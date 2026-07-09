@@ -141,6 +141,13 @@ export default function MandatoryTaskBoard() {
     setSubmission({mailingAddress:"",orderConfirmation:"",receiptNote:"",trackingNumber:"",deliveryDate:"",notes:"",customAnswers:{}});
   }
 
+  function deleteTask(taskId) {
+    const updated = tasks.filter(t => t.id !== taskId);
+    setTasks(updated);
+    saveTasks(updated);
+    setActiveTask(null);
+  }
+
   function closeTask(taskId) {
     const updated = tasks.map(t => t.id !== taskId ? t : {...t, status:"closed"});
     setTasks(updated);
@@ -209,8 +216,11 @@ export default function MandatoryTaskBoard() {
                       <div style={{color:C.muted,fontSize:12,marginTop:2}}>{completedCount} of {totalAssigned} staff completed</div>
                     </div>
                     <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
-                      <div style={{background:task.status==="closed"?C.cardBorder:mySub?"#4CAF5022":C.error+"22",border:"1px solid "+(task.status==="closed"?C.cardBorder:mySub?"#4CAF5044":C.error+"44"),borderRadius:20,padding:"2px 10px",color:task.status==="closed"?C.muted:mySub?"#4CAF50":C.error,fontSize:11,fontWeight:700}}>
-                        {task.status==="closed"?"Closed":mySub?"✓ Completed":"⚠ Action Required"}
+                      <div style={{display:"flex",flexDirection:"column",gap:4,alignItems:"flex-end"}}>
+                        <div style={{background:task.status==="closed"?C.cardBorder:mySub?"#4CAF5022":C.error+"22",border:"1px solid "+(task.status==="closed"?C.cardBorder:mySub?"#4CAF5044":C.error+"44"),borderRadius:20,padding:"2px 10px",color:task.status==="closed"?C.muted:mySub?"#4CAF50":C.error,fontSize:11,fontWeight:700}}>
+                          {task.status==="closed"?"Closed":mySub?"✓ Completed":"⚠ Action Required"}
+                        </div>
+                        {isLeadership&&<button onClick={e=>{e.stopPropagation();if(window.confirm("Delete this task permanently?"))deleteTask(task.id);}} style={{background:C.error+"22",border:"1px solid "+C.error+"44",borderRadius:8,padding:"3px 10px",color:C.error,fontSize:11,cursor:"pointer"}}>Delete</button>}
                       </div>
                     </div>
                   </div>
@@ -483,6 +493,9 @@ export default function MandatoryTaskBoard() {
                       <div style={{color:pct===100?"#4CAF50":C.gold,fontWeight:800,fontSize:14}}>{completedIds.length}/{totalAssigned}</div>
                       {task.status==="active"&&isLeadership&&(
                         <button onClick={()=>closeTask(task.id)} style={{background:"transparent",border:"1px solid "+C.cardBorder,borderRadius:8,padding:"4px 10px",color:C.muted,fontSize:11,cursor:"pointer"}}>Close Task</button>
+                      )}
+                      {isLeadership&&(
+                        <button onClick={e=>{e.stopPropagation();if(window.confirm("Delete this task permanently?"))deleteTask(task.id);}} style={{background:C.error+"22",border:"1px solid "+C.error+"44",borderRadius:8,padding:"4px 10px",color:C.error,fontSize:11,cursor:"pointer"}}>Delete</button>
                       )}
                       {task.status==="closed"&&<div style={{background:C.cardBorder,borderRadius:20,padding:"2px 10px",color:C.muted,fontSize:11,fontWeight:700}}>Closed</div>}
                     </div>

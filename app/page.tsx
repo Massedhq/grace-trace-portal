@@ -1026,20 +1026,28 @@ export default function WorkdayPortal() {
           const meetings = (() => { try { const s = localStorage.getItem("gtm_meetings"); return s ? JSON.parse(s) : []; } catch(e) { return []; } })();
           const pendingTasks = mandatoryTasks.filter((t: any) => t.assignedTo.includes(currentUser.id) && t.status === "active" && !t.submissions?.[currentUser.id]);
           const pendingMeetings = meetings.filter((m: any) => m.attendees.includes(currentUser.id) && m.status === "scheduled" && !m.responses?.[currentUser.id] && m.createdBy !== currentUser.id);
-          const total = pendingTasks.length + pendingMeetings.length;
+          const orientationSigned = (() => { try { const s = localStorage.getItem("gtm_orientation_" + currentUser.id); return s ? JSON.parse(s).signed : false; } catch(e) { return false; } })();
+          const binderMap = {avy:"gtm_orientation_avy",travis:"gtm_orientation_travis",deann:"gtm_orientation_deann",dennis:"gtm_orientation_dennis",erica:"gtm_orientation_erica",ialana:"gtm_orientation_ialana",aubreyon:"gtm_orientation_aubreyon"};
+          const binderKey = binderMap[currentUser.id];
+          const binderSigned = (() => { try { if (!binderKey) return true; const s = localStorage.getItem(binderKey); return s ? JSON.parse(s).signed : false; } catch(e) { return false; } })();
+          const binderUrl = "/" + currentUser.id + "-binder";
+          const total = pendingTasks.length + pendingMeetings.length + (!orientationSigned ? 1 : 0) + (!binderSigned ? 1 : 0);
           if (total === 0) return null;
           return (
             <div style={{ background: "#7B2D00", border: "1px solid " + C.error, borderRadius: 12, padding: "14px 18px", marginBottom: 20, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
               <span style={{ fontSize: 24, flexShrink: 0 }}>🔔</span>
               <div style={{ flex: 1 }}>
-                <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>You have {total} item{total !== 1 ? "s" : ""} that need your attention</div>
+                <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>You have {total} item{total !== 1 ? "s" : ""} that require your immediate attention</div>
                 <div style={{ color: C.muted, fontSize: 13, marginTop: 3 }}>
-                  {pendingTasks.length > 0 && <span>{pendingTasks.length} mandatory task{pendingTasks.length !== 1 ? "s" : ""} pending</span>}
-                  {pendingTasks.length > 0 && pendingMeetings.length > 0 && <span> · </span>}
-                  {pendingMeetings.length > 0 && <span>{pendingMeetings.length} meeting{pendingMeetings.length !== 1 ? "s" : ""} need{pendingMeetings.length === 1 ? "s" : ""} your response</span>}
+                  {!orientationSigned && <span>Orientation not signed · </span>}
+                  {!binderSigned && <span>Department binder not signed · </span>}
+                  {pendingTasks.length > 0 && <span>{pendingTasks.length} mandatory task{pendingTasks.length !== 1 ? "s" : ""} pending · </span>}
+                  {pendingMeetings.length > 0 && <span>{pendingMeetings.length} meeting{pendingMeetings.length !== 1 ? "s" : ""} need your response</span>}
                 </div>
               </div>
-              <div style={{ display: "flex", gap: 8", flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {!orientationSigned && <a href="/orientation" style={{ background: C.burgundy, border: "1px solid " + C.error, borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>Sign Orientation 📄</a>}
+                {!binderSigned && <a href={binderUrl} style={{ background: C.burgundy, border: "1px solid " + C.error, borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>Sign Binder 📘</a>}
                 {pendingTasks.length > 0 && <a href="/mandatory-tasks" style={{ background: C.error, border: "none", borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>View Tasks 📌</a>}
                 {pendingMeetings.length > 0 && <a href="/meetings" style={{ background: C.burgundy, border: "1px solid " + C.error, borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>View Meetings 📅</a>}
               </div>
