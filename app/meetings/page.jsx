@@ -40,6 +40,9 @@ export default function MeetingBoard() {
   });
   const [formError, setFormError] = useState("");
   const [created, setCreated] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState("");
 
   // Attendance response
   const [response, setResponse] = useState({method:"", canAttend:"", followUpDate:"", followUpNotes:""});
@@ -74,6 +77,44 @@ export default function MeetingBoard() {
       opts[i] = {...opts[i], [field]: val};
       return {...prev, voteOptions: opts};
     });
+  }
+
+  async function generateMeetingWithAI() {
+    if (!aiPrompt.trim()) { setAiError("Please describe the meeting."); return; }
+    setAiLoading(true); setAiError("");
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6",
+          max_tokens: 800,
+          messages: [{
+            role: "user",
+            content: `You are helping schedule a meeting for Grace Trace Ministries. Generate professional meeting details based on: "${aiPrompt}".
+
+Respond ONLY with a JSON object, no markdown, no backticks:
+{
+  "title": "professional meeting title",
+  "agenda": "detailed agenda listing what will be covered in this meeting, formatted as numbered items"
+}`
+          }]
+        })
+      });
+      const data = await response.json();
+      const text = data.content?.[0]?.text || "";
+      const clean = text.replace(/```json|```/g, "").trim();
+      const parsed = JSON.parse(clean);
+      setForm(p => ({
+        ...p,
+        title: parsed.title || p.title,
+        agenda: parsed.agenda || p.agenda,
+      }));
+      setAiPrompt("");
+    } catch(e) {
+      setAiError("Could not generate meeting details. Try again or fill in manually.");
+    }
+    setAiLoading(false);
   }
 
   function createMeeting() {
@@ -459,6 +500,19 @@ export default function MeetingBoard() {
           <div>
             <div style={{color:C.gold,fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",marginBottom:14}}>Schedule a New Meeting</div>
             <div style={{background:C.card,border:"1px solid "+C.cardBorder,borderRadius:12,padding:"20px 22px"}}>
+              <div style={{background:C.dark,border:"1px solid "+C.gold+"44",borderRadius:12,padding:"16px",marginBottom:20}}>
+                <div style={{color:C.gold,fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>✨ AI Meeting Assistant</div>
+                <div style={{color:C.muted,fontSize:12,marginBottom:10}}>Describe the meeting and AI will generate a title and agenda for you.</div>
+                <div style={{display:"flex",gap:8,marginBottom:8}}>
+                  <input type="text" value={aiPrompt} onChange={e=>{setAiPrompt(e.target.value);setAiError("");}} onKeyDown={e=>e.key==="Enter"&&generateMeetingWithAI()} placeholder="e.g. monthly board review of program operations and finances"
+                    style={{flex:1,background:C.card,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:13,outline:"none",fontFamily:"inherit"}}/>
+                  <button onClick={generateMeetingWithAI} disabled={aiLoading}
+                    style={{background:C.gold,border:"none",borderRadius:8,padding:"10px 18px",color:C.dark,fontSize:13,fontWeight:800,cursor:aiLoading?"not-allowed":"pointer",flexShrink:0,opacity:aiLoading?0.7:1}}>
+                    {aiLoading?"Generating...":"Generate ✨"}
+                  </button>
+                </div>
+                {aiError&&<div style={{color:C.error,fontSize:12}}>{aiError}</div>}
+              </div>
               {[
                 {label:"Meeting title",key:"title",type:"text",ph:"e.g. Monthly Staff Check-In, Board Meeting, Intake Review"},
                 {label:"Meeting date",key:"date",type:"text",ph:"e.g. July 20, 2026"},
