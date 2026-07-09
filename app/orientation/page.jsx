@@ -355,6 +355,20 @@ export default function OrientationPackage() {
           </p>
         </div>
 
+        {/* Volunteer Notice */}
+        <div style={{ background: C.green + "22", border: "1px solid " + C.green, borderRadius: 12, padding: "20px 24px", marginBottom: 16 }}>
+          <div style={{ color: "#4CAF50", fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>Volunteer Position — Compensation Notice</div>
+          <p style={{ color: C.text, fontSize: 14, lineHeight: 1.9, margin: "0 0 12px" }}>
+            Grace Trace Ministries is a newly formed 501(c)(3) nonprofit organization currently in its pre-revenue operational phase. All staff positions at this time are <strong style={{ color: C.ivory }}>volunteer roles</strong>. You will not receive monetary compensation until the organization has secured government contracts, grants, or other sustainable funding sources.
+          </p>
+          <p style={{ color: C.text, fontSize: 14, lineHeight: 1.9, margin: "0 0 12px" }}>
+            As funding is secured and revenue begins flowing into the organization, compensation structures will be established and implemented for all team members in accordance with the organization's financial capacity and board-approved compensation plan. Your contributions during this foundational period are recognized, valued, and essential to the long-term success of Grace Trace Ministries and the residents we serve.
+          </p>
+          <p style={{ color: C.gold, fontSize: 13, lineHeight: 1.8, margin: 0, fontWeight: 600 }}>
+            By signing this orientation package you acknowledge that you understand and accept the volunteer nature of your current position and agree to fulfill your responsibilities in support of the Grace Trace Ministries mission.
+          </p>
+        </div>
+
         {/* Signature */}
         <div style={{ background: C.card, border: "1px solid " + C.gold + "66", borderRadius: 12, padding: "20px 24px", marginBottom: 32 }}>
           <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>Digital Signature</div>

@@ -741,6 +741,27 @@ export default function WorkdayPortal() {
   const [reportVisible, setReportVisible] = useState(false);
   const [sent, setSent] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [usernameInput, setUsernameInput] = useState("");
+
+  const USERNAME_MAP: Record<string, string> = {
+    avygtm: "avy", travisgtm: "travis", deanngtm: "deann",
+    ericagtm: "erica", ialanagtm: "ialana", kissesgtm: "aubreyon", dennisgtm: "dennis",
+  };
+
+  function attemptLoginWithUsername() {
+    const userId = USERNAME_MAP[usernameInput.toLowerCase().trim()];
+    if (!userId) { setLoginError("Username not found. Check your username and try again."); return; }
+    const user = USERS.find(u => u.id === userId);
+    if (!user) { setLoginError("Account not found."); return; }
+    if (passwordInput !== user.password) { setLoginError("Incorrect password. Please try again."); return; }
+    try { localStorage.setItem("gtm_current_user", user.id); localStorage.setItem("gtm_session_active", "true"); } catch(e) {}
+    if (!taskData[user.id]) {
+      const d: Record<string, any> = {};
+      user.tasks.forEach((t: any) => { const fields: Record<string, string> = {}; t.fields.forEach((f: any) => { fields[f.key] = ""; }); d[t.id] = { completed: false, fields }; });
+      setTaskData((prev: any) => ({ ...prev, [user.id]: d }));
+    }
+    setCurrentUser(user); setActiveTask(null); setReportText(""); setReportVisible(false); setSent(false); setActiveTab("workday"); setScreen("dashboard");
+  }
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -859,52 +880,63 @@ export default function WorkdayPortal() {
   }
 
   if (screen === "login") return (
-    <div style={{ minHeight: "100vh", background: C.dark, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "'Inter','Segoe UI',sans-serif" }}>
-      <div style={{ width: "100%", maxWidth: 440 }}>
-        <div style={{ textAlign: "center", marginBottom: 28 }}>
-          <div style={{ width: 64, height: 64, borderRadius: "50%", background: C.burgundy, border: "2px solid " + C.gold, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", fontSize: 26 }}>✦</div>
-          <h1 style={{ color: C.ivory, fontSize: 24, fontWeight: 900, margin: "0 0 4px" }}>Grace Trace Ministries</h1>
-          <p style={{ color: C.gold, fontSize: 13, fontStyle: "italic", margin: "0 0 6px" }}>Tracing the Path of Grace with New Beginnings</p>
-          <p style={{ color: C.muted, fontSize: 13, margin: 0 }}>Staff Workday Portal — Select your name to continue</p>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: "'Inter','Segoe UI',sans-serif", position: "relative", overflow: "hidden" }}>
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(160deg, #0D0608 0%, #1A0812 40%, #2A0E1A 70%, #1A0F12 100%)" }} />
+      <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(ellipse at 20% 50%, #6B1A2A22 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, #C9A84C11 0%, transparent 50%)" }} />
+      <div style={{ position: "relative", flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 20px" }}>
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <div style={{ width: 72, height: 72, borderRadius: "50%", background: "linear-gradient(135deg," + C.burgundy + " 0%," + C.burgundyDark + " 100%)", border: "2px solid " + C.gold, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px", boxShadow: "0 0 32px #C9A84C22" }}>
+            <span style={{ color: C.gold, fontSize: 28 }}>✦</span>
+          </div>
+          <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 6, textTransform: "uppercase", marginBottom: 4 }}>Grace Trace</div>
+          <h1 style={{ color: C.ivory, fontSize: 26, fontWeight: 900, margin: "0 0 6px", letterSpacing: -0.5 }}>Ministries</h1>
+          <div style={{ width: 40, height: 1, background: C.gold, margin: "8px auto", opacity: 0.5 }} />
+          <div style={{ color: C.ivory, fontSize: 15, fontWeight: 700, marginBottom: 3 }}>Staff Workday Portal</div>
+          <div style={{ color: C.gold, fontSize: 10, fontWeight: 700, letterSpacing: 4, textTransform: "uppercase" }}>Authorized Personnel Only</div>
         </div>
-        <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 14, overflow: "hidden" }}>
-          {USERS.map((u, i) => (
-            <button key={u.id} onClick={() => selectUser(u)} style={{ width: "100%", textAlign: "left", padding: "15px 18px", background: "transparent", border: "none", borderBottom: i < USERS.length - 1 ? "1px solid " + C.cardBorder : "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 14 }}
-              onMouseEnter={e => e.currentTarget.style.background = "#3A1A20"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-              <div style={{ width: 42, height: 42, borderRadius: "50%", background: u.color, border: "1px solid " + C.gold + "55", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, color: C.ivory, flexShrink: 0 }}>{u.initials}</div>
-              <div style={{ flex: 1 }}><div style={{ color: C.text, fontWeight: 700, fontSize: 15 }}>{u.name}</div><div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>{u.role}</div></div>
-              <span style={{ color: C.gold, fontSize: 20 }}>›</span>
-            </button>
-          ))}
+        <div style={{ width: "100%", maxWidth: 420, background: "rgba(26,15,18,0.9)", border: "1px solid " + C.cardBorder, borderRadius: 20, padding: "32px 28px", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
+          <div style={{ textAlign: "center", marginBottom: 24 }}>
+            <div style={{ width: 50, height: 50, borderRadius: "50%", background: C.cardBorder, border: "1px solid " + C.gold + "44", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", fontSize: 20 }}>👤</div>
+            <div style={{ color: C.ivory, fontWeight: 800, fontSize: 17 }}>Welcome Back</div>
+            <div style={{ color: C.muted, fontSize: 13, marginTop: 3 }}>Sign in to access your account</div>
+          </div>
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", marginBottom: 7 }}>Username or Employee ID</div>
+            <div style={{ position: "relative" }}>
+              <span style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: C.muted, fontSize: 15 }}>👤</span>
+              <input type="text" value={usernameInput} onChange={e => { setUsernameInput(e.target.value); setLoginError(""); }} onKeyDown={e => e.key === "Enter" && attemptLoginWithUsername()} placeholder="Enter your username or ID"
+                style={{ width: "100%", background: C.dark, border: "1px solid " + (loginError ? C.error : C.cardBorder), borderRadius: 10, padding: "12px 14px 12px 40px", color: C.text, fontSize: 14, outline: "none", fontFamily: "inherit" }} autoFocus />
+            </div>
+          </div>
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", marginBottom: 7 }}>Password</div>
+            <div style={{ position: "relative" }}>
+              <span style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: C.muted, fontSize: 15 }}>🔒</span>
+              <input type={showPassword ? "text" : "password"} value={passwordInput} onChange={e => { setPasswordInput(e.target.value); setLoginError(""); }} onKeyDown={e => e.key === "Enter" && attemptLoginWithUsername()} placeholder="Enter your password"
+                style={{ width: "100%", background: C.dark, border: "1px solid " + (loginError ? C.error : C.cardBorder), borderRadius: 10, padding: "12px 44px 12px 40px", color: C.text, fontSize: 14, outline: "none", fontFamily: "inherit" }} />
+              <button onClick={() => setShowPassword(!showPassword)} style={{ position: "absolute", right: 13, top: "50%", transform: "translateY(-50%)", background: "transparent", border: "none", color: C.muted, cursor: "pointer", fontSize: 16, padding: 0, lineHeight: 1 }}>
+                {showPassword ? "🙈" : "👁️"}
+              </button>
+            </div>
+          </div>
+          {loginError && <div style={{ color: C.error, fontSize: 13, marginBottom: 14, textAlign: "center" }}>{loginError}</div>}
+          <button onClick={attemptLoginWithUsername}
+            style={{ width: "100%", background: "linear-gradient(135deg," + C.burgundy + " 0%,#8B1A2E 100%)", border: "none", borderRadius: 10, padding: "14px", color: C.ivory, fontSize: 14, fontWeight: 800, cursor: "pointer", letterSpacing: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
+            SIGN IN <span style={{ fontSize: 16 }}>→</span>
+          </button>
+        </div>
+      </div>
+      <div style={{ position: "relative", textAlign: "center", padding: "14px 20px", borderTop: "1px solid " + C.cardBorder + "44" }}>
+        <div style={{ color: C.muted, fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          <span>🔒</span>
+          <span style={{ fontWeight: 700, color: C.gold }}>AUTHORIZED USE ONLY.</span>
+          <span>All access is monitored and recorded.</span>
         </div>
       </div>
     </div>
   );
 
-  if (screen === "password") return (
-    <div style={{ minHeight: "100vh", background: C.dark, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "'Inter','Segoe UI',sans-serif" }}>
-      <div style={{ width: "100%", maxWidth: 380 }}>
-        <div style={{ textAlign: "center", marginBottom: 24 }}>
-          <div style={{ width: 52, height: 52, borderRadius: "50%", background: selectedUser.color, border: "2px solid " + C.gold, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px", fontSize: 16, fontWeight: 800, color: C.ivory }}>{selectedUser.initials}</div>
-          <h2 style={{ color: C.ivory, fontSize: 20, fontWeight: 800, margin: "0 0 4px" }}>{selectedUser.name}</h2>
-          <p style={{ color: C.muted, fontSize: 13, margin: 0 }}>{selectedUser.role}</p>
-        </div>
-        <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 14, padding: "24px" }}>
-          <div style={{ color: C.muted, fontSize: 13, marginBottom: 8 }}>Enter your password</div>
-          <div style={{ position: "relative", marginBottom: 8 }}>
-            <input type={showPassword ? "text" : "password"} value={passwordInput} onChange={e => { setPasswordInput(e.target.value); setLoginError(""); }} onKeyDown={e => e.key === "Enter" && attemptLogin()} placeholder="Password"
-              style={{ width: "100%", background: C.dark, border: "1px solid " + (loginError ? C.error : C.cardBorder), borderRadius: 8, padding: "11px 44px 11px 14px", color: C.text, fontSize: 15, outline: "none", fontFamily: "inherit" }} autoFocus />
-            <button onClick={() => setShowPassword(!showPassword)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "transparent", border: "none", color: C.gold, cursor: "pointer", fontSize: 13, fontWeight: 700, padding: "0 4px" }}>
-              {showPassword ? "🙈" : "👁️"}
-            </button>
-          </div>
-          {loginError && <div style={{ color: C.error, fontSize: 13, marginBottom: 10 }}>{loginError}</div>}
-          <button onClick={attemptLogin} style={{ width: "100%", background: C.burgundy, border: "1px solid " + C.gold + "66", borderRadius: 8, padding: "12px", color: C.ivory, fontSize: 15, fontWeight: 800, cursor: "pointer", marginTop: 4 }}>Log In</button>
-          <button onClick={() => setScreen("login")} style={{ width: "100%", background: "transparent", border: "none", color: C.muted, fontSize: 13, cursor: "pointer", marginTop: 12, padding: "6px" }}>← Back to staff list</button>
-        </div>
-      </div>
-    </div>
-  );
+
 
   const d = taskData[currentUser.id] || {};
   const total = currentUser.tasks.length;
