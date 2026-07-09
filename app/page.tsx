@@ -895,7 +895,7 @@ export default function WorkdayPortal() {
             <input type={showPassword ? "text" : "password"} value={passwordInput} onChange={e => { setPasswordInput(e.target.value); setLoginError(""); }} onKeyDown={e => e.key === "Enter" && attemptLogin()} placeholder="Password"
               style={{ width: "100%", background: C.dark, border: "1px solid " + (loginError ? C.error : C.cardBorder), borderRadius: 8, padding: "11px 44px 11px 14px", color: C.text, fontSize: 15, outline: "none", fontFamily: "inherit" }} autoFocus />
             <button onClick={() => setShowPassword(!showPassword)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "transparent", border: "none", color: C.muted, cursor: "pointer", fontSize: 16, padding: 0 }}>
-              {showPassword ? "🙈" : "👁"}
+              {showPassword ? "Hide" : "Show"}
             </button>
           </div>
           {loginError && <div style={{ color: C.error, fontSize: 13, marginBottom: 10 }}>{loginError}</div>}
