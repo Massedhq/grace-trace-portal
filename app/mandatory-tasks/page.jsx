@@ -116,7 +116,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no backticks:
         requiresReceipt: parsed.requiresReceipt ?? p.requiresReceipt,
         requiresTracking: parsed.requiresTracking ?? p.requiresTracking,
         requiresDeliveryDate: parsed.requiresDeliveryDate ?? p.requiresDeliveryDate,
-        customFields: (parsed.customFields || []).map((label: string) => ({ label })),
+        customFields: (parsed.customFields || []).map((label) => ({ label })),
       }));
       setAiPrompt("");
     } catch(e) {
