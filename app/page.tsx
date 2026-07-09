@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { useState, useEffect } from "react";
 
@@ -1021,6 +1020,31 @@ export default function WorkdayPortal() {
       {menuOpen && <div onClick={() => setMenuOpen(false)} style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "rgba(0,0,0,0.5)", zIndex: 99 }} />}
 
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 20px" }}>
+        {(() => {
+          const mandatoryTasks = (() => { try { const s = localStorage.getItem("gtm_mandatory_tasks"); return s ? JSON.parse(s) : []; } catch(e) { return []; } })();
+          const meetings = (() => { try { const s = localStorage.getItem("gtm_meetings"); return s ? JSON.parse(s) : []; } catch(e) { return []; } })();
+          const pendingTasks = mandatoryTasks.filter((t: any) => t.assignedTo.includes(currentUser.id) && t.status === "active" && !t.submissions?.[currentUser.id]);
+          const pendingMeetings = meetings.filter((m: any) => m.attendees.includes(currentUser.id) && m.status === "scheduled" && !m.responses?.[currentUser.id] && m.createdBy !== currentUser.id);
+          const total = pendingTasks.length + pendingMeetings.length;
+          if (total === 0) return null;
+          return (
+            <div style={{ background: "#7B2D00", border: "1px solid " + C.error, borderRadius: 12, padding: "14px 18px", marginBottom: 20, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 24, flexShrink: 0 }}>🔔</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>You have {total} item{total !== 1 ? "s" : ""} that need your attention</div>
+                <div style={{ color: C.muted, fontSize: 13, marginTop: 3 }}>
+                  {pendingTasks.length > 0 && <span>{pendingTasks.length} mandatory task{pendingTasks.length !== 1 ? "s" : ""} pending</span>}
+                  {pendingTasks.length > 0 && pendingMeetings.length > 0 && <span> · </span>}
+                  {pendingMeetings.length > 0 && <span>{pendingMeetings.length} meeting{pendingMeetings.length !== 1 ? "s" : ""} need{pendingMeetings.length === 1 ? "s" : ""} your response</span>}
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 8", flexWrap: "wrap" }}>
+                {pendingTasks.length > 0 && <a href="/mandatory-tasks" style={{ background: C.error, border: "none", borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>View Tasks 📌</a>}
+                {pendingMeetings.length > 0 && <a href="/meetings" style={{ background: C.burgundy, border: "1px solid " + C.error, borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>View Meetings 📅</a>}
+              </div>
+            </div>
+          );
+        })()}
         <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "16px 20px", marginBottom: 24 }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
             <span style={{ color: C.text, fontSize: 14, fontWeight: 700 }}>Today's workday progress</span>
@@ -1104,4 +1128,3 @@ export default function WorkdayPortal() {
     </div>
   );
 }
-
