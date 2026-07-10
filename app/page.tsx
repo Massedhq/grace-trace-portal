@@ -1035,6 +1035,7 @@ export default function WorkdayPortal() {
             {[
               { label: "My Workday", href: "/", icon: "📋" },
               { label: "Meeting Board", href: "/meetings", icon: "📅" },
+              { label: "Expense Tracker", href: "/expenses", icon: "💰" },
               { label: "Mandatory Tasks", href: "/mandatory-tasks", icon: "📌" },
               { label: "Creative Tab", href: "/creative", icon: "💡" },
               { label: "Orientation Package", href: "/orientation", icon: "📄" },

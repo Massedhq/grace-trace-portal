@@ -85,6 +85,47 @@ const PAGES = [
     tips:["You must respond to every meeting — no response is not acceptable","Avy and Travis can see everyone's attendance responses","Meetings can be printed from the meeting detail page for organizational records"],
   },
   {
+    icon:"💰",title:"Expense Tracker",url:"/expenses",who:"All Staff",
+    description:"Submit expenses for reimbursement here. Upload your receipt or confirmation, enter the amount and details, and track the status of every submission. Avy and Travis review and approve all expense requests.",
+    steps:[
+      "Log in to the Staff Workday Portal first",
+      "Click the ☰ hamburger menu",
+      "Click Expense Tracker",
+      "Click Submit Expense to add a new expense",
+      "Fill in the description, amount, vendor, purchase date, date received, and confirmation number",
+      "Select the expense category",
+      "Upload your receipt photo or PDF",
+      "Upload any supporting documents if needed",
+      "Click Submit Expense",
+      "Track the status of your submission under My Expenses",
+    ],
+    tips:[
+      "Your expense will show as Pending until Avy or Travis reviews it",
+      "Once approved it shows as Approved — once paid it shows as Reimbursed",
+      "Always upload your receipt — no receipt may result in the expense being declined",
+      "Avy and Travis can generate and print a full monthly expense report at any time",
+    ],
+  },
+  {
+    icon:"📌",title:"Mandatory Task Board",url:"/mandatory-tasks",who:"All Staff",
+    description:"Avy and Travis assign mandatory tasks that all staff must complete. A red alert shows on your dashboard when you have a pending task. Complete it and submit your confirmation before the deadline.",
+    steps:[
+      "Log in to the Staff Workday Portal first",
+      "Click the ☰ hamburger menu",
+      "Click Mandatory Tasks",
+      "Click on a task to open it",
+      "Fill in all required fields — mailing address, confirmation number, tracking number, delivery date as required",
+      "Upload your receipt or confirmation if required",
+      "Click Submit to complete the task",
+    ],
+    tips:[
+      "A red alert will show on your dashboard when you have a pending mandatory task",
+      "You must complete all mandatory tasks by the deadline",
+      "Avy and Travis can see who has and has not completed each task in real time",
+      "Avy and Travis can create, edit, and delete tasks — staff only complete them",
+    ],
+  },
+  {
     icon:"📘",title:"Department Binders",url:"(see hamburger menu)",who:"Each staff member sees their own binder — Avy and Travis see all",
     description:"Your complete department operations binder. Read your full job description, duties, schedules, logs, standards, and performance metrics. Sign on the final section to acknowledge receipt.",
     steps:[
