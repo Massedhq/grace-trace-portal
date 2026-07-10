@@ -792,6 +792,9 @@ export default function WorkdayPortal() {
               fetch("/api/taskdata", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId: user.id, data: d }) }).catch(()=>{});
             }
           }).catch(() => {});
+          fetch("/api/mandatory-tasks").then(r=>r.json()).then(t=>setAlertTasks(t)).catch(()=>{});
+          fetch("/api/meetings").then(r=>r.json()).then(m=>setAlertMeetings(m)).catch(()=>{});
+          fetch("/api/signatures").then(r=>r.json()).then(s=>setAlertSignatures(s)).catch(()=>{});
           setCurrentUser(user);
           setScreen("dashboard");
         }
