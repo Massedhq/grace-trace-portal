@@ -11,8 +11,12 @@ export const metadata: Metadata = {
     title: "GTM Staff",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+    ],
     apple: "/icons/icon-192x192.png",
+    shortcut: "/favicon-32x32.png",
   },
 };
 
@@ -32,6 +36,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="shortcut icon" href="/favicon-32x32.png" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
