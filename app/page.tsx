@@ -742,6 +742,7 @@ export default function WorkdayPortal() {
   const [sent, setSent] = useState(false);
   const [alertTasks, setAlertTasks] = useState([]);
   const [alertMeetings, setAlertMeetings] = useState([]);
+  const [alertSignatures, setAlertSignatures] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [usernameInput, setUsernameInput] = useState("");
 
@@ -769,6 +770,7 @@ export default function WorkdayPortal() {
     }).catch(() => {});
     fetch("/api/mandatory-tasks").then(r=>r.json()).then(t=>setAlertTasks(t)).catch(()=>{});
     fetch("/api/meetings").then(r=>r.json()).then(m=>setAlertMeetings(m)).catch(()=>{});
+    fetch("/api/signatures").then(r=>r.json()).then(s=>setAlertSignatures(s)).catch(()=>{});
     setCurrentUser(user); setActiveTask(null); setReportText(""); setReportVisible(false); setSent(false); setActiveTab("workday"); setScreen("dashboard");
   }
   const [menuOpen, setMenuOpen] = useState(false);
@@ -1064,10 +1066,8 @@ export default function WorkdayPortal() {
           const meetings = alertMeetings;
           const pendingTasks = mandatoryTasks.filter((t: any) => t.assignedTo.includes(currentUser.id) && t.status === "active" && !t.submissions?.[currentUser.id]);
           const pendingMeetings = meetings.filter((m: any) => m.attendees.includes(currentUser.id) && m.status === "scheduled" && !m.responses?.[currentUser.id] && m.createdBy !== currentUser.id);
-          const orientationSigned = (() => { try { const s = localStorage.getItem("gtm_orientation_" + currentUser.id); return s ? JSON.parse(s).signed : false; } catch(e) { return false; } })();
-          const binderMap = {avy:"gtm_orientation_avy",travis:"gtm_orientation_travis",deann:"gtm_orientation_deann",dennis:"gtm_orientation_dennis",erica:"gtm_orientation_erica",ialana:"gtm_orientation_ialana",aubreyon:"gtm_orientation_aubreyon"};
-          const binderKey = binderMap[currentUser.id];
-          const binderSigned = (() => { try { if (!binderKey) return true; const s = localStorage.getItem(binderKey); return s ? JSON.parse(s).signed : false; } catch(e) { return false; } })();
+          const orientationSigned = alertSignatures[currentUser.id]?.signed || false;
+          const binderSigned = alertSignatures[currentUser.id]?.signed || false;
           const binderUrl = "/" + currentUser.id + "-binder";
           const total = pendingTasks.length + pendingMeetings.length + (!orientationSigned ? 1 : 0) + (!binderSigned ? 1 : 0);
           if (total === 0) return null;
