@@ -744,6 +744,32 @@ export default function WorkdayPortal() {
   const [alertMeetings, setAlertMeetings] = useState([]);
   const [alertSignatures, setAlertSignatures] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+
+  useEffect(() => {
+    // Android/Chrome install prompt
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+      setShowInstallBanner(true);
+    });
+    // Check if already installed
+    if (window.matchMedia("(display-mode: standalone)").matches) {
+      setShowInstallBanner(false);
+    }
+  }, []);
+
+  async function handleInstall() {
+    if (installPrompt) {
+      installPrompt.prompt();
+      const result = await installPrompt.userChoice;
+      if (result.outcome === "accepted") {
+        setShowInstallBanner(false);
+        setInstallPrompt(null);
+      }
+    }
+  }
   const [usernameInput, setUsernameInput] = useState("");
 
   const USERNAME_MAP: Record<string, string> = {
@@ -938,6 +964,31 @@ export default function WorkdayPortal() {
           <span>All access is monitored and recorded.</span>
         </div>
       </div>
+
+      {showInstallBanner && installPrompt && (
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: C.burgundyDark, borderTop: "2px solid " + C.gold, padding: "14px 20px", display: "flex", alignItems: "center", gap: 14, zIndex: 999, flexWrap: "wrap" }}>
+          <img src="/icons/icon-72x72.png" alt="GTM" style={{ width: 44, height: 44, borderRadius: 10, flexShrink: 0 }} />
+          <div style={{ flex: 1 }}>
+            <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>Install the Staff Portal App</div>
+            <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>Add Grace Trace Ministries to your home screen for quick access</div>
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={() => setShowInstallBanner(false)} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "8px 14px", color: C.muted, fontSize: 13, cursor: "pointer" }}>Not now</button>
+            <button onClick={handleInstall} style={{ background: C.gold, border: "none", borderRadius: 8, padding: "8px 18px", color: C.dark, fontSize: 13, fontWeight: 800, cursor: "pointer" }}>Install App</button>
+          </div>
+        </div>
+      )}
+
+      {showInstallBanner && !installPrompt && (
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: C.burgundyDark, borderTop: "2px solid " + C.gold, padding: "14px 20px", display: "flex", alignItems: "center", gap: 14, zIndex: 999, flexWrap: "wrap" }}>
+          <img src="/icons/icon-72x72.png" alt="GTM" style={{ width: 44, height: 44, borderRadius: 10, flexShrink: 0 }} />
+          <div style={{ flex: 1 }}>
+            <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>Install on iPhone</div>
+            <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>Tap the Share button ⎋ at the bottom then tap <span style={{ color: C.gold, fontWeight: 700 }}>Add to Home Screen</span></div>
+          </div>
+          <button onClick={() => setShowInstallBanner(false)} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "8px 14px", color: C.muted, fontSize: 13, cursor: "pointer" }}>✕</button>
+        </div>
+      )}
     </div>
   );
 
