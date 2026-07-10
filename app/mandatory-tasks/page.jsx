@@ -93,9 +93,10 @@ export default function MandatoryTaskBoard() {
       assignedTo: "all",
     });
     setEditingTask(task.id);
-    setView("create");
+    setView("edit");
     setFormError("");
     setCreated(false);
+    setActiveTask(null);
   }
 
   async function generateWithAI() {
@@ -283,10 +284,10 @@ Respond ONLY with a JSON object in this exact format, no markdown, no backticks:
 
       {/* Tab nav */}
       <div style={{background:C.dark,borderBottom:"1px solid "+C.cardBorder,display:"flex",gap:2,padding:"0 24px"}}>
-        {["board", isLeadership&&"create", isLeadership&&"tracker"].filter(Boolean).map(tab=>(
+        {["board", isLeadership&&"create", editingTask&&isLeadership&&"edit", isLeadership&&"tracker"].filter(Boolean).map(tab=>(
           <button key={tab} onClick={()=>{setView(tab);setActiveTask(null);setSubmitted(false);}}
             style={{background:"transparent",border:"none",borderBottom:view===tab?"2px solid "+C.gold:"2px solid transparent",color:view===tab?C.gold:C.muted,fontSize:13,fontWeight:view===tab?800:500,padding:"11px 16px",cursor:"pointer"}}>
-            {tab==="board"?"My Tasks":tab==="create"?"Create Task":"Track Completion"}
+            {tab==="board"?"My Tasks":tab==="create"?"Create Task":tab==="edit"?"Edit Task":"Track Completion"}
             {tab==="board"&&pendingMine.length>0&&<span style={{background:C.error,color:C.ivory,borderRadius:20,padding:"1px 7px",fontSize:10,fontWeight:800,marginLeft:6}}>{pendingMine.length}</span>}
           </button>
         ))}
@@ -321,7 +322,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no backticks:
                         <div style={{background:task.status==="closed"?C.cardBorder:mySub?"#4CAF5022":C.error+"22",border:"1px solid "+(task.status==="closed"?C.cardBorder:mySub?"#4CAF5044":C.error+"44"),borderRadius:20,padding:"2px 10px",color:task.status==="closed"?C.muted:mySub?"#4CAF50":C.error,fontSize:11,fontWeight:700}}>
                           {task.status==="closed"?"Closed":mySub?"✓ Completed":"⚠ Action Required"}
                         </div>
-                        <button onClick={e=>{e.stopPropagation();loadTaskIntoForm(task);}} style={{background:C.gold+"22",border:"1px solid "+C.gold+"44",borderRadius:8,padding:"3px 10px",color:C.gold,fontSize:11,cursor:"pointer"}}>Edit</button>
+                        {isLeadership&&<button onClick={e=>{e.stopPropagation();loadTaskIntoForm(task);}} style={{background:C.gold+"22",border:"1px solid "+C.gold+"44",borderRadius:8,padding:"3px 10px",color:C.gold,fontSize:11,cursor:"pointer"}}>Edit</button>}
                         {isLeadership&&<button onClick={e=>{e.stopPropagation();if(window.confirm("Delete this task permanently?"))deleteTask(task.id);}} style={{background:C.error+"22",border:"1px solid "+C.error+"44",borderRadius:8,padding:"3px 10px",color:C.error,fontSize:11,cursor:"pointer"}}>Delete</button>}
                       </div>
                     </div>
@@ -601,6 +602,61 @@ Respond ONLY with a JSON object in this exact format, no markdown, no backticks:
                 {editingTask ? "✓ Save Changes" : "📌 Send Mandatory Task to Staff"}
               </button>
               {editingTask && <button onClick={()=>{setEditingTask(null);setForm({title:"",description:"",deadline:"",requiresReceipt:true,requiresTracking:false,requiresMailingAddress:false,requiresDeliveryDate:false,customFields:[],link:"",attachmentName:"",attachmentData:"",attachmentType:"",assignedTo:"all"});setView("board");}} style={{width:"100%",background:"transparent",border:"1px solid "+C.cardBorder,borderRadius:10,padding:"11px",color:C.muted,fontSize:13,cursor:"pointer",marginTop:8}}>Cancel Edit</button>}
+            </div>
+          </div>
+        )}
+
+        {/* EDIT TASK */}
+        {view==="edit"&&isLeadership&&editingTask&&(
+          <div>
+            <div style={{color:C.gold,fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",marginBottom:14}}>Edit Mandatory Task</div>
+            <div style={{background:C.card,border:"1px solid "+C.cardBorder,borderRadius:12,padding:"20px 22px"}}>
+              <div style={{marginBottom:14}}>
+                <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>Task title</div>
+                <input type="text" value={form.title} onChange={e=>setForm(p=>({...p,title:e.target.value}))} placeholder="Task title"
+                  style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
+              </div>
+              <div style={{marginBottom:14}}>
+                <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>Instructions</div>
+                <textarea value={form.description} onChange={e=>setForm(p=>({...p,description:e.target.value}))} rows={5}
+                  style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:14,resize:"vertical",outline:"none",fontFamily:"inherit",lineHeight:1.6}}/>
+              </div>
+              <div style={{marginBottom:14}}>
+                <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>Deadline</div>
+                <input type="text" value={form.deadline} onChange={e=>setForm(p=>({...p,deadline:e.target.value}))} placeholder="e.g. July 25, 2026"
+                  style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
+              </div>
+              <div style={{marginBottom:14}}>
+                <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>Link (optional)</div>
+                <input type="text" value={form.link||""} onChange={e=>setForm(p=>({...p,link:e.target.value}))} placeholder="Order page, Google Drive link, or resource URL"
+                  style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
+              </div>
+              <div style={{marginBottom:16}}>
+                <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:10}}>What do staff need to submit?</div>
+                <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                  {[
+                    {key:"requiresMailingAddress",label:"📦 Mailing address"},
+                    {key:"requiresReceipt",label:"🧾 Receipt or order confirmation"},
+                    {key:"requiresTracking",label:"📍 Tracking number"},
+                    {key:"requiresDeliveryDate",label:"📅 Expected delivery date"},
+                  ].map(opt=>(
+                    <button key={opt.key} onClick={()=>setForm(p=>({...p,[opt.key]:!p[opt.key]}))}
+                      style={{background:form[opt.key]?C.burgundy:C.dark,border:"1px solid "+(form[opt.key]?C.gold+"66":C.cardBorder),borderRadius:10,padding:"11px 16px",color:form[opt.key]?C.ivory:C.muted,fontSize:13,fontWeight:600,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:10}}>
+                      <span style={{width:20,height:20,borderRadius:4,background:form[opt.key]?C.gold:C.cardBorder,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,flexShrink:0}}>{form[opt.key]?"✓":""}</span>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {formError&&<div style={{color:C.error,fontSize:13,marginBottom:12}}>{formError}</div>}
+              {created&&<div style={{color:"#4CAF50",fontSize:13,fontWeight:700,marginBottom:12}}>✓ Task updated</div>}
+              <button onClick={createTask} style={{width:"100%",background:C.green,border:"none",borderRadius:10,padding:"13px",color:C.ivory,fontSize:14,fontWeight:800,cursor:"pointer",marginBottom:10}}>
+                ✓ Save Changes
+              </button>
+              <button onClick={()=>{setEditingTask(null);setForm({title:"",description:"",deadline:"",requiresReceipt:true,requiresTracking:false,requiresMailingAddress:false,requiresDeliveryDate:false,customFields:[],link:"",attachmentName:"",attachmentData:"",attachmentType:"",assignedTo:"all"});setView("board");}}
+                style={{width:"100%",background:"transparent",border:"1px solid "+C.cardBorder,borderRadius:10,padding:"11px",color:C.muted,fontSize:13,cursor:"pointer"}}>
+                Cancel
+              </button>
             </div>
           </div>
         )}
