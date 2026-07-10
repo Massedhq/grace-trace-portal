@@ -103,34 +103,13 @@ export default function MandatoryTaskBoard() {
     if (!aiPrompt.trim()) { setAiError("Please describe the task you want to create."); return; }
     setAiLoading(true); setAiError("");
     try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
+      const response = await fetch("/api/ai-task", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-6",
-          max_tokens: 1000,
-          messages: [{
-            role: "user",
-            content: `You are helping create a mandatory task for Grace Trace Ministries staff. Generate a professional task based on this request: "${aiPrompt}". 
-            
-Respond ONLY with a JSON object in this exact format, no markdown, no backticks:
-{
-  "title": "short clear task title",
-  "description": "full detailed instructions for staff explaining exactly what they need to do, where to go, what to order or complete, and any important details",
-  "deadline": "within 2 weeks from today",
-  "requiresMailingAddress": true or false,
-  "requiresReceipt": true or false,
-  "requiresTracking": true or false,
-  "requiresDeliveryDate": true or false,
-  "customFields": ["field label 1", "field label 2"]
-}`
-          }]
-        })
+        body: JSON.stringify({ prompt: aiPrompt })
       });
-      const data = await response.json();
-      const text = data.content?.[0]?.text || "";
-      const clean = text.replace(/```json|```/g, "").trim();
-      const parsed = JSON.parse(clean);
+      const parsed = await response.json();
+      if (parsed.error) throw new Error(parsed.error);
       setForm(p => ({
         ...p,
         title: parsed.title || p.title,
@@ -314,7 +293,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no backticks:
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:8}}>
                     <div style={{flex:1}}>
                       <div style={{color:C.text,fontWeight:800,fontSize:15}}>{task.title}</div>
-                      <div style={{color:C.muted,fontSize:12,marginTop:3}}>Due: {task.deadline} — Created by {task.createdByName}</div>
+                      <div style={{color:C.muted,fontSize:12,marginTop:3}}>Due: {task.deadline}</div>
                       <div style={{color:C.muted,fontSize:12,marginTop:2}}>{completedCount} of {totalAssigned} staff completed</div>
                     </div>
                     <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
@@ -322,7 +301,6 @@ Respond ONLY with a JSON object in this exact format, no markdown, no backticks:
                         <div style={{background:task.status==="closed"?C.cardBorder:mySub?"#4CAF5022":C.error+"22",border:"1px solid "+(task.status==="closed"?C.cardBorder:mySub?"#4CAF5044":C.error+"44"),borderRadius:20,padding:"2px 10px",color:task.status==="closed"?C.muted:mySub?"#4CAF50":C.error,fontSize:11,fontWeight:700}}>
                           {task.status==="closed"?"Closed":mySub?"✓ Completed":"⚠ Action Required"}
                         </div>
-                        {isLeadership&&<button onClick={e=>{e.stopPropagation();loadTaskIntoForm(task);}} style={{background:C.gold+"22",border:"1px solid "+C.gold+"44",borderRadius:8,padding:"3px 10px",color:C.gold,fontSize:11,cursor:"pointer"}}>Edit</button>}
                         {isLeadership&&<button onClick={e=>{e.stopPropagation();if(window.confirm("Delete this task permanently?"))deleteTask(task.id);}} style={{background:C.error+"22",border:"1px solid "+C.error+"44",borderRadius:8,padding:"3px 10px",color:C.error,fontSize:11,cursor:"pointer"}}>Delete</button>}
                       </div>
                     </div>
@@ -344,7 +322,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no backticks:
               <div style={{background:C.card,border:"1px solid "+C.cardBorder,borderRadius:12,padding:"20px 24px",marginBottom:16}}>
                 <div style={{color:C.gold,fontSize:10,fontWeight:800,letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>Mandatory Task</div>
                 <h2 style={{color:C.ivory,fontSize:20,fontWeight:900,margin:"0 0 8px"}}>{task.title}</h2>
-                <div style={{color:C.muted,fontSize:13,marginBottom:16}}>Due: {task.deadline} | Created by {task.createdByName} on {task.createdOn}</div>
+                <div style={{color:C.muted,fontSize:13,marginBottom:16}}>Due: {task.deadline}</div>
                 <div style={{background:C.dark,borderRadius:10,padding:"14px 16px",marginBottom:16}}>
                   <div style={{color:C.text,fontSize:14,lineHeight:1.8}}>{task.description}</div>
                 </div>
@@ -611,13 +589,29 @@ Respond ONLY with a JSON object in this exact format, no markdown, no backticks:
           <div>
             <div style={{color:C.gold,fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",marginBottom:14}}>Edit Mandatory Task</div>
             <div style={{background:C.card,border:"1px solid "+C.cardBorder,borderRadius:12,padding:"20px 22px"}}>
+
+              {/* AI Assist */}
+              <div style={{background:C.dark,border:"1px solid "+C.gold+"44",borderRadius:12,padding:"16px",marginBottom:20}}>
+                <div style={{color:C.gold,fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>✨ AI Task Assistant</div>
+                <div style={{color:C.muted,fontSize:12,marginBottom:10}}>Describe changes and AI will rewrite the task details for you.</div>
+                <div style={{display:"flex",gap:8,marginBottom:8}}>
+                  <input type="text" value={aiPrompt} onChange={e=>{setAiPrompt(e.target.value);setAiError("");}} onKeyDown={e=>e.key==="Enter"&&generateWithAI()} placeholder="e.g. update to include shirt size and color selection"
+                    style={{flex:1,background:C.card,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:13,outline:"none",fontFamily:"inherit"}}/>
+                  <button onClick={generateWithAI} disabled={aiLoading}
+                    style={{background:C.gold,border:"none",borderRadius:8,padding:"10px 18px",color:C.dark,fontSize:13,fontWeight:800,cursor:aiLoading?"not-allowed":"pointer",flexShrink:0,opacity:aiLoading?0.7:1}}>
+                    {aiLoading?"Generating...":"Generate ✨"}
+                  </button>
+                </div>
+                {aiError&&<div style={{color:C.error,fontSize:12}}>{aiError}</div>}
+              </div>
+
               <div style={{marginBottom:14}}>
                 <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>Task title</div>
                 <input type="text" value={form.title} onChange={e=>setForm(p=>({...p,title:e.target.value}))} placeholder="Task title"
                   style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
               </div>
               <div style={{marginBottom:14}}>
-                <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>Instructions</div>
+                <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>Instructions — tell staff exactly what to do</div>
                 <textarea value={form.description} onChange={e=>setForm(p=>({...p,description:e.target.value}))} rows={5}
                   style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:14,resize:"vertical",outline:"none",fontFamily:"inherit",lineHeight:1.6}}/>
               </div>
@@ -627,17 +621,35 @@ Respond ONLY with a JSON object in this exact format, no markdown, no backticks:
                   style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
               </div>
               <div style={{marginBottom:14}}>
-                <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>Link (optional)</div>
+                <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>Link <span style={{color:C.muted,fontWeight:400}}>(optional)</span></div>
                 <input type="text" value={form.link||""} onChange={e=>setForm(p=>({...p,link:e.target.value}))} placeholder="Order page, Google Drive link, or resource URL"
                   style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
+              </div>
+              <div style={{marginBottom:14}}>
+                <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>Upload a file <span style={{color:C.muted,fontWeight:400}}>(optional — PDF or photo)</span></div>
+                <input type="file" accept=".pdf,image/*" onChange={e=>{
+                  const file=e.target.files[0];
+                  if(!file)return;
+                  if(file.size>5*1024*1024){alert("File must be under 5MB.");return;}
+                  const reader=new FileReader();
+                  reader.onload=ev=>setForm(p=>({...p,attachmentName:file.name,attachmentData:ev.target.result,attachmentType:file.type}));
+                  reader.readAsDataURL(file);
+                }} style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}/>
+                {form.attachmentName&&(
+                  <div style={{marginTop:8,display:"flex",alignItems:"center",gap:10,background:C.dark,border:"1px solid "+C.green,borderRadius:8,padding:"8px 14px"}}>
+                    <span style={{fontSize:18}}>{form.attachmentType?.includes("pdf")?"📄":"🖼"}</span>
+                    <span style={{color:"#4CAF50",fontSize:13,fontWeight:600,flex:1}}>{form.attachmentName}</span>
+                    <button onClick={()=>setForm(p=>({...p,attachmentName:"",attachmentData:"",attachmentType:""}))} style={{background:"transparent",border:"none",color:C.error,fontSize:16,cursor:"pointer"}}>✕</button>
+                  </div>
+                )}
               </div>
               <div style={{marginBottom:16}}>
                 <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:10}}>What do staff need to submit?</div>
                 <div style={{display:"flex",flexDirection:"column",gap:10}}>
                   {[
-                    {key:"requiresMailingAddress",label:"📦 Mailing address"},
-                    {key:"requiresReceipt",label:"🧾 Receipt or order confirmation"},
-                    {key:"requiresTracking",label:"📍 Tracking number"},
+                    {key:"requiresMailingAddress",label:"📦 Mailing address — where to ship their item"},
+                    {key:"requiresReceipt",label:"🧾 Receipt or order confirmation — proof they completed the task"},
+                    {key:"requiresTracking",label:"📍 Tracking number — if their order has one"},
                     {key:"requiresDeliveryDate",label:"📅 Expected delivery date"},
                   ].map(opt=>(
                     <button key={opt.key} onClick={()=>setForm(p=>({...p,[opt.key]:!p[opt.key]}))}
@@ -648,8 +660,22 @@ Respond ONLY with a JSON object in this exact format, no markdown, no backticks:
                   ))}
                 </div>
               </div>
+              <div style={{marginBottom:16}}>
+                <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:8}}>Custom fields <span style={{color:C.muted,fontWeight:400}}>(optional)</span></div>
+                <div style={{display:"flex",gap:8,marginBottom:8}}>
+                  <input type="text" value={newFieldLabel} onChange={e=>setNewFieldLabel(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addCustomField()} placeholder="e.g. Shirt size, preferred color"
+                    style={{flex:1,background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"9px 12px",color:C.text,fontSize:13,outline:"none",fontFamily:"inherit"}}/>
+                  <button onClick={addCustomField} style={{background:C.burgundy,border:"1px solid "+C.gold+"66",borderRadius:8,padding:"9px 16px",color:C.ivory,fontSize:13,fontWeight:700,cursor:"pointer"}}>Add</button>
+                </div>
+                {form.customFields.map((f,i)=>(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"9px 12px",marginBottom:6}}>
+                    <span style={{color:C.text,fontSize:13,flex:1}}>{f.label}</span>
+                    <button onClick={()=>removeCustomField(i)} style={{background:"transparent",border:"none",color:C.error,fontSize:16,cursor:"pointer",padding:"0 4px"}}>✕</button>
+                  </div>
+                ))}
+              </div>
               {formError&&<div style={{color:C.error,fontSize:13,marginBottom:12}}>{formError}</div>}
-              {created&&<div style={{color:"#4CAF50",fontSize:13,fontWeight:700,marginBottom:12}}>✓ Task updated</div>}
+              {created&&<div style={{color:"#4CAF50",fontSize:13,fontWeight:700,marginBottom:12}}>✓ Task updated successfully</div>}
               <button onClick={createTask} style={{width:"100%",background:C.green,border:"none",borderRadius:10,padding:"13px",color:C.ivory,fontSize:14,fontWeight:800,cursor:"pointer",marginBottom:10}}>
                 ✓ Save Changes
               </button>
@@ -677,7 +703,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no backticks:
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:8,marginBottom:12}}>
                     <div>
                       <div style={{color:C.text,fontWeight:800,fontSize:15}}>{task.title}</div>
-                      <div style={{color:C.muted,fontSize:12,marginTop:3}}>Due: {task.deadline} | Created by {task.createdByName} on {task.createdOn}</div>
+                      <div style={{color:C.muted,fontSize:12,marginTop:3}}>Due: {task.deadline}</div>
                     </div>
                     <div style={{display:"flex",gap:8,alignItems:"center"}}>
                       <div style={{color:pct===100?"#4CAF50":C.gold,fontWeight:800,fontSize:14}}>{completedIds.length}/{totalAssigned}</div>

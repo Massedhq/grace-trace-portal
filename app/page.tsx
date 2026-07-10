@@ -849,15 +849,11 @@ export default function WorkdayPortal() {
   }
 
   function getSendLabel() {
-    if (currentUser.id === "avy") return "Send to Travis";
-    if (currentUser.id === "travis") return "Send to Avy";
-    return "Complete and Send";
+    return "Submit Report";
   }
 
   function getSentConfirmation() {
-    if (currentUser.id === "avy") return "Report sent to Travis";
-    if (currentUser.id === "travis") return "Report sent to Avy";
-    return "Report complete and sent";
+    return "Report submitted successfully";
   }
 
   function generateReport() {
