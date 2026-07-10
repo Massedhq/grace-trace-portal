@@ -41,6 +41,7 @@ export default function MandatoryTaskBoard() {
   });
   const [formError, setFormError] = useState("");
   const [created, setCreated] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
@@ -50,6 +51,7 @@ export default function MandatoryTaskBoard() {
   const [submission, setSubmission] = useState({
     mailingAddress:"", orderConfirmation:"", receiptNote:"",
     trackingNumber:"", deliveryDate:"", notes:"", customAnswers:{},
+    receiptFileName:"", receiptFileData:"", receiptFileType:"",
   });
   const [subError, setSubError] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -72,6 +74,28 @@ export default function MandatoryTaskBoard() {
 
   function removeCustomField(i) {
     setForm(p => ({...p, customFields:p.customFields.filter((_,idx)=>idx!==i)}));
+  }
+
+  function loadTaskIntoForm(task) {
+    setForm({
+      title: task.title,
+      description: task.description,
+      deadline: task.deadline,
+      requiresReceipt: task.requiresReceipt,
+      requiresTracking: task.requiresTracking,
+      requiresMailingAddress: task.requiresMailingAddress,
+      requiresDeliveryDate: task.requiresDeliveryDate,
+      customFields: task.customFields || [],
+      link: task.link || "",
+      attachmentName: task.attachmentName || "",
+      attachmentData: task.attachmentData || "",
+      attachmentType: task.attachmentType || "",
+      assignedTo: "all",
+    });
+    setEditingTask(task.id);
+    setView("create");
+    setFormError("");
+    setCreated(false);
   }
 
   async function generateWithAI() {
@@ -128,6 +152,31 @@ Respond ONLY with a JSON object in this exact format, no markdown, no backticks:
     if (!form.title.trim()) { setFormError("Please enter a task title."); return; }
     if (!form.description.trim()) { setFormError("Please describe what staff need to do."); return; }
     if (!form.deadline.trim()) { setFormError("Please enter a deadline."); return; }
+    // If editing existing task
+    if (editingTask) {
+      const updated = tasks.map(t => t.id !== editingTask ? t : {
+        ...t,
+        title: form.title,
+        description: form.description,
+        deadline: form.deadline,
+        requiresReceipt: form.requiresReceipt,
+        requiresTracking: form.requiresTracking,
+        requiresMailingAddress: form.requiresMailingAddress,
+        requiresDeliveryDate: form.requiresDeliveryDate,
+        customFields: form.customFields,
+        link: form.link,
+        attachmentName: form.attachmentName,
+        attachmentData: form.attachmentData,
+        attachmentType: form.attachmentType,
+      });
+      setTasks(updated);
+      saveTasks(updated);
+      setEditingTask(null);
+      setForm({title:"",description:"",deadline:"",requiresReceipt:true,requiresTracking:false,requiresMailingAddress:false,requiresDeliveryDate:false,customFields:[],link:"",attachmentName:"",attachmentData:"",attachmentType:"",assignedTo:"all"});
+      setCreated(true);
+      setTimeout(() => { setCreated(false); setView("board"); }, 1500);
+      return;
+    }
     const now = new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
     const newTask = {
       id: Date.now().toString(),
@@ -272,6 +321,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no backticks:
                         <div style={{background:task.status==="closed"?C.cardBorder:mySub?"#4CAF5022":C.error+"22",border:"1px solid "+(task.status==="closed"?C.cardBorder:mySub?"#4CAF5044":C.error+"44"),borderRadius:20,padding:"2px 10px",color:task.status==="closed"?C.muted:mySub?"#4CAF50":C.error,fontSize:11,fontWeight:700}}>
                           {task.status==="closed"?"Closed":mySub?"✓ Completed":"⚠ Action Required"}
                         </div>
+                        <button onClick={e=>{e.stopPropagation();loadTaskIntoForm(task);}} style={{background:C.gold+"22",border:"1px solid "+C.gold+"44",borderRadius:8,padding:"3px 10px",color:C.gold,fontSize:11,cursor:"pointer"}}>Edit</button>
                         {isLeadership&&<button onClick={e=>{e.stopPropagation();if(window.confirm("Delete this task permanently?"))deleteTask(task.id);}} style={{background:C.error+"22",border:"1px solid "+C.error+"44",borderRadius:8,padding:"3px 10px",color:C.error,fontSize:11,cursor:"pointer"}}>Delete</button>}
                       </div>
                     </div>
@@ -350,12 +400,27 @@ Respond ONLY with a JSON object in this exact format, no markdown, no backticks:
 
                   {task.requiresReceipt&&(
                     <div style={{marginBottom:16}}>
-                      <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>🧾 Order confirmation number or receipt details <span style={{color:C.error}}>*</span></div>
-                      <input type="text" value={submission.orderConfirmation} onChange={e=>setSubmission(p=>({...p,orderConfirmation:e.target.value}))} placeholder="Confirmation number or order ID"
+                      <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>🧾 Receipt or order confirmation <span style={{color:C.error}}>*</span></div>
+                      <input type="text" value={submission.orderConfirmation} onChange={e=>setSubmission(p=>({...p,orderConfirmation:e.target.value}))} placeholder="Order or confirmation number"
                         style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:14,outline:"none",fontFamily:"inherit",marginBottom:8}}/>
-                      <textarea value={submission.receiptNote} onChange={e=>setSubmission(p=>({...p,receiptNote:e.target.value}))} placeholder="Describe your receipt or confirmation — vendor, amount paid, item ordered, date ordered" rows={3}
-                        style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:14,resize:"vertical",outline:"none",fontFamily:"inherit",lineHeight:1.6}}/>
-                      <div style={{color:C.muted,fontSize:12,marginTop:6}}>📎 Upload a photo or screenshot of your receipt to Google Drive and paste the link or describe it above. Save the original receipt for your records.</div>
+                      <textarea value={submission.receiptNote} onChange={e=>setSubmission(p=>({...p,receiptNote:e.target.value}))} placeholder="Describe your order — vendor, amount paid, item ordered, date ordered" rows={2}
+                        style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:14,resize:"vertical",outline:"none",fontFamily:"inherit",lineHeight:1.6,marginBottom:8}}/>
+                      <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>📎 Upload receipt photo or PDF</div>
+                      <input type="file" accept=".pdf,image/*" onChange={e=>{
+                        const file=e.target.files[0];
+                        if(!file)return;
+                        if(file.size>5*1024*1024){alert("File must be under 5MB.");return;}
+                        const reader=new FileReader();
+                        reader.onload=ev=>setSubmission(p=>({...p,receiptFileName:file.name,receiptFileData:ev.target.result,receiptFileType:file.type}));
+                        reader.readAsDataURL(file);
+                      }} style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}/>
+                      {submission.receiptFileName&&(
+                        <div style={{marginTop:8,display:"flex",alignItems:"center",gap:10,background:C.dark,border:"1px solid "+C.green,borderRadius:8,padding:"8px 14px"}}>
+                          <span style={{fontSize:18}}>{submission.receiptFileType?.includes("pdf")?"📄":"🖼"}</span>
+                          <span style={{color:"#4CAF50",fontSize:13,fontWeight:600,flex:1}}>{submission.receiptFileName}</span>
+                          <button onClick={()=>setSubmission(p=>({...p,receiptFileName:"",receiptFileData:"",receiptFileType:""}))} style={{background:"transparent",border:"none",color:C.error,fontSize:16,cursor:"pointer"}}>✕</button>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -403,6 +468,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no backticks:
                     mySub?.mailingAddress&&["Mailing Address",mySub.mailingAddress],
                     mySub?.orderConfirmation&&["Order Confirmation",mySub.orderConfirmation],
                     mySub?.receiptNote&&["Receipt / Confirmation Details",mySub.receiptNote],
+                    mySub?.receiptFileName&&["Receipt File",mySub.receiptFileName],
                     mySub?.trackingNumber&&["Tracking Number",mySub.trackingNumber],
                     mySub?.deliveryDate&&["Expected Delivery",mySub.deliveryDate],
                     mySub?.notes&&["Notes",mySub.notes],
@@ -532,8 +598,9 @@ Respond ONLY with a JSON object in this exact format, no markdown, no backticks:
               {formError&&<div style={{color:C.error,fontSize:13,marginBottom:12}}>{formError}</div>}
               {created&&<div style={{color:"#4CAF50",fontSize:13,fontWeight:700,marginBottom:12}}>✓ Task created and sent to all staff</div>}
               <button onClick={createTask} style={{width:"100%",background:C.burgundy,border:"1px solid "+C.gold+"66",borderRadius:10,padding:"13px",color:C.ivory,fontSize:14,fontWeight:800,cursor:"pointer"}}>
-                📌 Send Mandatory Task to Staff
+                {editingTask ? "✓ Save Changes" : "📌 Send Mandatory Task to Staff"}
               </button>
+              {editingTask && <button onClick={()=>{setEditingTask(null);setForm({title:"",description:"",deadline:"",requiresReceipt:true,requiresTracking:false,requiresMailingAddress:false,requiresDeliveryDate:false,customFields:[],link:"",attachmentName:"",attachmentData:"",attachmentType:"",assignedTo:"all"});setView("board");}} style={{width:"100%",background:"transparent",border:"1px solid "+C.cardBorder,borderRadius:10,padding:"11px",color:C.muted,fontSize:13,cursor:"pointer",marginTop:8}}>Cancel Edit</button>}
             </div>
           </div>
         )}
