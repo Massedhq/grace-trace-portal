@@ -24,6 +24,7 @@ const SECTIONS = [
       ["Registered Agent","2018 Palo Duro Drive, Odessa, TX 79762"],
       ["Website","gracetraceministries.org"],
       ["Email","info@gracetraceministries.org"],
+      ["Phone","469-430-7467"],
       ["Primary NAICS Code","623990 — Other Residential Care Facilities"],
       ["Status","SAM.gov ACTIVE — CAGE 21SQ1 — 1023-EZ filed — 501c3 pending"],
     ]},
@@ -274,7 +275,8 @@ export default function TravisBinder(){
   function submitSignature(){
     if(!signatureName.trim()){setSignError("Please type your full name to sign.");return;}
     if(!signatureDate.trim()){setSignError("Please enter today's date.");return;}
-    try{localStorage.setItem("gtm_orientation_travis",JSON.stringify({signed:true,name:signatureName,date:signatureDate}));}catch(e){}
+    try{localStorage.setItem("gtm_orientation_travis",JSON.stringify({signed:true,name:signatureName,date:signatureDate}));
+    fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"travis",data:{signed:true,name:signatureName,date:signatureDate}})}).catch(()=>{});}catch(e){}
     setSigned(true);
   }
 

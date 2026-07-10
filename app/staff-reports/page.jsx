@@ -44,20 +44,17 @@ const STAFF = [
 
 export default function StaffReports() {
   const [taskData, setTaskData] = useState({});
+  const [signatures, setSignatures] = useState({});
   const [expandedStaff, setExpandedStaff] = useState(null);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("gtm_taskdata");
-      if (saved) setTaskData(JSON.parse(saved));
-    } catch (e) {}
+    fetch("/api/taskdata").then(r => r.json()).then(d => setTaskData(d)).catch(() => {});
+    fetch("/api/signatures").then(r => r.json()).then(d => setSignatures(d)).catch(() => {});
   }, []);
 
   function refresh() {
-    try {
-      const saved = localStorage.getItem("gtm_taskdata");
-      if (saved) setTaskData(JSON.parse(saved));
-    } catch (e) {}
+    fetch("/api/taskdata").then(r => r.json()).then(d => setTaskData(d)).catch(() => {});
+    fetch("/api/signatures").then(r => r.json()).then(d => setSignatures(d)).catch(() => {});
   }
 
   const date = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
@@ -93,18 +90,10 @@ export default function StaffReports() {
         <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>Orientation Package Status</div>
         <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "16px 20px", marginBottom: 24 }}>
           {STAFF.map(u => {
-            let signed = false;
-            let signedName = "";
-            let signedDate = "";
-            try {
-              const raw = localStorage.getItem("gtm_orientation_" + u.id);
-              if (raw) {
-                const parsed = JSON.parse(raw);
-                signed = parsed.signed;
-                signedName = parsed.name;
-                signedDate = parsed.date;
-              }
-            } catch(e) {}
+            const sigData = signatures["gtm_orientation_" + u.id] || signatures[u.id] || null;
+            const signed = sigData ? sigData.signed : false;
+            const signedName = sigData ? sigData.name : "";
+            const signedDate = sigData ? sigData.date : "";
             return (
               <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: "1px solid " + C.cardBorder }}>
                 <div style={{ width: 34, height: 34, borderRadius: "50%", background: u.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: C.ivory, flexShrink: 0 }}>{u.initials}</div>

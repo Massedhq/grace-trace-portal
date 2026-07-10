@@ -740,6 +740,8 @@ export default function WorkdayPortal() {
   const [reportText, setReportText] = useState("");
   const [reportVisible, setReportVisible] = useState(false);
   const [sent, setSent] = useState(false);
+  const [alertTasks, setAlertTasks] = useState([]);
+  const [alertMeetings, setAlertMeetings] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
   const [usernameInput, setUsernameInput] = useState("");
 
@@ -751,15 +753,22 @@ export default function WorkdayPortal() {
   function attemptLoginWithUsername() {
     const userId = USERNAME_MAP[usernameInput.toLowerCase().trim()];
     if (!userId) { setLoginError("Username not found. Check your username and try again."); return; }
-    const user = USERS.find(u => u.id === userId);
+    const user = USERS.find((u: any) => u.id === userId);
     if (!user) { setLoginError("Account not found."); return; }
     if (passwordInput !== user.password) { setLoginError("Incorrect password. Please try again."); return; }
     try { localStorage.setItem("gtm_current_user", user.id); localStorage.setItem("gtm_session_active", "true"); } catch(e) {}
-    if (!taskData[user.id]) {
-      const d: Record<string, any> = {};
-      user.tasks.forEach((t: any) => { const fields: Record<string, string> = {}; t.fields.forEach((f: any) => { fields[f.key] = ""; }); d[t.id] = { completed: false, fields }; });
-      setTaskData((prev: any) => ({ ...prev, [user.id]: d }));
-    }
+    fetch("/api/taskdata").then(r => r.json()).then((allData: any) => {
+      if (allData && allData[user.id]) {
+        setTaskData(allData);
+      } else {
+        const d: Record<string, any> = {};
+        user.tasks.forEach((t: any) => { const fields: Record<string,string> = {}; t.fields.forEach((f: any) => { fields[f.key] = ""; }); d[t.id] = { completed: false, fields }; });
+        setTaskData((prev: any) => ({ ...prev, [user.id]: d }));
+        fetch("/api/taskdata", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId: user.id, data: d }) }).catch(()=>{});
+      }
+    }).catch(() => {});
+    fetch("/api/mandatory-tasks").then(r=>r.json()).then(t=>setAlertTasks(t)).catch(()=>{});
+    fetch("/api/meetings").then(r=>r.json()).then(m=>setAlertMeetings(m)).catch(()=>{});
     setCurrentUser(user); setActiveTask(null); setReportText(""); setReportVisible(false); setSent(false); setActiveTab("workday"); setScreen("dashboard");
   }
   const [menuOpen, setMenuOpen] = useState(false);
@@ -769,23 +778,18 @@ export default function WorkdayPortal() {
       const uid = localStorage.getItem("gtm_current_user");
       const active = localStorage.getItem("gtm_session_active");
       if (uid && active === "true") {
-        const user = USERS.find(u => u.id === uid);
+        const user = USERS.find((u: any) => u.id === uid);
         if (user) {
-          const saved = localStorage.getItem("gtm_taskdata");
-          if (saved) {
-            const parsed = JSON.parse(saved);
-            setTaskData(parsed);
-            if (!parsed[user.id]) {
-              const d = {};
-              user.tasks.forEach(t => { const fields: Record<string, string> = {}; t.fields.forEach(f => { fields[f.key] = ""; }); d[t.id] = { completed: false, fields }; });
-              const updated = { ...parsed, [user.id]: d };
-              setTaskData(updated);
+          fetch("/api/taskdata").then(r => r.json()).then((allData: any) => {
+            if (allData && allData[user.id]) {
+              setTaskData(allData);
+            } else {
+              const d: Record<string, any> = {};
+              user.tasks.forEach((t: any) => { const fields: Record<string,string> = {}; t.fields.forEach((f: any) => { fields[f.key] = ""; }); d[t.id] = { completed: false, fields }; });
+              setTaskData((prev: any) => ({ ...prev, [user.id]: d }));
+              fetch("/api/taskdata", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId: user.id, data: d }) }).catch(()=>{});
             }
-          } else {
-            const d = {};
-            user.tasks.forEach(t => { const fields: Record<string, string> = {}; t.fields.forEach(f => { fields[f.key] = ""; }); d[t.id] = { completed: false, fields }; });
-            setTaskData({ [user.id]: d });
-          }
+          }).catch(() => {});
           setCurrentUser(user);
           setScreen("dashboard");
         }
@@ -838,7 +842,7 @@ export default function WorkdayPortal() {
   function submitTask(taskId) {
     setTaskData(prev => {
       const updated = { ...prev, [currentUser.id]: { ...prev[currentUser.id], [taskId]: { ...prev[currentUser.id][taskId], completed: true } } };
-      try { localStorage.setItem("gtm_taskdata", JSON.stringify(updated)); } catch(e) {}
+      fetch("/api/taskdata", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId: currentUser.id, data: updated[currentUser.id] }) }).catch(()=>{});
       return updated;
     });
     setActiveTask(null);
@@ -1060,8 +1064,8 @@ export default function WorkdayPortal() {
 
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 20px" }}>
         {(() => {
-          const mandatoryTasks = (() => { try { const s = localStorage.getItem("gtm_mandatory_tasks"); return s ? JSON.parse(s) : []; } catch(e) { return []; } })();
-          const meetings = (() => { try { const s = localStorage.getItem("gtm_meetings"); return s ? JSON.parse(s) : []; } catch(e) { return []; } })();
+          const mandatoryTasks = alertTasks;
+          const meetings = alertMeetings;
           const pendingTasks = mandatoryTasks.filter((t: any) => t.assignedTo.includes(currentUser.id) && t.status === "active" && !t.submissions?.[currentUser.id]);
           const pendingMeetings = meetings.filter((m: any) => m.attendees.includes(currentUser.id) && m.status === "scheduled" && !m.responses?.[currentUser.id] && m.createdBy !== currentUser.id);
           const orientationSigned = (() => { try { const s = localStorage.getItem("gtm_orientation_" + currentUser.id); return s ? JSON.parse(s).signed : false; } catch(e) { return false; } })();

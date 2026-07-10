@@ -17,11 +17,11 @@ const ALL_STAFF = [
   {id:"dennis",name:"Dennis Pride",role:"Director of Operations & Facilities",initials:"DO",color:"#1A4D35"},
 ];
 
-function loadMeetings() {
-  try { const s = localStorage.getItem("gtm_meetings"); return s ? JSON.parse(s) : []; } catch(e) { return []; }
+async function loadMeetings() {
+  try { const r = await fetch("/api/meetings"); return await r.json(); } catch(e) { return []; }
 }
-function saveMeetings(m) {
-  try { localStorage.setItem("gtm_meetings", JSON.stringify(m)); } catch(e) {}
+async function saveMeetings(m) {
+  try { await fetch("/api/meetings", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(m) }); } catch(e) {}
 }
 
 export default function MeetingBoard() {
@@ -54,8 +54,7 @@ export default function MeetingBoard() {
       const uid = localStorage.getItem("gtm_current_user");
       if (uid) { const u = ALL_STAFF.find(s => s.id === uid); if (u) setCurrentUser(u); }
     } catch(e) {}
-    setMeetings(loadMeetings());
-    setLoading(false);
+    loadMeetings().then(m => { setMeetings(m); setLoading(false); });
   }, []);
 
   const isLeadership = currentUser && (currentUser.id === "avy" || currentUser.id === "travis");

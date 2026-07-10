@@ -25,12 +25,11 @@ const USERS = [
   { id: "dennis", name: "Dennis", initials: "DO", color: "#1A4D35", password: "GTM@Dennis2026", isLeadership: false },
 ];
 
-function loadIdeas() {
-  try { const s = localStorage.getItem("gtm_ideas"); return s ? JSON.parse(s) : []; } catch (e) { return []; }
+async function loadIdeas() {
+  try { const r = await fetch("/api/ideas"); return await r.json(); } catch(e) { return []; }
 }
-
-function saveIdeas(ideas) {
-  try { localStorage.setItem("gtm_ideas", JSON.stringify(ideas)); } catch (e) {}
+async function saveIdeas(ideas) {
+  try { await fetch("/api/ideas", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(ideas) }); } catch(e) {}
 }
 
 export default function CreativeTab() {
@@ -52,8 +51,7 @@ export default function CreativeTab() {
         if (u) setCurrentUser(u);
       }
     } catch(e) {}
-    setIdeas(loadIdeas());
-    setLoading(false);
+    loadIdeas().then(i => { setIdeas(i); setLoading(false); });
   }, []);
 
   function logout() { 

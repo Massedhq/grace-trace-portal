@@ -17,11 +17,11 @@ const ALL_STAFF = [
   {id:"dennis",name:"Dennis Pride",role:"Director of Operations",initials:"DO",color:"#1A4D35"},
 ];
 
-function loadTasks() {
-  try { const s = localStorage.getItem("gtm_mandatory_tasks"); return s ? JSON.parse(s) : []; } catch(e) { return []; }
+async function loadTasks() {
+  try { const r = await fetch("/api/mandatory-tasks"); return await r.json(); } catch(e) { return []; }
 }
-function saveTasks(t) {
-  try { localStorage.setItem("gtm_mandatory_tasks", JSON.stringify(t)); } catch(e) {}
+async function saveTasks(t) {
+  try { await fetch("/api/mandatory-tasks", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(t) }); } catch(e) {}
 }
 
 export default function MandatoryTaskBoard() {
@@ -61,8 +61,7 @@ export default function MandatoryTaskBoard() {
       const uid = localStorage.getItem("gtm_current_user");
       if (uid) { const u = ALL_STAFF.find(s => s.id === uid); if (u) setCurrentUser(u); }
     } catch(e) {}
-    setTasks(loadTasks());
-    setLoading(false);
+    loadTasks().then(t => { setTasks(t); setLoading(false); });
   }, []);
 
   function addCustomField() {
@@ -153,7 +152,7 @@ Respond ONLY with a JSON object in this exact format, no markdown, no backticks:
     };
     const updated = [newTask, ...tasks];
     setTasks(updated);
-    saveTasks(updated);
+    saveTasks(updated);  // async, fire and forget
     setForm({title:"",description:"",deadline:"",requiresReceipt:true,requiresTracking:false,requiresMailingAddress:false,requiresDeliveryDate:false,customFields:[],link:"",attachmentName:"",attachmentData:"",attachmentType:"",assignedTo:"all"});
     setFormError("");
     setCreated(true);
@@ -188,14 +187,14 @@ Respond ONLY with a JSON object in this exact format, no markdown, no backticks:
     });
     setTasks(updated);
     saveTasks(updated);
-    setActiveTask(updated.find(t => t.id === taskId));
+    setActiveTask(updated.find(t => t.id === taskId) || null);
     setSubmitted(true);
     setSubError("");
     setSubmission({mailingAddress:"",orderConfirmation:"",receiptNote:"",trackingNumber:"",deliveryDate:"",notes:"",customAnswers:{}});
   }
 
   function deleteTask(taskId) {
-    const updated = tasks.filter(t => t.id !== taskId);
+    const updated = tasks.filter((t) => t.id !== taskId);
     setTasks(updated);
     saveTasks(updated);
     setActiveTask(null);

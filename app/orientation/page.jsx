@@ -252,10 +252,12 @@ export default function OrientationPackage() {
       setSignError("Name does not match your account. Please type your full name exactly as shown above.");
       return;
     }
+    const sigData = { signed: true, name: signatureName, date: signatureDate };
     try {
       const key = "gtm_orientation_" + currentUser.id;
-      localStorage.setItem(key, JSON.stringify({ signed: true, name: signatureName, date: signatureDate }));
+      localStorage.setItem(key, JSON.stringify(sigData));
     } catch (e) {}
+    fetch("/api/signatures", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId: currentUser.id, data: sigData }) }).catch(()=>{});
     setSigned(true);
     setConfirmed(true);
   }
