@@ -263,7 +263,7 @@ export default function MandatoryTaskBoard() {
 
       {/* Tab nav */}
       <div style={{background:C.dark,borderBottom:"1px solid "+C.cardBorder,display:"flex",gap:2,padding:"0 24px"}}>
-        {["board", isLeadership&&"create", editingTask&&isLeadership&&"edit", isLeadership&&"tracker"].filter(Boolean).map(tab=>(
+        {["board", isLeadership&&"create", isLeadership&&"edit", isLeadership&&"tracker"].filter(Boolean).map(tab=>(
           <button key={tab} onClick={()=>{setView(tab);setActiveTask(null);setSubmitted(false);}}
             style={{background:"transparent",border:"none",borderBottom:view===tab?"2px solid "+C.gold:"2px solid transparent",color:view===tab?C.gold:C.muted,fontSize:13,fontWeight:view===tab?800:500,padding:"11px 16px",cursor:"pointer"}}>
             {tab==="board"?"My Tasks":tab==="create"?"Create Task":tab==="edit"?"Edit Task":"Track Completion"}
@@ -585,6 +585,20 @@ export default function MandatoryTaskBoard() {
         )}
 
         {/* EDIT TASK */}
+        {view==="edit"&&isLeadership&&!editingTask&&(
+          <div>
+            <div style={{color:C.gold,fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",marginBottom:14}}>Select a Task to Edit</div>
+            {tasks.length===0&&<div style={{background:C.card,border:"1px solid "+C.cardBorder,borderRadius:12,padding:24,textAlign:"center",color:C.muted,fontSize:14}}>No tasks created yet.</div>}
+            {tasks.map(task=>(
+              <div key={task.id} onClick={()=>loadTaskIntoForm(task)} style={{background:C.card,border:"1px solid "+C.cardBorder,borderRadius:12,padding:"16px 20px",marginBottom:10,cursor:"pointer"}}
+                onMouseEnter={e=>e.currentTarget.style.borderColor=C.gold+"66"}
+                onMouseLeave={e=>e.currentTarget.style.borderColor=C.cardBorder}>
+                <div style={{color:C.text,fontWeight:700,fontSize:14}}>{task.title}</div>
+                <div style={{color:C.muted,fontSize:12,marginTop:3}}>Due: {task.deadline} — Click to edit</div>
+              </div>
+            ))}
+          </div>
+        )}
         {view==="edit"&&isLeadership&&editingTask&&(
           <div>
             <div style={{color:C.gold,fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",marginBottom:14}}>Edit Mandatory Task</div>
