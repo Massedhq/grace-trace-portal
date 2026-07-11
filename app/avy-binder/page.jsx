@@ -312,7 +312,7 @@ export default function AvyBinder(){
     if(!signatureName.trim()){setSignError("Please type your full name to sign.");return;}
     if(!signatureDate.trim()){setSignError("Please enter today's date.");return;}
     try{localStorage.setItem("gtm_orientation_avy",JSON.stringify({signed:true,name:signatureName,date:signatureDate}));
-    fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"avy",data:{signed:true,name:signatureName,date:signatureDate}})}).catch(()=>{});}catch(e){}
+    fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"binder_avy",data:{signed:true,name:signatureName,date:signatureDate}})}).catch(()=>{});}catch(e){}
     setSigned(true);
   }
 

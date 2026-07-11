@@ -276,7 +276,7 @@ export default function TravisBinder(){
     if(!signatureName.trim()){setSignError("Please type your full name to sign.");return;}
     if(!signatureDate.trim()){setSignError("Please enter today's date.");return;}
     try{localStorage.setItem("gtm_orientation_travis",JSON.stringify({signed:true,name:signatureName,date:signatureDate}));
-    fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"travis",data:{signed:true,name:signatureName,date:signatureDate}})}).catch(()=>{});}catch(e){}
+    fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"binder_travis",data:{signed:true,name:signatureName,date:signatureDate}})}).catch(()=>{});}catch(e){}
     setSigned(true);
   }
 

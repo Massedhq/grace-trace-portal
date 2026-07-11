@@ -36,9 +36,14 @@ const STAFF = [
     tasks: ["DBMD Program Communications Review", "DBMD Referral Source Outreach", "DBMD Licensure and Enrollment Research", "Communication Accessibility Planning", "Disability Services Partnership Building", "Phase 3 Program Development Progress", "Daily Activity Report"],
   },
   {
-    id: "dennis", name: "Dennis", initials: "DO", color: "#1A4D35",
+    id: "dennis", name: "Dennis Pride", initials: "DO", color: "#1A4D35",
     role: "Director of Operations and Facilities",
     tasks: ["Facility Inspection and Walkthrough", "Operational Log Review", "Maintenance and Repair Coordination", "Supply and Inventory Check", "Vendor and Contractor Communications", "Occupancy and Bed Status Review", "Zoning, Compliance, and Licensing", "Daily Operations Report"],
+  },
+  {
+    id: "travis", name: "Travis Ramar", initials: "TR", color: "#1E4D2B",
+    role: "VP / COO / Board Member",
+    tasks: ["Daily Executive Check-In", "Staff Oversight Review", "Facility Operations Review", "Government Contract Follow-Up", "Financial Review", "Weekly Report"],
   },
 ];
 
@@ -46,8 +51,10 @@ export default function StaffReports() {
   const [taskData, setTaskData] = useState({});
   const [signatures, setSignatures] = useState({});
   const [expandedStaff, setExpandedStaff] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState("");
 
   useEffect(() => {
+    try { const uid = localStorage.getItem("gtm_current_user"); if (uid) setCurrentUserId(uid); } catch(e) {}
     fetch("/api/taskdata").then(r => r.json()).then(d => setTaskData(d)).catch(() => {});
     fetch("/api/signatures").then(r => r.json()).then(d => setSignatures(d)).catch(() => {});
   }, []);
@@ -57,9 +64,16 @@ export default function StaffReports() {
     fetch("/api/signatures").then(r => r.json()).then(d => setSignatures(d)).catch(() => {});
   }
 
+  // Avy sees everyone including Travis. Travis sees everyone except Avy.
+  const visibleStaff = STAFF.filter(u => {
+    if (currentUserId === "avy") return true;
+    if (currentUserId === "travis") return u.id !== "avy";
+    return false;
+  });
+
   const date = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
-  const totalCompleted = STAFF.reduce((acc, u) => acc + (taskData[u.id] ? Object.values(taskData[u.id]).filter(x => x.completed).length : 0), 0);
-  const totalTasks = STAFF.reduce((acc, u) => acc + u.tasks.length, 0);
+  const totalCompleted = visibleStaff.reduce((acc, u) => acc + (taskData[u.id] ? Object.values(taskData[u.id]).filter(x => x.completed).length : 0), 0);
+  const totalTasks = visibleStaff.reduce((acc, u) => acc + u.tasks.length, 0);
   const overallPct = totalTasks ? Math.round(totalCompleted / totalTasks * 100) : 0;
 
   return (
@@ -89,20 +103,27 @@ export default function StaffReports() {
 
         <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>Orientation Package Status</div>
         <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "16px 20px", marginBottom: 24 }}>
-          {STAFF.map(u => {
-            const sigData = signatures["gtm_orientation_" + u.id] || signatures[u.id] || null;
-            const signed = sigData ? sigData.signed : false;
-            const signedName = sigData ? sigData.name : "";
-            const signedDate = sigData ? sigData.date : "";
+          {visibleStaff.map(u => {
+            const orientationSigData = signatures["orientation_" + u.id] || null;
+            const binderSigData = signatures["binder_" + u.id] || null;
+            const signed = orientationSigData ? orientationSigData.signed : false;
+            const binderSigned = binderSigData ? binderSigData.signed : false;
+            const signedName = orientationSigData ? orientationSigData.name : "";
+            const signedDate = orientationSigData ? orientationSigData.date : "";
             return (
               <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: "1px solid " + C.cardBorder }}>
                 <div style={{ width: 34, height: 34, borderRadius: "50%", background: u.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: C.ivory, flexShrink: 0 }}>{u.initials}</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ color: C.text, fontWeight: 700, fontSize: 14 }}>{u.name}</div>
-                  {signed && <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>Signed on {signedDate}</div>}
+                  {signed && <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>Orientation signed on {signedDate}</div>}
                 </div>
-                <div style={{ background: signed ? "#4CAF5022" : C.error + "22", border: "1px solid " + (signed ? "#4CAF5044" : C.error + "44"), borderRadius: 20, padding: "3px 12px", color: signed ? "#4CAF50" : C.error, fontSize: 11, fontWeight: 700 }}>
-                  {signed ? "✓ Signed" : "Not signed"}
+                <div style={{ display: "flex", gap: 6, flexDirection: "column", alignItems: "flex-end" }}>
+                  <div style={{ background: signed ? "#4CAF5022" : C.error + "22", border: "1px solid " + (signed ? "#4CAF5044" : C.error + "44"), borderRadius: 20, padding: "2px 10px", color: signed ? "#4CAF50" : C.error, fontSize: 11, fontWeight: 700 }}>
+                    📄 Orientation: {signed ? "✓ Signed" : "Not signed"}
+                  </div>
+                  <div style={{ background: binderSigned ? "#4CAF5022" : C.error + "22", border: "1px solid " + (binderSigned ? "#4CAF5044" : C.error + "44"), borderRadius: 20, padding: "2px 10px", color: binderSigned ? "#4CAF50" : C.error, fontSize: 11, fontWeight: 700 }}>
+                    📘 Binder: {binderSigned ? "✓ Signed" : "Not signed"}
+                  </div>
                 </div>
               </div>
             );
@@ -111,7 +132,7 @@ export default function StaffReports() {
 
         <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>Individual Staff Reports</div>
 
-        {STAFF.map(u => {
+        {visibleStaff.map(u => {
           const ud = taskData[u.id];
           const completed = ud ? Object.values(ud).filter(x => x.completed).length : 0;
           const total = u.tasks.length;

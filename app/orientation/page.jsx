@@ -257,7 +257,7 @@ export default function OrientationPackage() {
       const key = "gtm_orientation_" + currentUser.id;
       localStorage.setItem(key, JSON.stringify(sigData));
     } catch (e) {}
-    fetch("/api/signatures", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId: currentUser.id, data: sigData }) }).catch(()=>{});
+    fetch("/api/signatures", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId: "orientation_" + currentUser.id, data: sigData }) }).catch(()=>{});
     setSigned(true);
     setConfirmed(true);
   }

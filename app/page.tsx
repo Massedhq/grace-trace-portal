@@ -748,16 +748,23 @@ export default function WorkdayPortal() {
   const [showInstallBanner, setShowInstallBanner] = useState(false);
 
   useEffect(() => {
-    // Android/Chrome install prompt
-    window.addEventListener("beforeinstallprompt", (e) => {
+    // Android/Chrome — native install prompt
+    const handler = (e) => {
       e.preventDefault();
       setInstallPrompt(e);
       setShowInstallBanner(true);
-    });
-    // Check if already installed
-    if (window.matchMedia("(display-mode: standalone)").matches) {
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    // iOS Safari — show manual instructions if not already installed
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
+    if (isIOS && !isStandalone) {
+      setShowInstallBanner(true);
+    }
+    if (isStandalone) {
       setShowInstallBanner(false);
     }
+    return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
   async function handleInstall() {
@@ -797,6 +804,18 @@ export default function WorkdayPortal() {
     fetch("/api/mandatory-tasks").then(r=>r.json()).then(t=>setAlertTasks(t)).catch(()=>{});
     fetch("/api/meetings").then(r=>r.json()).then(m=>setAlertMeetings(m)).catch(()=>{});
     fetch("/api/signatures").then(r=>r.json()).then(s=>setAlertSignatures(s)).catch(()=>{});
+    // Register service worker and push notifications
+    if ("serviceWorker" in navigator && "PushManager" in window) {
+      navigator.serviceWorker.register("/sw.js").then(reg => {
+        Notification.requestPermission().then(permission => {
+          if (permission === "granted") {
+            reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: null }).then(sub => {
+              fetch("/api/push", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId: user.id, subscription: sub }) }).catch(()=>{});
+            }).catch(()=>{});
+          }
+        });
+      }).catch(()=>{});
+    }
     setCurrentUser(user); setActiveTask(null); setReportText(""); setReportVisible(false); setSent(false); setActiveTab("workday"); setScreen("dashboard");
   }
   const [menuOpen, setMenuOpen] = useState(false);
@@ -1121,8 +1140,8 @@ export default function WorkdayPortal() {
           const meetings = alertMeetings;
           const pendingTasks = mandatoryTasks.filter((t: any) => t.assignedTo.includes(currentUser.id) && t.status === "active" && !t.submissions?.[currentUser.id]);
           const pendingMeetings = meetings.filter((m: any) => m.attendees.includes(currentUser.id) && m.status === "scheduled" && !m.responses?.[currentUser.id] && m.createdBy !== currentUser.id);
-          const orientationSigned = alertSignatures[currentUser.id]?.signed || false;
-          const binderSigned = alertSignatures[currentUser.id]?.signed || false;
+          const orientationSigned = alertSignatures["orientation_" + currentUser.id]?.signed || false;
+          const binderSigned = alertSignatures["binder_" + currentUser.id]?.signed || false;
           const binderUrl = "/" + currentUser.id + "-binder";
           const total = pendingTasks.length + pendingMeetings.length + (!orientationSigned ? 1 : 0) + (!binderSigned ? 1 : 0);
           if (total === 0) return null;

@@ -447,7 +447,7 @@ export default function IalanaBinder() {
     if (!signatureName.trim()) { setSignError("Please type your full name to sign."); return; }
     if (!signatureDate.trim()) { setSignError("Please enter today's date."); return; }
     try { localStorage.setItem("gtm_orientation_ialana", JSON.stringify({ signed: true, name: signatureName, date: signatureDate })); } catch (e) {}
-    fetch("/api/signatures", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId: "ialana", data: { signed: true, name: signatureName, date: signatureDate } }) }).catch(()=>{});
+    fetch("/api/signatures", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId: "binder_ialana", data: { signed: true, name: signatureName, date: signatureDate } }) }).catch(()=>{});
     setSigned(true);
   }
 

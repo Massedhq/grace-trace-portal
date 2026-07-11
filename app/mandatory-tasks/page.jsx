@@ -182,6 +182,16 @@ export default function MandatoryTaskBoard() {
     const updated = [newTask, ...tasks];
     setTasks(updated);
     saveTasks(updated);  // async, fire and forget
+    // Send push notification to all staff
+    fetch("/api/push/notify", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        title: "New Mandatory Task",
+        body: form.title + " — Due: " + form.deadline,
+        url: "/mandatory-tasks"
+      })
+    }).catch(()=>{});
     setForm({title:"",description:"",deadline:"",requiresReceipt:true,requiresTracking:false,requiresMailingAddress:false,requiresDeliveryDate:false,customFields:[],link:"",attachmentName:"",attachmentData:"",attachmentType:"",assignedTo:"all"});
     setFormError("");
     setCreated(true);
