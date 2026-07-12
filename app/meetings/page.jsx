@@ -36,13 +36,14 @@ export default function MeetingBoard() {
   const [form, setForm] = useState({
     title:"", date:"", time:"", meetingType:"", attendeeType:"",
     attendees:[], externalName:"", externalOrg:"", externalRole:"",
-    agenda:"", notes:"", voteOptions:[{date:"",time:""}],
+    agenda:"", notes:"", link:"", voteOptions:[{date:"",time:""}],
   });
   const [formError, setFormError] = useState("");
   const [created, setCreated] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
+  const [editingMeeting, setEditingMeeting] = useState(null);
 
   // Attendance response
   const [response, setResponse] = useState({method:"", canAttend:"", followUpDate:"", followUpNotes:""});
@@ -82,28 +83,13 @@ export default function MeetingBoard() {
     if (!aiPrompt.trim()) { setAiError("Please describe the meeting."); return; }
     setAiLoading(true); setAiError("");
     try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
+      const response = await fetch("/api/ai-meeting", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-6",
-          max_tokens: 800,
-          messages: [{
-            role: "user",
-            content: `You are helping schedule a meeting for Grace Trace Ministries. Generate professional meeting details based on: "${aiPrompt}".
-
-Respond ONLY with a JSON object, no markdown, no backticks:
-{
-  "title": "professional meeting title",
-  "agenda": "detailed agenda listing what will be covered in this meeting, formatted as numbered items"
-}`
-          }]
-        })
+        body: JSON.stringify({ prompt: aiPrompt })
       });
-      const data = await response.json();
-      const text = data.content?.[0]?.text || "";
-      const clean = text.replace(/```json|```/g, "").trim();
-      const parsed = JSON.parse(clean);
+      const parsed = await response.json();
+      if (parsed.error) throw new Error(parsed.error);
       setForm(p => ({
         ...p,
         title: parsed.title || p.title,
@@ -116,6 +102,37 @@ Respond ONLY with a JSON object, no markdown, no backticks:
     setAiLoading(false);
   }
 
+  function loadMeetingIntoForm(meeting) {
+    setForm({
+      title: meeting.title,
+      date: meeting.finalDate||meeting.date||"",
+      time: meeting.finalTime||meeting.time||"",
+      meetingType: meeting.meetingType||"",
+      attendeeType: meeting.attendeeType||"",
+      attendees: meeting.attendees||[],
+      externalName: meeting.externalName||"",
+      externalOrg: meeting.externalOrg||"",
+      externalRole: meeting.externalRole||"",
+      agenda: meeting.agenda||"",
+      notes: meeting.notes||"",
+      link: meeting.link||"",
+      voteOptions: meeting.voteOptions||[{date:"",time:""}],
+    });
+    setEditingMeeting(meeting.id);
+    setView("schedule");
+    setActiveMeeting(null);
+    setFormError("");
+    setCreated(false);
+  }
+
+  function deleteMeeting(meetingId) {
+    const updated = meetings.filter(m => m.id !== meetingId);
+    setMeetings(updated);
+    saveMeetings(updated);
+    setActiveMeeting(null);
+    setView("board");
+  }
+
   function createMeeting() {
     if (!form.title.trim()) { setFormError("Please enter a meeting title."); return; }
     if (!form.meetingType) { setFormError("Please select a meeting type."); return; }
@@ -125,6 +142,23 @@ Respond ONLY with a JSON object, no markdown, no backticks:
     if (form.attendeeType !== "vote" && !form.date) { setFormError("Please enter the meeting date."); return; }
     if (form.attendeeType !== "vote" && !form.time) { setFormError("Please enter the meeting time."); return; }
 
+    // If editing existing meeting
+    if (editingMeeting) {
+      const updated = meetings.map(m => m.id !== editingMeeting ? m : {
+        ...m, title:form.title, date:form.date, time:form.time,
+        meetingType:form.meetingType, attendeeType:form.attendeeType,
+        attendees:form.attendeeType==="full-board"?ALL_STAFF.map(s=>s.id):form.attendees,
+        externalName:form.externalName, externalOrg:form.externalOrg, externalRole:form.externalRole,
+        agenda:form.agenda, notes:form.notes, link:form.link,
+        voteOptions:form.voteOptions.filter(o=>o.date&&o.time),
+      });
+      setMeetings(updated); saveMeetings(updated);
+      setEditingMeeting(null);
+      setForm({title:"",date:"",time:"",meetingType:"",attendeeType:"",attendees:[],externalName:"",externalOrg:"",externalRole:"",agenda:"",notes:"",link:"",voteOptions:[{date:"",time:""}]});
+      setCreated(true);
+      setTimeout(()=>{setCreated(false);setView("board");},1500);
+      return;
+    }
     const now = new Date().toLocaleDateString("en-US", {month:"long",day:"numeric",year:"numeric"});
     const newMeeting = {
       id: Date.now().toString(),
@@ -133,13 +167,14 @@ Respond ONLY with a JSON object, no markdown, no backticks:
       time: form.time,
       meetingType: form.meetingType,
       attendeeType: form.attendeeType,
-      attendees: form.attendeeType === "full-board" ? ALL_STAFF.map(s=>s.id) : form.attendees,
+      attendees: form.attendeeType === "full-board" ? ALL_STAFF.map(s=>s.id) : [...new Set([...form.attendees, currentUser.id])],
       externalName: form.externalName,
       externalOrg: form.externalOrg,
       externalRole: form.externalRole,
       agenda: form.agenda,
       notes: form.notes,
       voteOptions: form.voteOptions.filter(o=>o.date&&o.time),
+      link: form.link,
       voteResults: {},
       responses: {},
       createdBy: currentUser.id,
@@ -153,7 +188,8 @@ Respond ONLY with a JSON object, no markdown, no backticks:
     const updated = [newMeeting, ...meetings];
     setMeetings(updated);
     saveMeetings(updated);
-    setForm({title:"",date:"",time:"",meetingType:"",attendeeType:"",attendees:[],externalName:"",externalOrg:"",externalRole:"",agenda:"",notes:"",voteOptions:[{date:"",time:""}]});
+    setForm({title:"",date:"",time:"",meetingType:"",attendeeType:"",attendees:[],externalName:"",externalOrg:"",externalRole:"",agenda:"",notes:"",link:"",voteOptions:[{date:"",time:""}]});
+    setEditingMeeting(null);
     setFormError("");
     setCreated(true);
     setTimeout(() => { setCreated(false); setView("board"); }, 1500);
@@ -368,7 +404,11 @@ Respond ONLY with a JSON object, no markdown, no backticks:
                     <div style={{color:C.gold,fontSize:10,fontWeight:800,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Meeting Record</div>
                     <h2 style={{color:C.ivory,fontSize:20,fontWeight:900,margin:0}}>{m.title}</h2>
                   </div>
-                  <button onClick={()=>printMeeting(m)} style={{background:C.burgundy,border:"1px solid "+C.gold+"66",borderRadius:8,padding:"8px 16px",color:C.ivory,fontSize:12,fontWeight:700,cursor:"pointer"}}>🖨 Print Record</button>
+                  <div style={{display:"flex",gap:8}}>
+                {isLeadership&&<button onClick={()=>loadMeetingIntoForm(m)} style={{background:C.gold+"22",border:"1px solid "+C.gold+"44",borderRadius:8,padding:"8px 14px",color:C.gold,fontSize:12,fontWeight:700,cursor:"pointer"}}>✏ Edit</button>}
+                {isLeadership&&<button onClick={()=>{if(window.confirm("Delete this meeting permanently?"))deleteMeeting(m.id);}} style={{background:C.error+"22",border:"1px solid "+C.error+"44",borderRadius:8,padding:"8px 14px",color:C.error,fontSize:12,fontWeight:700,cursor:"pointer"}}>Delete</button>}
+                <button onClick={()=>printMeeting(m)} style={{background:C.burgundy,border:"1px solid "+C.gold+"66",borderRadius:8,padding:"8px 16px",color:C.ivory,fontSize:12,fontWeight:700,cursor:"pointer"}}>🖨 Print Record</button>
+              </div>
                 </div>
                 {[
                   ["Date",m.status==="voting"?"TBD — pending vote":(m.finalDate||m.date)],
@@ -384,7 +424,8 @@ Respond ONLY with a JSON object, no markdown, no backticks:
                     <div style={{color:C.text,fontSize:13}}>{v}</div>
                   </div>
                 ))}
-                {m.agenda&&<div style={{marginTop:12}}><div style={{color:C.gold,fontSize:11,fontWeight:800,letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>Agenda</div><div style={{color:C.text,fontSize:14,lineHeight:1.7,whiteSpace:"pre-wrap"}}>{m.agenda}</div></div>}
+                {m.link&&<div style={{marginTop:12,padding:"10px 14px",background:C.dark,borderRadius:10,border:"1px solid "+C.cardBorder}}><div style={{color:C.gold,fontSize:11,fontWeight:800,letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>Meeting Link</div><a href={m.link} target="_blank" rel="noreferrer" style={{color:C.gold,fontSize:14,wordBreak:"break-all"}}>🔗 {m.link}</a></div>}
+        {m.agenda&&<div style={{marginTop:12}}><div style={{color:C.gold,fontSize:11,fontWeight:800,letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>Agenda</div><div style={{color:C.text,fontSize:14,lineHeight:1.7,whiteSpace:"pre-wrap"}}>{m.agenda}</div></div>}
               </div>
 
               {/* Vote section */}
@@ -582,6 +623,11 @@ Respond ONLY with a JSON object, no markdown, no backticks:
                 </div>
               )}
               <div style={{marginBottom:14}}>
+                <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>Meeting link <span style={{color:C.muted,fontWeight:400}}>(optional — Zoom, Google Meet, Teams, or any URL)</span></div>
+                <input type="text" value={form.link||""} onChange={e=>setForm(p=>({...p,link:e.target.value}))} placeholder="e.g. https://zoom.us/j/123456789"
+                  style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
+              </div>
+              <div style={{marginBottom:14}}>
                 <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>Agenda</div>
                 <textarea value={form.agenda} onChange={e=>setForm(p=>({...p,agenda:e.target.value}))} placeholder="List the agenda items for this meeting" rows={4}
                   style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:14,resize:"vertical",outline:"none",fontFamily:"inherit",lineHeight:1.6}}/>
@@ -592,10 +638,11 @@ Respond ONLY with a JSON object, no markdown, no backticks:
                   style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:14,resize:"vertical",outline:"none",fontFamily:"inherit",lineHeight:1.6}}/>
               </div>
               {formError&&<div style={{color:C.error,fontSize:13,marginBottom:12}}>{formError}</div>}
-              {created&&<div style={{color:"#4CAF50",fontSize:13,fontWeight:700,marginBottom:12}}>✓ Meeting scheduled and sent to attendees</div>}
+              {created&&<div style={{color:"#4CAF50",fontSize:13,fontWeight:700,marginBottom:12}}>{editingMeeting?"✓ Meeting updated":"✓ Meeting scheduled and sent to attendees"}</div>}
               <button onClick={createMeeting} style={{width:"100%",background:C.burgundy,border:"1px solid "+C.gold+"66",borderRadius:10,padding:"13px",color:C.ivory,fontSize:14,fontWeight:800,cursor:"pointer"}}>
-                Schedule Meeting — Notify Attendees
+                {editingMeeting?"✓ Save Changes":"Schedule Meeting — Notify Attendees"}
               </button>
+              {editingMeeting&&<button onClick={()=>{setEditingMeeting(null);setForm({title:"",date:"",time:"",meetingType:"",attendeeType:"",attendees:[],externalName:"",externalOrg:"",externalRole:"",agenda:"",notes:"",link:"",voteOptions:[{date:"",time:""}]});setView("board");}} style={{width:"100%",background:"transparent",border:"1px solid "+C.cardBorder,borderRadius:10,padding:"11px",color:C.muted,fontSize:13,cursor:"pointer",marginTop:8}}>Cancel Edit</button>}
             </div>
           </div>
         )}
