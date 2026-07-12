@@ -820,6 +820,15 @@ export default function WorkdayPortal() {
   }
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Reload alert data every time screen changes to dashboard
+  useEffect(() => {
+    if (screen === "dashboard" && currentUser) {
+      fetch("/api/mandatory-tasks").then(r=>r.json()).then(t=>setAlertTasks(t)).catch(()=>{});
+      fetch("/api/meetings").then(r=>r.json()).then(m=>setAlertMeetings(m)).catch(()=>{});
+      fetch("/api/signatures").then(r=>r.json()).then(s=>setAlertSignatures(s)).catch(()=>{});
+    }
+  }, [screen, currentUser?.id]);
+
   useEffect(() => {
     try {
       const uid = localStorage.getItem("gtm_current_user");
@@ -1139,7 +1148,7 @@ export default function WorkdayPortal() {
           const mandatoryTasks = alertTasks;
           const meetings = alertMeetings;
           const pendingTasks = mandatoryTasks.filter((t: any) => t.assignedTo.includes(currentUser.id) && t.status === "active" && !t.submissions?.[currentUser.id]);
-          const pendingMeetings = meetings.filter((m: any) => m.attendees.includes(currentUser.id) && m.status === "scheduled" && !m.responses?.[currentUser.id] && m.createdBy !== currentUser.id);
+          const pendingMeetings = meetings.filter((m: any) => m.attendees.includes(currentUser.id) && m.status === "scheduled" && !m.responses?.[currentUser.id]);
           const orientationSigned = alertSignatures["orientation_" + currentUser.id]?.signed || false;
           const binderSigned = alertSignatures["binder_" + currentUser.id]?.signed || false;
           const binderUrl = "/" + currentUser.id + "-binder";
