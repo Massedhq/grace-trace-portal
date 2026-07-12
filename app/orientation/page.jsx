@@ -260,7 +260,6 @@ export default function OrientationPackage() {
     fetch("/api/signatures", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId: "orientation_" + currentUser.id, data: sigData }) }).catch(()=>{});
     setSigned(true);
     setConfirmed(true);
-    // Smart redirect — go to next unsigned document or back to dashboard
   }
 
   function logout() { try { localStorage.removeItem("gtm_current_user"); } catch(e) {} window.location.href = "/"; }
