@@ -259,7 +259,8 @@ export default function DennisBinder(){
       if(uid==="dennis"||uid==="avy"||uid==="travis"){
         setAuthorized(true);
         const saved=localStorage.getItem("gtm_orientation_dennis");
-        if(saved){const p=JSON.parse(saved);if(p.signed)setSigned(true);}
+        if(saved){const p=JSON.parse(saved);if(p.signed)setSigned(true);
+    // Smart redirect — go to next unsigned document or back to dashboard}
       }
     }catch(e){}
     setLoading(false);
@@ -269,8 +270,9 @@ export default function DennisBinder(){
     if(!signatureName.trim()){setSignError("Please type your full name to sign.");return;}
     if(!signatureDate.trim()){setSignError("Please enter today's date.");return;}
     try{localStorage.setItem("gtm_orientation_dennis",JSON.stringify({signed:true,name:signatureName,date:signatureDate}));
-    fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"binder_dennis",data:{signed:true,name:signatureName,date:signatureDate}})}).catch(()=>{});}catch(e){}
+    fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"binder_dennis",data:{signed:true,name:signatureName,date:signatureDate}})});.catch(()=>{});}catch(e){}
     setSigned(true);
+    // Smart redirect — go to next unsigned document or back to dashboard
   }
 
   if(loading)return<div style={{minHeight:"100vh",background:C.dark,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter','Segoe UI',sans-serif"}}><div style={{color:C.muted}}>Loading...</div></div>;
@@ -326,6 +328,25 @@ export default function DennisBinder(){
                     <div style={{fontSize:32,marginBottom:8}}>✓</div>
                     <div style={{color:"#4CAF50",fontWeight:800,fontSize:16}}>Binder Signed and Acknowledged</div>
                     <div style={{color:C.muted,fontSize:13,marginTop:4}}>Dennis Pride — {signatureDate||"Signed"}</div>
+
+                  <div style={{marginTop:20,display:"flex",flexDirection:"column",gap:10}}>
+                    <div style={{color:"#4CAF5088",fontSize:12,textAlign:"center",marginBottom:4}}>What would you like to do next?</div>
+                    <button onClick={()=>{
+                      fetch("/api/signatures").then(r=>r.json()).then(sigs=>{
+                        const uid=localStorage.getItem("gtm_current_user")||"";
+                        const oSigned=sigs["orientation_"+uid]?.signed||false;
+                        const bSigned=sigs["binder_"+uid]?.signed||false;
+                        if(!oSigned){window.location.href="/orientation";}
+                        else if(!bSigned){window.location.href="/"+uid+"-binder";}
+                        else{window.location.href="/";}
+                      }).catch(()=>{window.location.href="/";});
+                    }} style={{background:C.burgundy,border:"1px solid "+C.gold+"66",borderRadius:10,padding:"12px",color:C.ivory,fontSize:14,fontWeight:800,cursor:"pointer"}}>
+                      Continue to Next Required Document →
+                    </button>
+                    <button onClick={()=>{window.location.href="/";}} style={{background:"transparent",border:"1px solid "+C.cardBorder,borderRadius:10,padding:"12px",color:C.muted,fontSize:13,cursor:"pointer"}}>
+                      Return to My Workday Dashboard
+                    </button>
+                  </div>
                   </div>
                 )}
               </div>

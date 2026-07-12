@@ -260,6 +260,7 @@ export default function OrientationPackage() {
     fetch("/api/signatures", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId: "orientation_" + currentUser.id, data: sigData }) }).catch(()=>{});
     setSigned(true);
     setConfirmed(true);
+    // Smart redirect — go to next unsigned document or back to dashboard
   }
 
   function logout() { try { localStorage.removeItem("gtm_current_user"); } catch(e) {} window.location.href = "/"; }
@@ -281,7 +282,22 @@ export default function OrientationPackage() {
         <p style={{ color: C.text, fontSize: 14, lineHeight: 1.7, marginBottom: 28 }}>
           Your orientation package has been acknowledged and your digital signature has been recorded. You have confirmed that you understand your role, responsibilities, and expectations at Grace Trace Ministries.
         </p>
-        <button onClick={logout} style={{ background: C.burgundy, border: "1px solid " + C.gold + "66", borderRadius: 10, padding: "12px 28px", color: C.ivory, fontSize: 14, fontWeight: 800, cursor: "pointer" }}>Done</button>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
+          <div style={{ color: C.muted, fontSize: 12, marginBottom: 4 }}>What would you like to do next?</div>
+          <button onClick={() => {
+            fetch("/api/signatures").then(r=>r.json()).then(sigs=>{
+              const uid = localStorage.getItem("gtm_current_user") || "";
+              const bSigned = sigs["binder_"+uid]?.signed || false;
+              if (!bSigned) { window.location.href = "/" + uid + "-binder"; }
+              else { window.location.href = "/"; }
+            }).catch(() => { window.location.href = "/"; });
+          }} style={{ background: C.burgundy, border: "1px solid " + C.gold + "66", borderRadius: 10, padding: "12px 28px", color: C.ivory, fontSize: 14, fontWeight: 800, cursor: "pointer" }}>
+            Continue to My Department Binder →
+          </button>
+          <button onClick={() => { window.location.href = "/"; }} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 10, padding: "12px 28px", color: C.muted, fontSize: 14, cursor: "pointer" }}>
+            Return to My Workday Dashboard
+          </button>
+        </div>
       </div>
     </div>
   );

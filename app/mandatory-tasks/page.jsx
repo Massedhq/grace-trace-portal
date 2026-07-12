@@ -476,6 +476,19 @@ export default function MandatoryTaskBoard() {
                   ):null)}
                 </div>
               )}
+            <div style={{display:"flex",flexDirection:"column",gap:10,marginTop:16}}>
+              <div style={{color:"#4CAF5088",fontSize:12,textAlign:"center"}}>What would you like to do next?</div>
+              <button onClick={()=>{
+                const nextPending = tasks.find(t => t.assignedTo.includes(currentUser.id) && t.status==="active" && !t.submissions?.[currentUser.id] && t.id !== task.id);
+                if(nextPending){setActiveTask(nextPending);setSubmitted(false);setSubmission({mailingAddress:"",orderConfirmation:"",receiptNote:"",trackingNumber:"",deliveryDate:"",notes:"",customAnswers:{},receiptFileName:"",receiptFileData:"",receiptFileType:""});}
+                else{setActiveTask(null);setView("board");}
+              }} style={{background:C.burgundy,border:"1px solid "+C.gold+"66",borderRadius:10,padding:"12px",color:C.ivory,fontSize:14,fontWeight:800,cursor:"pointer"}}>
+                Continue to Next Pending Task →
+              </button>
+              <button onClick={()=>{window.location.href="/";}} style={{background:"transparent",border:"1px solid "+C.cardBorder,borderRadius:10,padding:"12px",color:C.muted,fontSize:13,cursor:"pointer"}}>
+                Return to My Workday Dashboard
+              </button>
+            </div>
             </div>
           );
         })()}
