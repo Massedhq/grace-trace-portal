@@ -315,7 +315,7 @@ export default function MeetingBoard() {
 
   // My meetings — ones I am invited to
   const myMeetings = meetings.filter(m => m.attendees.includes(currentUser.id) || m.createdBy === currentUser.id);
-  const pendingResponse = myMeetings.filter(m => m.status==="scheduled" && !(m.responses||{})[currentUser.id] && m.createdBy!==currentUser.id);
+  const pendingResponse = myMeetings.filter(m => m.status==="scheduled" && !(m.responses||{})[currentUser.id]);
 
   return (
     <div style={{minHeight:"100vh",background:C.dark,fontFamily:"'Inter','Segoe UI',sans-serif"}}>
@@ -374,7 +374,7 @@ export default function MeetingBoard() {
                       </div>
                       {m.status==="scheduled"&&<div style={{color:C.muted,fontSize:11}}>{responseCount}/{totalInvited} responded</div>}
                       {myRes&&<div style={{color:"#4CAF50",fontSize:11,fontWeight:700}}>✓ You responded</div>}
-                      {!myRes&&m.status==="scheduled"&&m.createdBy!==currentUser.id&&<div style={{color:C.error,fontSize:11,fontWeight:700}}>⚠ Response needed</div>}
+                      {!myRes&&m.status==="scheduled"&&<div style={{color:C.error,fontSize:11,fontWeight:700}}>⚠ Response needed</div>}
                     </div>
                   </div>
                 </div>
@@ -486,7 +486,7 @@ export default function MeetingBoard() {
               </div>
 
               {/* Submit your response */}
-              {m.status==="scheduled"&&!myRes&&m.createdBy!==currentUser.id&&!responseSent&&(
+              {m.status==="scheduled"&&!myRes&&!responseSent&&(
                 <div style={{background:C.card,border:"1px solid "+C.gold+"66",borderRadius:12,padding:"18px 20px",marginBottom:16}}>
                   <div style={{color:C.gold,fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",marginBottom:14}}>Your Response — Required</div>
                   <div style={{marginBottom:14}}>
