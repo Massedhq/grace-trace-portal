@@ -16,6 +16,11 @@ const C = {
 
 const STAFF = [
   {
+    id: "avy", name: "Avrial Evans (Avy)", initials: "AE", color: "#6B1A2A",
+    role: "President / Executive Director / Board Chair",
+    tasks: ["Overnight Report Review", "Government Contract and Grant Research", "Staff Reports and Oversight", "Financial Review", "Community and Partner Outreach", "Government Grants and Procurement Tracker", "Daily Executive Summary"],
+  },
+  {
     id: "deann", name: "Deann Evans", initials: "DE", color: "#8B2A3E",
     role: "Program and Outreach Director / House Manager Oversight / Registered Agent",
     tasks: ["Registered Agent — Mail and Legal Notices", "Open the House — Morning Check", "Overnight Curfew and Accountability Review", "Community Outreach", "Active Referral Follow-Ups", "Partner Relationship Check-Ins", "Nightly Curfew Close-Out", "Daily Activity Report"],
