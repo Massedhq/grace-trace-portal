@@ -864,11 +864,16 @@ export default function WorkdayPortal() {
         const user = USERS.find((u: any) => u.id === uid);
         if (user) {
           fetch("/api/taskdata").then(r => r.json()).then((allData: any) => {
+            const d: Record<string, any> = {};
+            user.tasks.forEach((t: any) => { const fields: Record<string,string> = {}; t.fields.forEach((f: any) => { fields[f.key] = ""; }); d[t.id] = { completed: false, fields }; });
             if (allData && allData[user.id]) {
-              setTaskData(allData);
+              // Merge saved data with new tasks — never lose existing completions
+              const merged: Record<string, any> = { ...d };
+              Object.keys(allData[user.id]).forEach((taskId: string) => { merged[taskId] = allData[user.id][taskId]; });
+              // Add any new tasks that don't exist yet
+              Object.keys(d).forEach((taskId: string) => { if (!merged[taskId]) merged[taskId] = d[taskId]; });
+              setTaskData((prev: any) => ({ ...prev, [user.id]: merged }));
             } else {
-              const d: Record<string, any> = {};
-              user.tasks.forEach((t: any) => { const fields: Record<string,string> = {}; t.fields.forEach((f: any) => { fields[f.key] = ""; }); d[t.id] = { completed: false, fields }; });
               setTaskData((prev: any) => ({ ...prev, [user.id]: d }));
               fetch("/api/taskdata", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId: user.id, data: d }) }).catch(()=>{});
             }
