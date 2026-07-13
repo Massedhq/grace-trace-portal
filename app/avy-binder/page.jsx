@@ -302,9 +302,10 @@ export default function AvyBinder(){
 
   useEffect(()=>{
     try{
-      const saved=localStorage.getItem("gtm_orientation_avy");
-      if(saved){const p=JSON.parse(saved);if(p.signed)setSigned(true);
-      }
+      fetch("/api/signatures").then(function(r){return r.json();}).then(function(sigs){
+        if(sigs["binder_avy"]&&sigs["binder_avy"].signed){setSigned(true);}
+        else{try{const s=localStorage.getItem("gtm_orientation_avy");if(s){const p=JSON.parse(s);if(p.signed)setSigned(true);}}catch(e){}}
+      }).catch(function(){});
     }catch(e){}
     setLoading(false);
   },[]);

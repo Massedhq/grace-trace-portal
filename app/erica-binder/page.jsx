@@ -448,9 +448,10 @@ export default function EricaBinder() {
       const uid = localStorage.getItem("gtm_current_user");
       if (uid === "erica" || uid === "avy" || uid === "travis") {
         setAuthorized(true);
-        const saved = localStorage.getItem("gtm_orientation_erica");
-        if (saved) { const p = JSON.parse(saved); if (p.signed) setSigned(true);
-      }
+        fetch("/api/signatures").then(function(r){return r.json();}).then(function(sigs){
+          if(sigs["binder_erica"]&&sigs["binder_erica"].signed){setSigned(true);}
+          else{try{const s=localStorage.getItem("gtm_orientation_erica");if(s){const p=JSON.parse(s);if(p.signed)setSigned(true);}}catch(e){}}
+        }).catch(function(){try{const s=localStorage.getItem("gtm_orientation_erica");if(s){const p=JSON.parse(s);if(p.signed)setSigned(true);}}catch(e){}});
       }
     } catch (e) {}
     setLoading(false);

@@ -258,9 +258,10 @@ export default function DennisBinder(){
       const uid=localStorage.getItem("gtm_current_user");
       if(uid==="dennis"||uid==="avy"||uid==="travis"){
         setAuthorized(true);
-        const saved=localStorage.getItem("gtm_orientation_dennis");
-        if(saved){const p=JSON.parse(saved);if(p.signed)setSigned(true);
-      }
+        fetch("/api/signatures").then(function(r){return r.json();}).then(function(sigs){
+        if(sigs["binder_dennis"]&&sigs["binder_dennis"].signed){setSigned(true);}
+        else{try{const saved=localStorage.getItem("gtm_orientation_dennis");if(saved){const p=JSON.parse(saved);if(p.signed)setSigned(true);}}catch(e){}}
+      }).catch(function(){try{const saved=localStorage.getItem("gtm_orientation_dennis");if(saved){const p=JSON.parse(saved);if(p.signed)setSigned(true);}}catch(e){}});
       }
     }catch(e){}
     setLoading(false);

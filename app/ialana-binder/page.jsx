@@ -436,9 +436,10 @@ export default function IalanaBinder() {
       const uid = localStorage.getItem("gtm_current_user");
       if (uid === "ialana" || uid === "avy" || uid === "travis") {
         setAuthorized(true);
-        const saved = localStorage.getItem("gtm_orientation_ialana");
-        if (saved) { const p = JSON.parse(saved); if (p.signed) setSigned(true);
-      }
+        fetch("/api/signatures").then(function(r){return r.json();}).then(function(sigs){
+          if(sigs["binder_ialana"]&&sigs["binder_ialana"].signed){setSigned(true);}
+          else{try{const s=localStorage.getItem("gtm_orientation_ialana");if(s){const p=JSON.parse(s);if(p.signed)setSigned(true);}}catch(e){}}
+        }).catch(function(){try{const s=localStorage.getItem("gtm_orientation_ialana");if(s){const p=JSON.parse(s);if(p.signed)setSigned(true);}}catch(e){}});
       }
     } catch (e) {}
     setLoading(false);

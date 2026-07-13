@@ -239,7 +239,23 @@ export default function OrientationPackage() {
       const uid = localStorage.getItem("gtm_current_user");
       if (uid) {
         const u = STAFF.find(s => s.id === uid);
-        if (u) setCurrentUser(u);
+        if (u) {
+          setCurrentUser(u);
+          // Check if already signed from API
+          fetch("/api/signatures").then(r=>r.json()).then(sigs=>{
+            if (sigs["orientation_"+uid] && sigs["orientation_"+uid].signed) {
+              setSigned(true);
+              setConfirmed(true);
+              setSignatureDate(sigs["orientation_"+uid].date || "");
+            }
+          }).catch(()=>{
+            // Fallback to localStorage
+            try {
+              const saved = localStorage.getItem("gtm_orientation_"+uid);
+              if (saved) { const p = JSON.parse(saved); if (p.signed) { setSigned(true); setConfirmed(true); } }
+            } catch(e2) {}
+          });
+        }
       }
     } catch(e) {}
     setLoading(false);

@@ -64,6 +64,20 @@ export default function StaffReports() {
     fetch("/api/signatures").then(r => r.json()).then(d => setSignatures(d)).catch(() => {});
   }
 
+  function resetTask(userId, taskId) {
+    if (!window.confirm("Reset this task for " + userId + "? This will mark it as incomplete.")) return;
+    const updated = { ...taskData };
+    if (updated[userId] && updated[userId][taskId]) {
+      updated[userId][taskId] = { ...updated[userId][taskId], completed: false };
+      // Reset all fields too
+      Object.keys(updated[userId][taskId].fields || {}).forEach(k => {
+        updated[userId][taskId].fields[k] = "";
+      });
+    }
+    setTaskData(updated);
+    fetch("/api/taskdata", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId, data: updated[userId] }) }).catch(() => {});
+  }
+
   // Avy sees everyone including Travis. Travis sees everyone except Avy.
   const visibleStaff = STAFF.filter(u => {
     if (currentUserId === "avy") return true;
@@ -177,7 +191,15 @@ export default function StaffReports() {
                             </div>
                           ))}
                         </div>
-                        <div style={{ color: isComplete ? "#4CAF50" : C.muted, fontSize: 11, flexShrink: 0 }}>{isComplete ? "Complete" : "Pending"}</div>
+                        <div style={{ display: "flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
+                          <div style={{ color: isComplete ? "#4CAF50" : C.muted, fontSize: 11 }}>{isComplete ? "Complete" : "Pending"}</div>
+                          {isComplete && (
+                            <button onClick={e => { e.stopPropagation(); resetTask(u.id, task.id || String(i)); }}
+                              style={{ background: C.error+"22", border: "1px solid "+C.error+"44", borderRadius: 6, padding: "2px 8px", color: C.error, fontSize: 10, fontWeight: 700, cursor: "pointer" }}>
+                              Reset
+                            </button>
+                          )}
+                        </div>
                       </div>
                     );
                   }) : <div style={{ color: C.muted, fontSize: 13, fontStyle: "italic", padding: "8px 0" }}>No activity logged yet today</div>}

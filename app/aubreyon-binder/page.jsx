@@ -216,9 +216,14 @@ export default function AubreyonBinder(){
       const uid=localStorage.getItem("gtm_current_user");
       if(uid==="aubreyon"||uid==="avy"||uid==="travis"){
         setAuthorized(true);
-        fetch("/api/signatures").then(r=>r.json()).then(sigs=>{
-          if(sigs["binder_aubreyon"]&&sigs["binder_aubreyon"].signed) setSigned(true);
-        }).catch(()=>{});
+        fetch("/api/signatures").then(function(r){return r.json();}).then(function(sigs){
+          if(sigs["binder_aubreyon"]&&sigs["binder_aubreyon"].signed){setSigned(true);}
+          else{
+            try{const saved=localStorage.getItem("gtm_orientation_aubreyon");if(saved){const p=JSON.parse(saved);if(p.signed)setSigned(true);}}catch(e){}
+          }
+        }).catch(function(){
+          try{const saved=localStorage.getItem("gtm_orientation_aubreyon");if(saved){const p=JSON.parse(saved);if(p.signed)setSigned(true);}}catch(e){}
+        });
       }
     }catch(e){}
     setLoading(false);

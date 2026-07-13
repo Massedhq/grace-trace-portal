@@ -88,6 +88,25 @@ const USERS = [
           { key: "followUp", label: "Is a follow-up needed? When?", type: "text", ph: "Follow-up date or action needed" },
         ]
       },
+      {
+        id: "a8", title: "Government Grants & Procurement Tracker",
+        fields: [
+          { key: "grantName", label: "Grant or funding opportunity name", type: "text", ph: "e.g. VA GPD Per Diem, DOJ Second Chance Act, HUD CoC" },
+          { key: "agency", label: "Agency or funding source", type: "text", ph: "e.g. VA, HUD, DOJ, Texas Veterans Commission, SAM.gov" },
+          { key: "grantLink", label: "Link to grant or opportunity", type: "text", ph: "Paste URL to the grant page, SAM.gov listing, or Grants.gov opportunity" },
+          { key: "contactName", label: "Contact name", type: "text", ph: "Program officer or agency contact" },
+          { key: "contactInfo", label: "Contact phone or email", type: "text", ph: "Direct phone or email for this opportunity" },
+          { key: "applicationStatus", label: "Application status", type: "select", options: ["Researching — not applied", "Preparing application", "Application submitted", "Under review", "Awarded", "Denied", "On hold"] },
+          { key: "applicationDate", label: "Date applied or submitted", type: "text", ph: "e.g. July 10, 2026" },
+          { key: "amountRequested", label: "Amount requested or award amount", type: "text", ph: "e.g. $50,000" },
+          { key: "deadline", label: "Application deadline or next deadline", type: "text", ph: "e.g. August 1, 2026" },
+          { key: "requirementsNotes", label: "Requirements and eligibility notes", type: "textarea", ph: "What does this grant require — 501c3, SAM.gov, minimum capacity, match?" },
+          { key: "followUpDate", label: "Follow-up date", type: "text", ph: "When do you need to check back on this?" },
+          { key: "followUpAction", label: "Follow-up action needed", type: "textarea", ph: "What needs to happen next for this opportunity?" },
+          { key: "statusUpdate", label: "Latest status update", type: "textarea", ph: "Most recent update — what happened, what was said, what changed" },
+          { key: "notes", label: "Additional notes", type: "textarea", ph: "Any other important information about this opportunity" },
+        ]
+      },
     ]
   },
   {
@@ -1124,10 +1143,11 @@ export default function WorkdayPortal() {
               { label: "Meeting Board", href: "/meetings", icon: "📅" },
               { label: "Expense Tracker", href: "/expenses", icon: "💰" },
               { label: "Mandatory Tasks", href: "/mandatory-tasks", icon: "📌" },
-              { label: "Task Requests — Kisses", href: "/task-requests", icon: "✉️" },
               { label: "Creative Tab", href: "/creative", icon: "💡" },
               { label: "Orientation Package", href: "/orientation", icon: "📄" },
               { label: "Navigation Guide", href: "/navigation", icon: "🗺" },
+              { label: "Vendor List", href: "/vendors", icon: "🏪" },
+              { label: "Task Requests — Kisses", href: "/task-requests", icon: "✉️" },
               ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Staff Reports", href: "/staff-reports", icon: "👥" }] : []),
               ...(currentUser.id === "ialana" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Ialana's Binder", href: "/ialana-binder", icon: "📘" }] : []),
               ...(currentUser.id === "erica" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Erica's Binder", href: "/erica-binder", icon: "📗" }] : []),
