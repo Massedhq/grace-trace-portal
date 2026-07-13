@@ -570,70 +570,73 @@ const USERS = [
     initials: "KW",
     color: "#4A1A5C",
     password: "GTM@Kisses2026",
-    role: "Director of Communication — Deaf, Blind, and Disabled Programs",
+    role: "Director of Communication — DBMD Programs",
     tasks: [
       {
-        id: "k1", title: "DBMD Program Communications Review",
+        id: "k1", title: "Social Media Check and Engagement",
         fields: [
-          { key: "inquiriesReceived", label: "Were any DBMD or disability-related inquiries received today?", type: "select", options: ["Yes", "No"] },
-          { key: "inquiryDetails", label: "If yes, describe the inquiry", type: "textarea", ph: "Who reached out, what was the question or need?" },
-          { key: "responseGiven", label: "What response was given?", type: "textarea", ph: "How did you respond?" },
-          { key: "followUpNeeded", label: "Is follow-up needed?", type: "text", ph: "Next step and date" },
+          { key: "platforms", label: "Which platforms were checked today?", type: "text", ph: "Facebook, Instagram, LinkedIn, etc." },
+          { key: "comments", label: "Were there any comments or messages that needed response?", type: "select", options: ["Yes", "No"] },
+          { key: "response", label: "Describe any responses given", type: "textarea", ph: "What was responded to and how" },
+          { key: "posts", label: "Were any posts published today?", type: "select", options: ["Yes", "No"] },
+          { key: "postDetails", label: "Describe posts published", type: "textarea", ph: "Platform, content, and any notes" },
+          { key: "presidentApproved", label: "Was President approval received before posting?", type: "select", options: ["Yes", "No — pending", "Not required"] },
         ]
       },
       {
-        id: "k2", title: "DBMD Referral Source Outreach",
+        id: "k2", title: "Content Creation",
         fields: [
-          { key: "agencyContacted", label: "Which agency or organization was contacted?", type: "text", ph: "HHSC, disability advocacy org, waiver coordinator, etc." },
-          { key: "contactPerson", label: "Who did you speak with?", type: "text", ph: "Name and title" },
-          { key: "purpose", label: "Purpose of the outreach", type: "textarea", ph: "What was the goal of this contact?" },
-          { key: "outcome", label: "Outcome", type: "textarea", ph: "What was accomplished or shared?" },
-          { key: "nextStep", label: "Next step", type: "text", ph: "Follow-up action and date" },
+          { key: "contentCreated", label: "What content was created today?", type: "textarea", ph: "Graphics, captions, videos, or other materials" },
+          { key: "platform", label: "Which platform is this content for?", type: "text", ph: "Facebook, Instagram, LinkedIn, print, etc." },
+          { key: "status", label: "Status of content", type: "select", options: ["Draft — pending President approval", "Approved and scheduled", "Published today"] },
+          { key: "calendarUpdated", label: "Was the content calendar updated?", type: "select", options: ["Yes", "No", "Not needed today"] },
         ]
       },
       {
-        id: "k3", title: "DBMD Licensure and Enrollment Research",
+        id: "k3", title: "DBMD Research and Development",
         fields: [
-          { key: "topicResearched", label: "What DBMD enrollment or licensure topic was researched today?", type: "text", ph: "e.g. HHSC DBMD waiver enrollment requirements" },
-          { key: "findings", label: "What did you find?", type: "textarea", ph: "Summarize the key information discovered" },
-          { key: "nextResearchStep", label: "What is the next research step?", type: "textarea", ph: "What do you need to find out next?" },
-          { key: "documentedWhere", label: "Where was this documented?", type: "text", ph: "e.g. Google Drive folder, Phase 3 planning document" },
+          { key: "researchTopic", label: "What DBMD topic was researched today?", type: "text", ph: "e.g. HHSC licensing requirements, DBMD waiver rates, staffing requirements" },
+          { key: "source", label: "What source or contact was used?", type: "text", ph: "Website, organization, or person contacted" },
+          { key: "findings", label: "Key findings from today's research", type: "textarea", ph: "What was learned that is relevant to Grace Trace DBMD program development" },
+          { key: "hoursSpent", label: "Hours spent on DBMD research today", type: "text", ph: "e.g. 1.5 hours" },
+          { key: "actionItems", label: "Action items from today's research", type: "textarea", ph: "What needs to be followed up on or researched next" },
+          { key: "reportToPresident", label: "Does this need to be reported to President today?", type: "select", options: ["Yes — urgent", "Yes — in weekly report", "No"] },
         ]
       },
       {
-        id: "k4", title: "Communication Accessibility Planning",
+        id: "k4", title: "Staff Assist Tasks",
         fields: [
-          { key: "materialReviewed", label: "Which material or outreach piece was reviewed for accessibility?", type: "text", ph: "Name of the document, flyer, or communication piece" },
-          { key: "accessibilityCheck", label: "Accessibility formats reviewed", type: "textarea", ph: "ASL, Braille, large print, screen reader compatible — which were addressed?" },
-          { key: "changesNeeded", label: "What changes are needed?", type: "textarea", ph: "Document what needs to be updated for accessibility compliance" },
-          { key: "completedBy", label: "When will changes be completed?", type: "text", ph: "Target date for completion" },
+          { key: "tasksAssigned", label: "Were any staff assist tasks assigned to you today?", type: "select", options: ["Yes", "No"] },
+          { key: "requestedBy", label: "Who assigned the task?", type: "text", ph: "Staff member name and their role" },
+          { key: "taskDescription", label: "Describe the task assigned", type: "textarea", ph: "What was the task, what was needed, and any deadline given" },
+          { key: "taskStatus", label: "Status of the assigned task", type: "select", options: ["Completed today", "In progress — will complete by deadline", "Need more information", "Escalated to President"] },
+          { key: "taskOutcome", label: "Outcome and what was delivered", type: "textarea", ph: "What was completed and delivered to the requesting staff member" },
+          { key: "notifiedRequester", label: "Was the requesting staff member notified of completion?", type: "select", options: ["Yes", "No — still in progress", "Not yet"] },
         ]
       },
       {
-        id: "k5", title: "Disability Services Partnership Building",
+        id: "k5", title: "Internal Communications",
         fields: [
-          { key: "orgIdentified", label: "What organization was identified or contacted today?", type: "text", ph: "Name of the organization" },
-          { key: "serviceProvided", label: "What service do they provide?", type: "text", ph: "e.g. occupational therapy, adaptive equipment, specialized care" },
-          { key: "contactMade", label: "Was contact made?", type: "select", options: ["Yes — spoke with someone", "Yes — left message", "Email sent", "No — will follow up"] },
-          { key: "partnershipPotential", label: "Partnership potential", type: "textarea", ph: "How could this organization support the Grace Trace DBMD program?" },
-          { key: "nextStep", label: "Next step", type: "text", ph: "What happens next with this organization?" },
+          { key: "communicationsDrafted", label: "Were any internal communications drafted today?", type: "select", options: ["Yes", "No"] },
+          { key: "details", label: "Describe what was drafted or sent", type: "textarea", ph: "Type of communication, recipient, and purpose" },
+          { key: "presidentApproval", label: "Was President approval obtained before distribution?", type: "select", options: ["Yes", "No — pending approval", "Not required"] },
         ]
       },
       {
-        id: "k6", title: "Phase 3 Program Development Progress",
+        id: "k6", title: "Brand and Marketing Work",
         fields: [
-          { key: "milestoneWorkedOn", label: "What Phase 3 milestone was worked on today?", type: "text", ph: "e.g. HHSC enrollment, accessibility planning, partner network" },
-          { key: "progressMade", label: "What progress was made?", type: "textarea", ph: "Describe what was accomplished" },
-          { key: "blockersOrChallenges", label: "Any blockers or challenges?", type: "textarea", ph: "What is slowing progress and how can it be addressed?" },
-          { key: "nextMilestone", label: "What is the next milestone?", type: "textarea", ph: "What is the next step toward Phase 3 launch?" },
+          { key: "materialsCreated", label: "What marketing or brand materials were worked on today?", type: "textarea", ph: "Flyers, brochures, graphics, style guide updates, newsletter" },
+          { key: "status", label: "Status", type: "select", options: ["Draft", "Pending President approval", "Approved", "Distributed"] },
+          { key: "notes", label: "Notes", type: "textarea", ph: "Any additional details about brand or marketing work today" },
         ]
       },
       {
         id: "k7", title: "Daily Activity Report",
         fields: [
-          { key: "summary", label: "Summary of today's communication and program development activity", type: "textarea", ph: "Overall summary of what was accomplished" },
-          { key: "flagsForLeadership", label: "Anything to flag for Avy and Travis?", type: "textarea", ph: "Urgent items or important updates for leadership" },
-          { key: "tomorrowPriorities", label: "Priorities for tomorrow", type: "textarea", ph: "What will you focus on first tomorrow?" },
+          { key: "summary", label: "Summary of today's activities", type: "textarea", ph: "Overall what was accomplished today across all responsibilities" },
+          { key: "staffAssistSummary", label: "Summary of any staff assist tasks completed today", type: "textarea", ph: "Who requested it, what was done, and outcome" },
+          { key: "urgentItems", label: "Any urgent items for Avy to know?", type: "textarea", ph: "Flag anything needing immediate attention" },
+          { key: "tomorrowPriorities", label: "Top priorities for tomorrow", type: "textarea", ph: "What will you focus on first tomorrow" },
         ]
       },
     ]
@@ -1121,6 +1124,7 @@ export default function WorkdayPortal() {
               { label: "Meeting Board", href: "/meetings", icon: "📅" },
               { label: "Expense Tracker", href: "/expenses", icon: "💰" },
               { label: "Mandatory Tasks", href: "/mandatory-tasks", icon: "📌" },
+              { label: "Task Requests — Kisses", href: "/task-requests", icon: "✉️" },
               { label: "Creative Tab", href: "/creative", icon: "💡" },
               { label: "Orientation Package", href: "/orientation", icon: "📄" },
               { label: "Navigation Guide", href: "/navigation", icon: "🗺" },
@@ -1129,6 +1133,7 @@ export default function WorkdayPortal() {
               ...(currentUser.id === "erica" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Erica's Binder", href: "/erica-binder", icon: "📗" }] : []),
               ...(currentUser.id === "deann" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Deann's Binder", href: "/deann-binder", icon: "📙" }] : []),
               ...(currentUser.id === "dennis" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Dennis's Binder", href: "/dennis-binder", icon: "📒" }] : []),
+              ...(currentUser.id === "aubreyon" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Kisses' Binder", href: "/aubreyon-binder", icon: "📙" }] : []),
               ...(currentUser.id === "travis" || currentUser.id === "avy" ? [{ label: "Travis's Binder", href: "/travis-binder", icon: "📓" }] : []),
               ...(currentUser.id === "avy" ? [{ label: "My Binder", href: "/avy-binder", icon: "📔" }] : []),
             ].map((item) => (
