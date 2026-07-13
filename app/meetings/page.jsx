@@ -44,6 +44,17 @@ export default function MeetingBoard() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
   const [editingMeeting, setEditingMeeting] = useState(null);
+  const [reportForm, setReportForm] = useState({
+    title:"", reportingPeriod:"", reasonForReport:"",
+    completed:"", inProgress:"", pendingItems:"",
+    actionItems:"", issuesRisks:"", itemsForReview:"",
+    decisionsNeeded:"", upcomingDeadlines:"", metrics:"",
+    announcements:"", followUpItems:"", resourcesNeeded:"",
+    nextReportDate:"", link:"", attendees:[], attendeeType:"full-board",
+  });
+  const [reportError, setReportError] = useState("");
+  const [reportCreated, setReportCreated] = useState(false);
+  const [convertingMeeting, setConvertingMeeting] = useState(null);
 
   // Attendance response
   const [response, setResponse] = useState({method:"", canAttend:"", followUpDate:"", followUpNotes:""});
@@ -131,6 +142,65 @@ export default function MeetingBoard() {
     saveMeetings(updated);
     setActiveMeeting(null);
     setView("board");
+  }
+
+  function createReport() {
+    if (!reportForm.title.trim()) { setReportError("Please enter a report title."); return; }
+    if (!reportForm.reportingPeriod.trim()) { setReportError("Please enter the reporting period."); return; }
+    const now = new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+    const newReport = {
+      id: Date.now().toString(),
+      title: reportForm.title,
+      meetingType: "Report",
+      attendeeType: reportForm.attendeeType,
+      attendees: reportForm.attendeeType === "full-board" ? ALL_STAFF.map(s=>s.id) : reportForm.attendees,
+      reportingPeriod: reportForm.reportingPeriod,
+      reasonForReport: reportForm.reasonForReport,
+      completed: reportForm.completed,
+      inProgress: reportForm.inProgress,
+      pendingItems: reportForm.pendingItems,
+      actionItems: reportForm.actionItems,
+      issuesRisks: reportForm.issuesRisks,
+      itemsForReview: reportForm.itemsForReview,
+      decisionsNeeded: reportForm.decisionsNeeded,
+      upcomingDeadlines: reportForm.upcomingDeadlines,
+      metrics: reportForm.metrics,
+      announcements: reportForm.announcements,
+      followUpItems: reportForm.followUpItems,
+      resourcesNeeded: reportForm.resourcesNeeded,
+      nextReportDate: reportForm.nextReportDate,
+      link: reportForm.link,
+      date: now, time: "", finalDate: now, finalTime: "",
+      createdBy: currentUser.id,
+      createdByName: currentUser.name,
+      createdOn: now,
+      status: "scheduled",
+      isReport: true,
+      responses: {},
+      voteResults: {},
+      agenda: reportForm.reasonForReport,
+      notes: "",
+    };
+    const updated = [newReport, ...meetings];
+    setMeetings(updated); saveMeetings(updated);
+    setReportForm({title:"",reportingPeriod:"",reasonForReport:"",completed:"",inProgress:"",pendingItems:"",actionItems:"",issuesRisks:"",itemsForReview:"",decisionsNeeded:"",upcomingDeadlines:"",metrics:"",announcements:"",followUpItems:"",resourcesNeeded:"",nextReportDate:"",link:"",attendees:[],attendeeType:"full-board"});
+    setReportError("");
+    setReportCreated(true);
+    setTimeout(()=>{setReportCreated(false);setView("board");},1500);
+  }
+
+  function convertMeetingToReport(meetingId) {
+    const meeting = meetings.find(m=>m.id===meetingId);
+    if (!meeting) return;
+    setReportForm(p=>({...p,
+      title: meeting.title + " — Meeting Report",
+      attendees: meeting.attendees,
+      attendeeType: meeting.attendeeType,
+      link: meeting.link||"",
+    }));
+    setConvertingMeeting(meetingId);
+    setView("report");
+    setActiveMeeting(null);
   }
 
   function createMeeting() {
@@ -280,7 +350,23 @@ export default function MeetingBoard() {
         <div class="row"><span class="label">Status</span><span>${m.status==="voting"?"Pending Vote":m.status==="scheduled"?"Scheduled":"Completed"}</span></div>
         ${m.externalName?`<div class="row"><span class="label">External Contact</span><span>${m.externalName}${m.externalOrg?" — "+m.externalOrg:""}${m.externalRole?" ("+m.externalRole+")":""}</span></div>`:""}
         <div class="row"><span class="label">Attendees</span><span>${attendeeNames||"All Staff"}</span></div>
-        ${m.agenda?`<h2>Agenda</h2><pre>${m.agenda}</pre>`:""}
+        ${m.isReport?`
+          ${m.reportingPeriod?`<div class="row"><span class="label">Reporting Period</span><span>${m.reportingPeriod}</span></div>`:''}
+          ${m.reasonForReport?`<h2>Reason for Report</h2><pre>${m.reasonForReport}</pre>`:''}
+          ${m.completed?`<h2>✓ Completed</h2><pre>${m.completed}</pre>`:''}
+          ${m.inProgress?`<h2>🔄 In Progress</h2><pre>${m.inProgress}</pre>`:''}
+          ${m.pendingItems?`<h2>⏳ Pending Items</h2><pre>${m.pendingItems}</pre>`:''}
+          ${m.actionItems?`<h2>📋 Action Items</h2><pre>${m.actionItems}</pre>`:''}
+          ${m.issuesRisks?`<h2>⚠ Issues & Risks</h2><pre>${m.issuesRisks}</pre>`:''}
+          ${m.itemsForReview?`<h2>👁 Items for Review</h2><pre>${m.itemsForReview}</pre>`:''}
+          ${m.decisionsNeeded?`<h2>❓ Decisions Needed</h2><pre>${m.decisionsNeeded}</pre>`:''}
+          ${m.upcomingDeadlines?`<h2>📅 Upcoming Deadlines</h2><pre>${m.upcomingDeadlines}</pre>`:''}
+          ${m.metrics?`<h2>📊 Metrics & KPIs</h2><pre>${m.metrics}</pre>`:''}
+          ${m.announcements?`<h2>📣 Announcements</h2><pre>${m.announcements}</pre>`:''}
+          ${m.followUpItems?`<h2>🔁 Follow-Up Items</h2><pre>${m.followUpItems}</pre>`:''}
+          ${m.resourcesNeeded?`<h2>🛠 Resources Needed</h2><pre>${m.resourcesNeeded}</pre>`:''}
+          ${m.nextReportDate?`<h2>📆 Next Report Date</h2><p>${m.nextReportDate}</p>`:''}
+        `:`${m.agenda?`<h2>Agenda</h2><pre>${m.agenda}</pre>`:""}`}
         ${m.notes?`<h2>Meeting Notes</h2><pre>${m.notes}</pre>`:""}
         ${m.voteOptions?.length?`<h2>Date & Time Vote Options</h2><pre>${voteLines}</pre>`:""}
         ${responseLines?`<h2>Attendance Responses</h2><pre>${responseLines}</pre>`:""}
@@ -330,10 +416,10 @@ export default function MeetingBoard() {
 
       {/* Tab nav */}
       <div style={{background:C.dark,borderBottom:"1px solid "+C.cardBorder,display:"flex",gap:2,padding:"0 24px"}}>
-        {["board", isLeadership&&"schedule", isLeadership&&"vote"].filter(Boolean).map(tab=>(
+        {["board", isLeadership&&"schedule", isLeadership&&"vote", isLeadership&&"report"].filter(Boolean).map(tab=>(
           <button key={tab} onClick={()=>{setView(tab);setActiveMeeting(null);setResponseSent(false);}}
-            style={{background:"transparent",border:"none",borderBottom:view===tab?"2px solid "+C.gold:"2px solid transparent",color:view===tab?C.gold:C.muted,fontSize:13,fontWeight:view===tab?800:500,padding:"11px 16px",cursor:"pointer"}}>
-            {tab==="board"?"Meeting Board":tab==="schedule"?"Schedule Meeting":"Vote to Schedule"}
+            style={{background:"transparent",border:"none",borderBottom:view===tab?"2px solid "+C.gold:"2px solid transparent",color:view===tab?C.gold:C.muted,fontSize:13,fontWeight:view===tab?800:500,padding:"11px 16px",cursor:"pointer",whiteSpace:"nowrap"}}>
+            {tab==="board"?"Meeting Board":tab==="schedule"?"Schedule Meeting":tab==="vote"?"Vote to Schedule":"Meeting Report 📋"}
             {tab==="board"&&pendingResponse.length>0&&<span style={{background:C.error,color:C.ivory,borderRadius:20,padding:"1px 7px",fontSize:10,fontWeight:800,marginLeft:6}}>{pendingResponse.length}</span>}
           </button>
         ))}
@@ -363,8 +449,8 @@ export default function MeetingBoard() {
                     <div>
                       <div style={{color:C.text,fontWeight:800,fontSize:15}}>{m.title}</div>
                       <div style={{color:C.muted,fontSize:12,marginTop:3}}>
-                        {m.status==="voting"?"🗳 Voting in progress — pick a date":
-                        `📅 ${m.finalDate||m.date} at ${m.finalTime||m.time}`} — {m.meetingType}
+                        {m.isReport?"📋 Meeting Report":m.status==="voting"?"🗳 Voting in progress — pick a date":
+                        `📅 ${m.finalDate||m.date} at ${m.finalTime||m.time}`}{!m.isReport&&` — ${m.meetingType}`}
                       </div>
                       <div style={{color:C.muted,fontSize:11,marginTop:2}}>Scheduled by {m.createdByName} on {m.createdOn}</div>
                     </div>
@@ -401,11 +487,12 @@ export default function MeetingBoard() {
               <div style={{background:C.card,border:"1px solid "+C.cardBorder,borderRadius:12,padding:"20px 24px",marginBottom:16}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:10,marginBottom:16}}>
                   <div>
-                    <div style={{color:C.gold,fontSize:10,fontWeight:800,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Meeting Record</div>
+                    <div style={{color:C.gold,fontSize:10,fontWeight:800,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>{m.isReport?"📋 Meeting Report":"Meeting Record"}</div>
                     <h2 style={{color:C.ivory,fontSize:20,fontWeight:900,margin:0}}>{m.title}</h2>
                   </div>
-                  <div style={{display:"flex",gap:8}}>
+                  <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                 {isLeadership&&<button onClick={()=>loadMeetingIntoForm(m)} style={{background:C.gold+"22",border:"1px solid "+C.gold+"44",borderRadius:8,padding:"8px 14px",color:C.gold,fontSize:12,fontWeight:700,cursor:"pointer"}}>✏ Edit</button>}
+                {isLeadership&&!m.isReport&&<button onClick={()=>convertMeetingToReport(m.id)} style={{background:C.green+"44",border:"1px solid "+C.green,borderRadius:8,padding:"8px 14px",color:"#4CAF50",fontSize:12,fontWeight:700,cursor:"pointer"}}>📋 Convert to Report</button>}
                 {isLeadership&&<button onClick={()=>{if(window.confirm("Delete this meeting permanently?"))deleteMeeting(m.id);}} style={{background:C.error+"22",border:"1px solid "+C.error+"44",borderRadius:8,padding:"8px 14px",color:C.error,fontSize:12,fontWeight:700,cursor:"pointer"}}>Delete</button>}
                 <button onClick={()=>printMeeting(m)} style={{background:C.burgundy,border:"1px solid "+C.gold+"66",borderRadius:8,padding:"8px 16px",color:C.ivory,fontSize:12,fontWeight:700,cursor:"pointer"}}>🖨 Print Record</button>
               </div>
@@ -425,7 +512,36 @@ export default function MeetingBoard() {
                   </div>
                 ))}
                 {m.link&&<div style={{marginTop:12,padding:"10px 14px",background:C.dark,borderRadius:10,border:"1px solid "+C.cardBorder}}><div style={{color:C.gold,fontSize:11,fontWeight:800,letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>Meeting Link</div><a href={m.link} target="_blank" rel="noreferrer" style={{color:C.gold,fontSize:14,wordBreak:"break-all"}}>🔗 {m.link}</a></div>}
-        {m.agenda&&<div style={{marginTop:12}}><div style={{color:C.gold,fontSize:11,fontWeight:800,letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>Agenda</div><div style={{color:C.text,fontSize:14,lineHeight:1.7,whiteSpace:"pre-wrap"}}>{m.agenda}</div></div>}
+        {m.agenda&&!m.isReport&&<div style={{marginTop:12}}><div style={{color:C.gold,fontSize:11,fontWeight:800,letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>Agenda</div><div style={{color:C.text,fontSize:14,lineHeight:1.7,whiteSpace:"pre-wrap"}}>{m.agenda}</div></div>}
+        {m.isReport&&(
+          <div style={{marginTop:12}}>
+            <div style={{background:C.dark,border:"1px solid "+C.gold+"44",borderRadius:10,padding:"14px 16px",marginBottom:10}}>
+              <div style={{color:C.gold,fontSize:10,fontWeight:800,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Reporting Period</div>
+              <div style={{color:C.text,fontSize:14}}>{m.reportingPeriod}</div>
+            </div>
+            {[
+              ["Reason for Report",m.reasonForReport],
+              ["✓ Completed",m.completed],
+              ["🔄 In Progress",m.inProgress],
+              ["⏳ Pending Items",m.pendingItems],
+              ["📋 Action Items",m.actionItems],
+              ["⚠ Issues & Risks",m.issuesRisks],
+              ["👁 Items for Review",m.itemsForReview],
+              ["❓ Decisions Needed",m.decisionsNeeded],
+              ["📅 Upcoming Deadlines",m.upcomingDeadlines],
+              ["📊 Metrics & KPIs",m.metrics],
+              ["📣 Announcements",m.announcements],
+              ["🔁 Follow-Up Items",m.followUpItems],
+              ["🛠 Resources Needed",m.resourcesNeeded],
+              ["📆 Next Report Date",m.nextReportDate],
+            ].filter(([,val])=>val).map(([label,val],i)=>(
+              <div key={i} style={{marginBottom:10}}>
+                <div style={{color:C.gold,fontSize:11,fontWeight:800,letterSpacing:1,textTransform:"uppercase",marginBottom:4}}>{label}</div>
+                <div style={{color:C.text,fontSize:14,lineHeight:1.8,whiteSpace:"pre-wrap",background:C.dark,borderRadius:8,padding:"10px 14px"}}>{val}</div>
+              </div>
+            ))}
+          </div>
+        )}
               </div>
 
               {/* Vote section */}
@@ -723,6 +839,87 @@ export default function MeetingBoard() {
                 style={{width:"100%",background:C.burgundy,border:"1px solid "+C.gold+"66",borderRadius:10,padding:"13px",color:C.ivory,fontSize:14,fontWeight:800,cursor:"pointer"}}>
                 Send Vote to Staff
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* MEETING REPORT FORM */}
+        {view==="report"&&isLeadership&&(
+          <div>
+            <div style={{color:C.gold,fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>
+              {convertingMeeting?"Convert Meeting to Report":"Create Meeting Report"}
+            </div>
+            <div style={{color:C.muted,fontSize:12,marginBottom:16}}>Send a structured status report to all staff — no meeting required. Staff must acknowledge receipt.</div>
+            <div style={{background:C.card,border:"1px solid "+C.cardBorder,borderRadius:12,padding:"20px 22px"}}>
+
+              {/* Who receives it */}
+              <div style={{marginBottom:14}}>
+                <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:8}}>Send report to</div>
+                <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                  {[{val:"full-board",label:"All Staff"},{val:"single",label:"Selected Staff"}].map(opt=>(
+                    <button key={opt.val} onClick={()=>setReportForm(p=>({...p,attendeeType:opt.val,attendees:opt.val==="full-board"?ALL_STAFF.map(s=>s.id):[]}))}
+                      style={{background:reportForm.attendeeType===opt.val?C.burgundy:C.dark,border:"1px solid "+(reportForm.attendeeType===opt.val?C.gold+"66":C.cardBorder),borderRadius:8,padding:"8px 14px",color:reportForm.attendeeType===opt.val?C.ivory:C.muted,fontSize:13,fontWeight:600,cursor:"pointer"}}>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+                {reportForm.attendeeType==="single"&&(
+                  <div style={{marginTop:10,display:"flex",flexDirection:"column",gap:6}}>
+                    {ALL_STAFF.map(s=>(
+                      <button key={s.id} onClick={()=>setReportForm(p=>({...p,attendees:p.attendees.includes(s.id)?p.attendees.filter(a=>a!==s.id):[...p.attendees,s.id]}))}
+                        style={{background:reportForm.attendees.includes(s.id)?C.burgundy:C.dark,border:"1px solid "+(reportForm.attendees.includes(s.id)?C.gold+"66":C.cardBorder),borderRadius:8,padding:"9px 14px",color:reportForm.attendees.includes(s.id)?C.ivory:C.muted,fontSize:13,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:10}}>
+                        <div style={{width:28,height:28,borderRadius:"50%",background:s.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:800,color:C.ivory,flexShrink:0}}>{s.initials}</div>
+                        {s.name}{reportForm.attendees.includes(s.id)&&<span style={{marginLeft:"auto",color:C.gold}}>✓</span>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Required fields */}
+              {[
+                {label:"Report title",key:"title",ph:"e.g. Weekly Operations Update — July 13, 2026",required:true},
+                {label:"Reporting period",key:"reportingPeriod",ph:"e.g. July 7 – July 13, 2026",required:true},
+                {label:"Link (optional)",key:"link",ph:"e.g. Google Drive folder, document, or resource URL"},
+              ].map(f=>(
+                <div key={f.key} style={{marginBottom:14}}>
+                  <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>{f.label}{f.required&&<span style={{color:C.error}}> *</span>}</div>
+                  <input type="text" value={reportForm[f.key]} onChange={e=>setReportForm(p=>({...p,[f.key]:e.target.value}))} placeholder={f.ph}
+                    style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
+                </div>
+              ))}
+
+              {/* Report sections */}
+              {[
+                {label:"Reason for report",key:"reasonForReport",ph:"Why is this report being sent? No meeting held this week — providing status update..."},
+                {label:"✓ Completed — Work finished this period",key:"completed",ph:"List everything completed since the last report or meeting"},
+                {label:"🔄 In Progress — Currently being worked on",key:"inProgress",ph:"List tasks and projects currently underway"},
+                {label:"⏳ Pending Items — Waiting on approval or information",key:"pendingItems",ph:"What is on hold and why"},
+                {label:"📋 Action Items — Tasks assigned with due dates",key:"actionItems",ph:"Task | Owner | Due Date
+e.g. Review budget | Finance | July 17"},
+                {label:"⚠ Issues & Risks — Problems or roadblocks",key:"issuesRisks",ph:"Describe any issues, risks, or blockers"},
+                {label:"👁 Items for Review — Needs attention from staff",key:"itemsForReview",ph:"Documents, proposals, or items staff should review"},
+                {label:"❓ Decisions Needed — Approvals required",key:"decisionsNeeded",ph:"Questions or approvals that need responses"},
+                {label:"📅 Upcoming Deadlines",key:"upcomingDeadlines",ph:"Important dates for the next week or reporting period"},
+                {label:"📊 Metrics & KPIs",key:"metrics",ph:"Numbers showing progress — beds filled, applications submitted, etc."},
+                {label:"📣 Announcements",key:"announcements",ph:"Policy updates, training, organizational news"},
+                {label:"🔁 Follow-Up Items from Previous Reports",key:"followUpItems",ph:"Outstanding items from last report"},
+                {label:"🛠 Resources Needed",key:"resourcesNeeded",ph:"Staffing, equipment, or support required"},
+                {label:"📆 Next Report Date",key:"nextReportDate",ph:"e.g. July 20, 2026"},
+              ].map(f=>(
+                <div key={f.key} style={{marginBottom:14}}>
+                  <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>{f.label}</div>
+                  <textarea value={reportForm[f.key]||""} onChange={e=>setReportForm(p=>({...p,[f.key]:e.target.value}))} placeholder={f.ph} rows={3}
+                    style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:13,resize:"vertical",outline:"none",fontFamily:"inherit",lineHeight:1.6}}/>
+                </div>
+              ))}
+
+              {reportError&&<div style={{color:C.error,fontSize:13,marginBottom:12}}>{reportError}</div>}
+              {reportCreated&&<div style={{color:"#4CAF50",fontSize:13,fontWeight:700,marginBottom:12}}>✓ Report sent — staff will see it in their Meeting Board</div>}
+              <button onClick={createReport} style={{width:"100%",background:C.burgundy,border:"1px solid "+C.gold+"66",borderRadius:10,padding:"13px",color:C.ivory,fontSize:14,fontWeight:800,cursor:"pointer"}}>
+                📋 Send Report to Staff
+              </button>
+              {convertingMeeting&&<button onClick={()=>{setConvertingMeeting(null);setView("board");}} style={{width:"100%",background:"transparent",border:"1px solid "+C.cardBorder,borderRadius:10,padding:"11px",color:C.muted,fontSize:13,cursor:"pointer",marginTop:8}}>Cancel</button>}
             </div>
           </div>
         )}
