@@ -895,8 +895,7 @@ export default function MeetingBoard() {
                 {label:"✓ Completed — Work finished this period",key:"completed",ph:"List everything completed since the last report or meeting"},
                 {label:"🔄 In Progress — Currently being worked on",key:"inProgress",ph:"List tasks and projects currently underway"},
                 {label:"⏳ Pending Items — Waiting on approval or information",key:"pendingItems",ph:"What is on hold and why"},
-                {label:"📋 Action Items — Tasks assigned with due dates",key:"actionItems",ph:"Task | Owner | Due Date
-e.g. Review budget | Finance | July 17"},
+                {label:"📋 Action Items — Tasks assigned with due dates",key:"actionItems",ph:"Task | Owner | Due Date — e.g. Review budget | Finance | July 17"},
                 {label:"⚠ Issues & Risks — Problems or roadblocks",key:"issuesRisks",ph:"Describe any issues, risks, or blockers"},
                 {label:"👁 Items for Review — Needs attention from staff",key:"itemsForReview",ph:"Documents, proposals, or items staff should review"},
                 {label:"❓ Decisions Needed — Approvals required",key:"decisionsNeeded",ph:"Questions or approvals that need responses"},
