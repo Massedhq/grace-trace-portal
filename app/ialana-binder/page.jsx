@@ -535,7 +535,7 @@ export default function IalanaBinder() {
                         else{window.location.href="/";}
                       }).catch(function(){window.location.href="/";});
                     }} style={{background:C.burgundy,border:"1px solid "+C.gold+"66",borderRadius:10,padding:"12px",color:C.ivory,fontSize:14,fontWeight:800,cursor:"pointer"}}>
-                      Continue to Next Required Document
+                      Continue to Next Pending Item
                     </button>
                     <button onClick={()=>{window.location.href="/";}} style={{background:"transparent",border:"1px solid "+C.cardBorder,borderRadius:10,padding:"12px",color:C.muted,fontSize:13,cursor:"pointer"}}>
                       Return to My Workday Dashboard

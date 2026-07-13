@@ -820,12 +820,17 @@ export default function WorkdayPortal() {
   }
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Reload alert data every time screen changes to dashboard
+  // Reload alert data every time dashboard is shown or window gets focus
   useEffect(() => {
     if (screen === "dashboard" && currentUser) {
-      fetch("/api/mandatory-tasks").then(r=>r.json()).then(t=>setAlertTasks(t)).catch(()=>{});
-      fetch("/api/meetings").then(r=>r.json()).then(m=>setAlertMeetings(m)).catch(()=>{});
-      fetch("/api/signatures").then(r=>r.json()).then(s=>setAlertSignatures(s)).catch(()=>{});
+      const reload = () => {
+        fetch("/api/mandatory-tasks").then(r=>r.json()).then(t=>setAlertTasks(t)).catch(()=>{});
+        fetch("/api/meetings").then(r=>r.json()).then(m=>setAlertMeetings(m)).catch(()=>{});
+        fetch("/api/signatures").then(r=>r.json()).then(s=>setAlertSignatures(s)).catch(()=>{});
+      };
+      reload();
+      window.addEventListener("focus", reload);
+      return () => window.removeEventListener("focus", reload);
     }
   }, [screen, currentUser?.id]);
 

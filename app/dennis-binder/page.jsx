@@ -353,13 +353,12 @@ export default function DennisBinder(){
                       var uid2=localStorage.getItem("gtm_current_user")||"";
                       fetch("/api/signatures").then(function(r){return r.json();}).then(function(sigs){
                         var oSigned=sigs["orientation_"+uid2]?sigs["orientation_"+uid2].signed:false;
-                        var bSigned=sigs["binder_"+uid2]?sigs["binder_"+uid2].signed:false;
+                        // Binder was just signed so treat it as signed
                         if(!oSigned){window.location.href="/orientation";}
-                        else if(!bSigned){window.location.href="/"+uid2+"-binder";}
                         else{window.location.href="/";}
                       }).catch(function(){window.location.href="/";});
                     }} style={{background:C.burgundy,border:"1px solid "+C.gold+"66",borderRadius:10,padding:"12px",color:C.ivory,fontSize:14,fontWeight:800,cursor:"pointer"}}>
-                      Continue to Next Required Document
+                      Continue to Next Pending Item
                     </button>
                     <button onClick={function(){window.location.href="/";}} style={{background:"transparent",border:"1px solid "+C.cardBorder,borderRadius:10,padding:"12px",color:C.muted,fontSize:13,cursor:"pointer"}}>
                       Return to My Workday Dashboard
