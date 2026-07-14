@@ -71,9 +71,14 @@ export default function PropertyOpportunities() {
     loadProperties().then(p => { setProperties(p); setLoading(false); });
   }, []);
 
+  const [importMsg, setImportMsg] = useState("");
+  const [importOk, setImportOk] = useState(false);
+
   async function fetchFromUrl() {
-    if (!quickUrl.trim()) return;
+    if (!quickUrl.trim() || !quickUrl.startsWith("http")) return;
     setQuickLoading(true);
+    setImportMsg("");
+    setImportOk(false);
     try {
       const res = await fetch("/api/scrape", {
         method: "POST",
@@ -81,26 +86,35 @@ export default function PropertyOpportunities() {
         body: JSON.stringify({ url: quickUrl })
       });
       const data = await res.json();
-      if (data.error) {
-        // Even if scraping fails, save the URL
-        setForm(p => ({...p, listingUrl: quickUrl}));
-        setQuickLoading(false);
-        return;
-      }
+
+      // Always save the URL
       setForm(p => ({
         ...p,
         listingUrl: quickUrl,
-        name: data.title || p.name,
-        description: data.description || p.description,
-        photoUrl: data.photo || p.photoUrl,
-        askingPrice: data.price || p.askingPrice,
-        address: data.address || p.address,
-        squareFt: data.sqft || p.squareFt,
-        bathrooms: data.baths || p.bathrooms,
-        numRooms: data.beds || p.numRooms,
+        name: data.title && !data.error ? data.title : p.name,
+        description: data.description && !data.error ? data.description : p.description,
+        photoUrl: data.photo && !data.error ? data.photo : p.photoUrl,
+        askingPrice: data.price && !data.error ? data.price : p.askingPrice,
+        address: data.address && !data.error ? data.address : p.address,
+        squareFt: data.sqft && !data.error ? data.sqft : p.squareFt,
+        bathrooms: data.baths && !data.error ? data.baths : p.bathrooms,
+        numRooms: data.beds && !data.error ? data.beds : p.numRooms,
       }));
+
+      if (data.error === "zillow_blocked") {
+        setImportMsg("Zillow blocks all auto-import tools — link saved. Please fill in the property details manually below.");
+        setImportOk(false);
+      } else if (data.error === "limited" || data.error) {
+        setImportMsg(data.message || "Link saved — some details could not be pulled automatically. Please fill them in below.");
+        setImportOk(false);
+      } else {
+        const fieldsGot = [data.title&&"title",data.photo&&"photo",data.price&&"price",data.address&&"address",data.description&&"description"].filter(Boolean);
+        setImportMsg("✓ Pulled: " + (fieldsGot.length>0 ? fieldsGot.join(", ") : "listing link") + ". Review and complete the form below.");
+        setImportOk(true);
+      }
     } catch(e) {
       setForm(p => ({...p, listingUrl: quickUrl}));
+      setImportMsg("Link saved — could not auto-import. Please fill in the details manually.");
     }
     setQuickLoading(false);
   }
@@ -411,14 +425,27 @@ export default function PropertyOpportunities() {
             {/* Quick URL paste */}
             <div style={{background:C.card,border:"1px solid "+C.gold+"44",borderRadius:12,padding:"16px 20px",marginBottom:20}}>
               <div style={{color:C.gold,fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>⚡ Quick Add from Listing Site</div>
-              <div style={{color:C.muted,fontSize:12,marginBottom:10}}>Paste a Zillow, LoopNet, Crexi, or Realtor.com link — we'll pull the photo, price, address and description automatically</div>
-              <div style={{display:"flex",gap:8}}>
-                <input type="text" value={quickUrl} onChange={e=>setQuickUrl(e.target.value)} placeholder="https://www.zillow.com/homes/..."
-                  style={{flex:1,background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:13,outline:"none",fontFamily:"inherit"}}/>
-                <button onClick={fetchFromUrl} disabled={quickLoading} style={{background:C.gold,border:"none",borderRadius:8,padding:"10px 16px",color:C.dark,fontSize:13,fontWeight:800,cursor:quickLoading?"not-allowed":"pointer",opacity:quickLoading?0.7:1}}>
-                  {quickLoading?"⏳ Pulling info...":"⚡ Import"}
+              <div style={{color:C.muted,fontSize:12,marginBottom:4}}>Copy the URL from Zillow, LoopNet, Crexi, Realtor.com or any listing site and paste it below</div>
+              <div style={{color:C.muted,fontSize:11,marginBottom:10}}>Note: Zillow blocks all auto-import tools. For Zillow, paste the link and fill details manually.</div>
+              <div style={{display:"flex",gap:8,marginBottom:quickUrl&&!quickUrl.startsWith("http")?8:0}}>
+                <input
+                  type="url"
+                  value={quickUrl}
+                  onChange={e=>setQuickUrl(e.target.value)}
+                  onPaste={e=>{e.preventDefault();const text=e.clipboardData.getData("text").trim();setQuickUrl(text);}}
+                  placeholder="Paste listing URL here — e.g. https://www.loopnet.com/listing/..."
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
+                  style={{flex:1,background:C.dark,border:"1px solid "+(quickUrl&&!quickUrl.startsWith("http")?C.error:C.cardBorder),borderRadius:8,padding:"10px 14px",color:C.text,fontSize:13,outline:"none",fontFamily:"monospace"}}/>
+                <button onClick={fetchFromUrl} disabled={quickLoading||!quickUrl.startsWith("http")} style={{background:quickUrl.startsWith("http")?C.gold:C.muted,border:"none",borderRadius:8,padding:"10px 16px",color:C.dark,fontSize:13,fontWeight:800,cursor:(quickLoading||!quickUrl.startsWith("http"))?"not-allowed":"pointer",opacity:quickLoading?0.7:1,flexShrink:0}}>
+                  {quickLoading?"⏳ Loading...":"⚡ Import"}
                 </button>
               </div>
+              {quickUrl&&!quickUrl.startsWith("http")&&<div style={{color:C.error,fontSize:11,marginTop:6}}>URL must start with https://</div>}
+              {!importMsg&&quickUrl.startsWith("http")&&<div style={{color:"#4CAF50",fontSize:11,marginTop:6}}>✓ URL ready — click Import</div>}
+              {importMsg&&<div style={{color:importOk?"#4CAF50":C.gold,fontSize:12,marginTop:8,background:importOk?"#4CAF5011":C.gold+"11",borderRadius:8,padding:"8px 12px",lineHeight:1.6}}>{importMsg}</div>}
             </div>
 
             <div style={{background:C.card,border:"1px solid "+C.cardBorder,borderRadius:12,padding:"20px 22px"}}>

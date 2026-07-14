@@ -7,138 +7,147 @@ export async function POST(req: Request) {
     const { url } = await req.json();
     if (!url) return NextResponse.json({ error: 'No URL provided' }, { status: 400 });
 
-    // Fetch the page server-side (bypasses browser CORS)
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Connection': 'keep-alive',
-      }
-    });
+    const domain = new URL(url).hostname.replace('www.','');
 
-    if (!response.ok) {
-      return NextResponse.json({ error: `Site returned ${response.status}` }, { status: 200 });
+    // Zillow blocks all scrapers — return early with helpful message
+    if (domain.includes('zillow')) {
+      return NextResponse.json({
+        error: 'zillow_blocked',
+        message: 'Zillow blocks all auto-import tools. The link has been saved — please fill in the details manually.',
+        url,
+        site: 'Zillow',
+      });
     }
 
-    const html = await response.text();
+    // Fetch server-side with browser-like headers
+    let html = '';
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+        },
+        redirect: 'follow',
+      });
+      if (response.ok) html = await response.text();
+      else return NextResponse.json({ error: `Site returned ${response.status} — try filling details manually`, url, site: domain });
+    } catch(e) {
+      return NextResponse.json({ error: 'Could not reach site — try filling details manually', url, site: domain });
+    }
 
-    // Extract Open Graph and meta tags — works on most listing sites
-    function getMeta(property: string): string {
-      const patterns = [
-        new RegExp(`<meta[^>]+property=["']og:${property}["'][^>]+content=["']([^"']+)["']`, 'i'),
-        new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:${property}["']`, 'i'),
-        new RegExp(`<meta[^>]+name=["']${property}["'][^>]+content=["']([^"']+)["']`, 'i'),
-        new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+name=["']${property}["']`, 'i'),
-      ];
-      for (const p of patterns) {
-        const m = html.match(p);
-        if (m?.[1]) return m[1].trim();
+    // Helper: extract meta tags
+    function getMeta(names: string[]): string {
+      for (const name of names) {
+        const patterns = [
+          new RegExp(`<meta[^>]+property=["']${name}["'][^>]+content=["']([^"']{3,500})["']`, 'i'),
+          new RegExp(`<meta[^>]+content=["']([^"']{3,500})["'][^>]+property=["']${name}["']`, 'i'),
+          new RegExp(`<meta[^>]+name=["']${name}["'][^>]+content=["']([^"']{3,500})["']`, 'i'),
+          new RegExp(`<meta[^>]+content=["']([^"']{3,500})["'][^>]+name=["']${name}["']`, 'i'),
+        ];
+        for (const p of patterns) {
+          const m = html.match(p);
+          if (m?.[1]) return m[1].trim().replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'");
+        }
       }
       return '';
     }
 
     function getTitle(): string {
+      const og = getMeta(['og:title','twitter:title']);
+      if (og) return og;
       const m = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-      return m?.[1]?.trim().replace(/\s*\|.*$/, '').replace(/\s*-.*$/, '').trim() || '';
+      return m?.[1]?.trim().split('|')[0].split('-')[0].trim() || '';
     }
 
-    function extractPrice(): string {
-      // Common price patterns on listing sites
+    function getPhoto(): string {
+      const og = getMeta(['og:image','og:image:url','twitter:image','twitter:image:src']);
+      if (og) return og.startsWith('//') ? 'https:'+og : og;
+      // Try JSON-LD
+      const ldMatch = html.match(/["']image["']\s*:\s*["']([^"']+(?:jpg|jpeg|png|webp)[^"']*)["']/i);
+      if (ldMatch?.[1]) return ldMatch[1];
+      return '';
+    }
+
+    function getDescription(): string {
+      return getMeta(['og:description','twitter:description','description']).slice(0,500);
+    }
+
+    function getPrice(): string {
+      // Try meta tags first
+      const priceMeta = getMeta(['product:price:amount','price','og:price:amount']);
+      if (priceMeta) return '$' + priceMeta;
+      // Try patterns in HTML
       const patterns = [
-        /\$[\d,]+(?:,\d{3})*(?:\.\d{2})?(?:\/mo(?:nth)?)?/gi,
-        /(?:Price|Asking|Listed at|Sale Price)[:\s]+\$[\d,]+/gi,
+        /\$\s*[\d,]+(?:\.\d{2})?(?:\s*(?:\/mo|\/month|per month))?/gi,
+        /(?:price|asking|list(?:ed)?|sale)[:\s"']+\$\s*[\d,]+/gi,
+        /(?:USD|Price)\s*[\d,]+/gi,
       ];
       for (const p of patterns) {
         const m = html.match(p);
-        if (m?.[0]) return m[0].replace(/[Pp]rice[:\s]+/, '').trim();
+        if (m?.[0]) return m[0].replace(/(?:price|asking|listed|sale|USD)[:\s"']*/i,'').trim();
       }
       return '';
     }
 
-    function extractSqFt(): string {
-      const m = html.match(/[\d,]+\s*(?:sq\.?\s*ft\.?|square\s*feet)/i);
-      return m?.[0]?.trim() || '';
+    function getSqFt(): string {
+      const m = html.match(/([\d,]+)\s*(?:sq\.?\s*ft\.?|square\s*feet|SF\b)/i);
+      return m ? m[1].replace(',','') + ' sq ft' : '';
     }
 
-    function extractBeds(): string {
-      const m = html.match(/(\d+)\s*(?:bed(?:room)?s?|BR|bd)/i);
-      return m?.[1] ? m[1] + ' bedrooms' : '';
+    function getRooms(): string {
+      const m = html.match(/(\d+)\s*(?:bed(?:room)?s?|BR\b|bd\b)/i);
+      return m ? m[1] + ' bedrooms' : '';
     }
 
-    function extractBaths(): string {
-      const m = html.match(/(\d+(?:\.\d+)?)\s*(?:bath(?:room)?s?|BA|ba)/i);
-      return m?.[1] ? m[1] + ' bathrooms' : '';
+    function getBaths(): string {
+      const m = html.match(/(\d+(?:\.\d)?)\s*(?:bath(?:room)?s?|BA\b)/i);
+      return m ? m[1] + ' baths' : '';
     }
 
-    function extractAddress(): string {
-      // Try structured data first
-      const ldJson = html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
-      if (ldJson) {
-        for (const block of ldJson) {
-          try {
-            const data = JSON.parse(block.replace(/<script[^>]*>|<\/script>/gi, ''));
-            if (data?.address?.streetAddress) return data.address.streetAddress + (data.address.addressLocality ? ', ' + data.address.addressLocality : '');
-            if (data?.location?.address) return data.location.address;
-          } catch(e) {}
-        }
+    function getAddress(): string {
+      // Try JSON-LD structured data
+      const blocks = html.match(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi) || [];
+      for (const block of blocks) {
+        try {
+          const text = block.replace(/<[^>]+>/g,'');
+          const data = JSON.parse(text);
+          const addr = data?.address || data?.location?.address || data?.geo?.address;
+          if (addr?.streetAddress) return [addr.streetAddress, addr.addressLocality, addr.addressRegion].filter(Boolean).join(', ');
+          if (typeof addr === 'string' && addr.length > 5) return addr;
+        } catch(e) {}
       }
-      return '';
+      // Try og:street-address or similar
+      return getMeta(['og:street-address','place:location:latitude']) || '';
     }
-
-    function extractPhoto(): string {
-      // Try og:image first (most reliable)
-      const ogImage = getMeta('image');
-      if (ogImage && (ogImage.startsWith('http') || ogImage.startsWith('//'))) {
-        return ogImage.startsWith('//') ? 'https:' + ogImage : ogImage;
-      }
-      // Try first large img src
-      const imgs = html.match(/<img[^>]+src=["']([^"']+(?:jpg|jpeg|png|webp)[^"']*)["']/gi);
-      if (imgs) {
-        for (const img of imgs) {
-          const src = img.match(/src=["']([^"']+)["']/i)?.[1];
-          if (src && (src.includes('http') || src.startsWith('//')) && !src.includes('logo') && !src.includes('icon')) {
-            return src.startsWith('//') ? 'https:' + src : src;
-          }
-        }
-      }
-      return '';
-    }
-
-    function extractDescription(): string {
-      const desc = getMeta('description') || getMeta('og:description');
-      if (desc) return desc;
-      // Try meta description
-      const m = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']{20,})["']/i);
-      return m?.[1]?.trim() || '';
-    }
-
-    // Site-specific extraction hints
-    const domain = new URL(url).hostname.replace('www.','');
-    let siteHint = '';
-    if (domain.includes('zillow')) siteHint = 'Zillow';
-    else if (domain.includes('loopnet')) siteHint = 'LoopNet';
-    else if (domain.includes('crexi')) siteHint = 'Crexi';
-    else if (domain.includes('realtor')) siteHint = 'Realtor.com';
-    else if (domain.includes('costar')) siteHint = 'CoStar';
-    else if (domain.includes('commercialmls')) siteHint = 'CommercialMLS';
 
     const result = {
-      title: getTitle() || getMeta('title'),
-      description: extractDescription(),
-      photo: extractPhoto(),
-      price: extractPrice(),
-      address: extractAddress(),
-      sqft: extractSqFt(),
-      beds: extractBeds(),
-      baths: extractBaths(),
-      site: siteHint || domain,
+      title: getTitle(),
+      description: getDescription(),
+      photo: getPhoto(),
+      price: getPrice(),
+      address: getAddress(),
+      sqft: getSqFt(),
+      beds: getRooms(),
+      baths: getBaths(),
+      site: domain,
       url,
     };
 
+    // Check if we got anything useful
+    const hasData = result.title || result.photo || result.price || result.description;
+    if (!hasData) {
+      return NextResponse.json({
+        ...result,
+        error: 'limited',
+        message: 'This site limits auto-import. The link has been saved — please fill in the remaining details manually.',
+      });
+    }
+
     return NextResponse.json(result);
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 200 });
+    return NextResponse.json({ error: e.message, url: '' }, { status: 200 });
   }
 }
