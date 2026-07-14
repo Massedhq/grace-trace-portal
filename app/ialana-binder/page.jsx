@@ -463,13 +463,13 @@ export default function IalanaBinder() {
     setLoading(false);
   },[]);
 
-  function submitSignature() {
-    if (!signatureName.trim()) { setSignError("Please type your full name to sign."); return; }
-    if (!signatureDate.trim()) { setSignError("Please enter today's date."); return; }
-    try { localStorage.setItem("gtm_orientation_ialana", JSON.stringify({ signed: true, name: signatureName, date: signatureDate })); } catch (e) {}
-    fetch("/api/signatures", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId: "binder_ialana", data: { signed: true, name: signatureName, date: signatureDate } }) }).catch(()=>{});
-    fetch("/api/signatures", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId: "orientation_ialana", data: { signed: true, name: signatureName, date: signatureDate } }) }).catch(()=>{});
-    fetch("/api/signatures", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId: "ialana", data: { signed: true, name: signatureName, date: signatureDate } }) }).catch(()=>{});
+  function submitSignature(){
+    if(!signatureName.trim()){setSignError("Please type your full name to sign.");return;}
+    if(!signatureDate.trim()){setSignError("Please enter today\'s date.");return;}
+    const sigData={signed:true,name:signatureName,date:signatureDate};
+    try{localStorage.setItem("gtm_orientation_ialana",JSON.stringify(sigData));}catch(e){}
+    fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"binder_ialana",data:sigData})})
+      .catch(function(){});
     setSigned(true);
   }
 

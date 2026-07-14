@@ -20,26 +20,34 @@ export async function GET() {
     await initDB();
     const rows = await sql`SELECT user_id, data FROM gtm_signatures`;
     const result: Record<string, any> = {};
-    
-    const STAFF_IDS = ["avy","travis","deann","erica","ialana","aubreyon","dennis"];
-    
+
     rows.forEach((r: any) => {
       result[r.user_id] = r.data;
     });
 
-    // Migrate old keys to new format automatically
-    // If someone signed as "deann" (old key), copy it to "binder_deann" and "orientation_deann"
+    const STAFF_IDS = ["avy","travis","deann","erica","ialana","aubreyon","dennis"];
+
+    // All possible old key formats that may have been used
     STAFF_IDS.forEach(uid => {
-      // Old format: just uid
-      if (result[uid] && result[uid].signed) {
-        if (!result["binder_" + uid]) result["binder_" + uid] = result[uid];
-        if (!result["orientation_" + uid]) result["orientation_" + uid] = result[uid];
-      }
-      // Old format: gtm_orientation_uid
-      const oldKey = "gtm_orientation_" + uid;
-      if (result[oldKey] && result[oldKey].signed) {
-        if (!result["binder_" + uid]) result["binder_" + uid] = result[oldKey];
-        if (!result["orientation_" + uid]) result["orientation_" + uid] = result[oldKey];
+      const possibleKeys = [
+        uid,                          // "deann"
+        "gtm_orientation_" + uid,     // "gtm_orientation_deann"
+        "orientation_" + uid,         // "orientation_deann"
+        "binder_" + uid,              // "binder_deann" (current correct key)
+      ];
+
+      // Find any signed entry under any old key
+      let signedData: any = null;
+      possibleKeys.forEach(key => {
+        if (result[key] && result[key].signed && !signedData) {
+          signedData = result[key];
+        }
+      });
+
+      // If found, make sure BOTH current keys exist
+      if (signedData) {
+        result["binder_" + uid] = signedData;
+        result["orientation_" + uid] = signedData;
       }
     });
 

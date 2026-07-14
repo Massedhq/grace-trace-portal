@@ -245,12 +245,11 @@ export default function AubreyonBinder(){
 
   function submitSignature(){
     if(!signatureName.trim()){setSignError("Please type your full name to sign.");return;}
-    if(!signatureDate.trim()){setSignError("Please enter today's date.");return;}
+    if(!signatureDate.trim()){setSignError("Please enter today\'s date.");return;}
     const sigData={signed:true,name:signatureName,date:signatureDate};
     try{localStorage.setItem("gtm_orientation_aubreyon",JSON.stringify(sigData));}catch(e){}
-    fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"binder_aubreyon",data:sigData})}).catch(function(){});
-    fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"orientation_aubreyon",data:sigData})}).catch(function(){});
-    fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"aubreyon",data:sigData})}).catch(function(){});
+    fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"binder_aubreyon",data:sigData})})
+      .catch(function(){});
     setSigned(true);
   }
 

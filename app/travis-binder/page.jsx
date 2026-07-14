@@ -294,13 +294,12 @@ export default function TravisBinder(){
 
   function submitSignature(){
     if(!signatureName.trim()){setSignError("Please type your full name to sign.");return;}
-    if(!signatureDate.trim()){setSignError("Please enter today's date.");return;}
-    const sigData = {signed:true,name:signatureName,date:signatureDate};
+    if(!signatureDate.trim()){setSignError("Please enter today\'s date.");return;}
+    const sigData={signed:true,name:signatureName,date:signatureDate};
     try{localStorage.setItem("gtm_orientation_travis",JSON.stringify(sigData));}catch(e){}
-    fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"binder_travis",data:sigData})}).catch(()=>{});
+    fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"binder_travis",data:sigData})})
+      .catch(function(){});
     setSigned(true);
-    fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"orientation_travis",data:sigData})}).catch(function(){});
-    fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"travis",data:sigData})}).catch(function(){});
   }
 
   if(loading)return<div style={{minHeight:"100vh",background:C.dark,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter','Segoe UI',sans-serif"}}><div style={{color:C.muted}}>Loading...</div></div>;
