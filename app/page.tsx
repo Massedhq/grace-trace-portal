@@ -89,6 +89,18 @@ const USERS = [
         ]
       },
       {
+        id: "a9", title: "Complete Your Board & Team Directory Profile",
+        fields: [
+          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes — confirmed correct", "No — needs updating"] },
+          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes — phone added", "No — I will add it now", "I prefer not to share"] },
+          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes — email added", "No — I will add it now"] },
+          { key: "cityAdded", label: "Have you added your city and state?", type: "select", options: ["Yes — city added", "No — I will add it now"] },
+          { key: "contactPref", label: "Have you set your preferred contact method?", type: "select", options: ["Yes — preference set", "No — I will set it now"] },
+          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes — profile is complete", "No — still needs updates"] },
+          { key: "notes", label: "Any corrections or updates needed?", type: "textarea", ph: "List anything that needs to be changed or added to your profile" },
+        ]
+      },
+      {
         id: "a8", title: "Government Grants & Procurement Tracker",
         fields: [
           { key: "grantName", label: "Grant or funding opportunity name", type: "text", ph: "e.g. VA GPD Per Diem, DOJ Second Chance Act, HUD CoC" },
@@ -170,6 +182,17 @@ const USERS = [
           { key: "correctionPlan", label: "Correction plan or next steps", type: "textarea", ph: "How and when will gaps be addressed?" },
         ]
       },
+    ,
+      {
+        id: "dir1", title: "Complete Your Board & Team Directory Profile",
+        fields: [
+          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes — confirmed correct", "No — needs updating"] },
+          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes — phone added", "No — I will add it now", "I prefer not to share"] },
+          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes — email added", "No — I will add it now"] },
+          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes — profile is complete", "No — still needs updates"] },
+          { key: "notes", label: "Any updates needed?", type: "textarea", ph: "List anything that needs to be changed in your profile" },
+        ]
+      }
     ]
   },
   {
@@ -314,6 +337,17 @@ const USERS = [
           { key: "tomorrowPriorities", label: "Top priorities for tomorrow", type: "textarea", ph: "What will you focus on first tomorrow?" },
         ]
       },
+    ,
+      {
+        id: "dir1", title: "Complete Your Board & Team Directory Profile",
+        fields: [
+          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes — confirmed correct", "No — needs updating"] },
+          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes — phone added", "No — I will add it now", "I prefer not to share"] },
+          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes — email added", "No — I will add it now"] },
+          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes — profile is complete", "No — still needs updates"] },
+          { key: "notes", label: "Any updates needed?", type: "textarea", ph: "List anything that needs to be changed in your profile" },
+        ]
+      }
     ]
   },
   {
@@ -453,6 +487,17 @@ const USERS = [
           { key: "inspectionTime", label: "Date and time of inspection", type: "text", ph: "e.g. July 8, 2026 at 2:00 PM" },
         ]
       },
+    ,
+      {
+        id: "dir1", title: "Complete Your Board & Team Directory Profile",
+        fields: [
+          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes — confirmed correct", "No — needs updating"] },
+          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes — phone added", "No — I will add it now", "I prefer not to share"] },
+          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes — email added", "No — I will add it now"] },
+          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes — profile is complete", "No — still needs updates"] },
+          { key: "notes", label: "Any updates needed?", type: "textarea", ph: "List anything that needs to be changed in your profile" },
+        ]
+      }
     ]
   },
   {
@@ -581,6 +626,17 @@ const USERS = [
           { key: "tomorrowPriorities", label: "Top priorities for tomorrow", type: "textarea", ph: "What will you focus on first tomorrow?" },
         ]
       },
+    ,
+      {
+        id: "dir1", title: "Complete Your Board & Team Directory Profile",
+        fields: [
+          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes — confirmed correct", "No — needs updating"] },
+          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes — phone added", "No — I will add it now", "I prefer not to share"] },
+          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes — email added", "No — I will add it now"] },
+          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes — profile is complete", "No — still needs updates"] },
+          { key: "notes", label: "Any updates needed?", type: "textarea", ph: "List anything that needs to be changed in your profile" },
+        ]
+      }
     ]
   },
   {
@@ -647,6 +703,16 @@ const USERS = [
           { key: "materialsCreated", label: "What marketing or brand materials were worked on today?", type: "textarea", ph: "Flyers, brochures, graphics, style guide updates, newsletter" },
           { key: "status", label: "Status", type: "select", options: ["Draft", "Pending President approval", "Approved", "Distributed"] },
           { key: "notes", label: "Notes", type: "textarea", ph: "Any additional details about brand or marketing work today" },
+        ]
+      },
+      {
+        id: "dir1", title: "Complete Your Board & Team Directory Profile",
+        fields: [
+          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes — confirmed correct", "No — needs updating"] },
+          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes — phone added", "No — I will add it now", "I prefer not to share"] },
+          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes — email added", "No — I will add it now"] },
+          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes — profile is complete", "No — still needs updates"] },
+          { key: "notes", label: "Any corrections or updates needed?", type: "textarea", ph: "List anything that needs to be changed or added to your profile" },
         ]
       },
       {
@@ -747,6 +813,17 @@ const USERS = [
           { key: "flagsForLeadership", label: "Anything to flag for Avy and Travis?", type: "textarea", ph: "Urgent facility or operations items needing leadership attention" },
         ]
       },
+    ,
+      {
+        id: "dir1", title: "Complete Your Board & Team Directory Profile",
+        fields: [
+          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes — confirmed correct", "No — needs updating"] },
+          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes — phone added", "No — I will add it now", "I prefer not to share"] },
+          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes — email added", "No — I will add it now"] },
+          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes — profile is complete", "No — still needs updates"] },
+          { key: "notes", label: "Any updates needed?", type: "textarea", ph: "List anything that needs to be changed in your profile" },
+        ]
+      }
     ]
   },
 ];
@@ -1153,6 +1230,8 @@ export default function WorkdayPortal() {
               { label: "Orientation Package", href: "/orientation", icon: "📄" },
               { label: "Navigation Guide", href: "/navigation", icon: "🗺" },
               { label: "Vendor List", href: "/vendors", icon: "🏪" },
+              { label: "Property Opportunities", href: "/properties", icon: "🏢" },
+              { label: "Board & Team Directory", href: "/directory", icon: "👥" },
               { label: "Task Requests — Kisses", href: "/task-requests", icon: "✉️" },
               ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Staff Reports", href: "/staff-reports", icon: "👥" }] : []),
               ...(currentUser.id === "ialana" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Ialana's Binder", href: "/ialana-binder", icon: "📘" }] : []),
