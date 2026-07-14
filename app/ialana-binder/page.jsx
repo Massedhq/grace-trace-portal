@@ -431,25 +431,45 @@ export default function IalanaBinder() {
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
 
-  useEffect(() => {
-    try {
-      const uid = localStorage.getItem("gtm_current_user");
-      if (uid === "ialana" || uid === "avy" || uid === "travis") {
+  useEffect(()=>{
+    try{
+      const uid2=localStorage.getItem("gtm_current_user");
+      const allowed = ["ialana","avy","travis"];
+      if(uid2&&allowed.includes(uid2)){
         setAuthorized(true);
-        fetch("/api/signatures").then(function(r){return r.json();}).then(function(sigs){
-          if(sigs["binder_ialana"]&&sigs["binder_ialana"].signed){setSigned(true);}
-          else{try{const s=localStorage.getItem("gtm_orientation_ialana");if(s){const p=JSON.parse(s);if(p.signed)setSigned(true);}}catch(e){}}
-        }).catch(function(){try{const s=localStorage.getItem("gtm_orientation_ialana");if(s){const p=JSON.parse(s);if(p.signed)setSigned(true);}}catch(e){}});
+        // Always check API first — never rely on localStorage alone
+        fetch("/api/signatures")
+          .then(function(r){return r.json();})
+          .then(function(sigs){
+            if(sigs["binder_ialana"]&&sigs["binder_ialana"].signed){
+              setSigned(true);
+            } else {
+              // Fallback to localStorage
+              try{
+                const s=localStorage.getItem("gtm_orientation_ialana");
+                if(s){const p=JSON.parse(s);if(p.signed)setSigned(true);}
+              }catch(e){}
+            }
+          })
+          .catch(function(){
+            // Offline fallback
+            try{
+              const s=localStorage.getItem("gtm_orientation_ialana");
+              if(s){const p=JSON.parse(s);if(p.signed)setSigned(true);}
+            }catch(e){}
+          });
       }
-    } catch (e) {}
+    }catch(e){}
     setLoading(false);
-  }, []);
+  },[]);
 
   function submitSignature() {
     if (!signatureName.trim()) { setSignError("Please type your full name to sign."); return; }
     if (!signatureDate.trim()) { setSignError("Please enter today's date."); return; }
     try { localStorage.setItem("gtm_orientation_ialana", JSON.stringify({ signed: true, name: signatureName, date: signatureDate })); } catch (e) {}
     fetch("/api/signatures", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId: "binder_ialana", data: { signed: true, name: signatureName, date: signatureDate } }) }).catch(()=>{});
+    fetch("/api/signatures", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId: "orientation_ialana", data: { signed: true, name: signatureName, date: signatureDate } }) }).catch(()=>{});
+    fetch("/api/signatures", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId: "ialana", data: { signed: true, name: signatureName, date: signatureDate } }) }).catch(()=>{});
     setSigned(true);
   }
 

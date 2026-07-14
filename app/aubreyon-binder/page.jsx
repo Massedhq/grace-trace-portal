@@ -213,17 +213,31 @@ export default function AubreyonBinder(){
 
   useEffect(()=>{
     try{
-      const uid=localStorage.getItem("gtm_current_user");
-      if(uid==="aubreyon"||uid==="avy"||uid==="travis"){
+      const uid2=localStorage.getItem("gtm_current_user");
+      const allowed = ["aubreyon","avy","travis"];
+      if(uid2&&allowed.includes(uid2)){
         setAuthorized(true);
-        fetch("/api/signatures").then(function(r){return r.json();}).then(function(sigs){
-          if(sigs["binder_aubreyon"]&&sigs["binder_aubreyon"].signed){setSigned(true);}
-          else{
-            try{const saved=localStorage.getItem("gtm_orientation_aubreyon");if(saved){const p=JSON.parse(saved);if(p.signed)setSigned(true);}}catch(e){}
-          }
-        }).catch(function(){
-          try{const saved=localStorage.getItem("gtm_orientation_aubreyon");if(saved){const p=JSON.parse(saved);if(p.signed)setSigned(true);}}catch(e){}
-        });
+        // Always check API first — never rely on localStorage alone
+        fetch("/api/signatures")
+          .then(function(r){return r.json();})
+          .then(function(sigs){
+            if(sigs["binder_aubreyon"]&&sigs["binder_aubreyon"].signed){
+              setSigned(true);
+            } else {
+              // Fallback to localStorage
+              try{
+                const s=localStorage.getItem("gtm_orientation_aubreyon");
+                if(s){const p=JSON.parse(s);if(p.signed)setSigned(true);}
+              }catch(e){}
+            }
+          })
+          .catch(function(){
+            // Offline fallback
+            try{
+              const s=localStorage.getItem("gtm_orientation_aubreyon");
+              if(s){const p=JSON.parse(s);if(p.signed)setSigned(true);}
+            }catch(e){}
+          });
       }
     }catch(e){}
     setLoading(false);
@@ -235,6 +249,8 @@ export default function AubreyonBinder(){
     const sigData={signed:true,name:signatureName,date:signatureDate};
     try{localStorage.setItem("gtm_orientation_aubreyon",JSON.stringify(sigData));}catch(e){}
     fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"binder_aubreyon",data:sigData})}).catch(function(){});
+    fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"orientation_aubreyon",data:sigData})}).catch(function(){});
+    fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"aubreyon",data:sigData})}).catch(function(){});
     setSigned(true);
   }
 

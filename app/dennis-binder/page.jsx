@@ -255,13 +255,31 @@ export default function DennisBinder(){
 
   useEffect(()=>{
     try{
-      const uid=localStorage.getItem("gtm_current_user");
-      if(uid==="dennis"||uid==="avy"||uid==="travis"){
+      const uid2=localStorage.getItem("gtm_current_user");
+      const allowed = ["dennis","avy","travis"];
+      if(uid2&&allowed.includes(uid2)){
         setAuthorized(true);
-        fetch("/api/signatures").then(function(r){return r.json();}).then(function(sigs){
-        if(sigs["binder_dennis"]&&sigs["binder_dennis"].signed){setSigned(true);}
-        else{try{const saved=localStorage.getItem("gtm_orientation_dennis");if(saved){const p=JSON.parse(saved);if(p.signed)setSigned(true);}}catch(e){}}
-      }).catch(function(){try{const saved=localStorage.getItem("gtm_orientation_dennis");if(saved){const p=JSON.parse(saved);if(p.signed)setSigned(true);}}catch(e){}});
+        // Always check API first — never rely on localStorage alone
+        fetch("/api/signatures")
+          .then(function(r){return r.json();})
+          .then(function(sigs){
+            if(sigs["binder_dennis"]&&sigs["binder_dennis"].signed){
+              setSigned(true);
+            } else {
+              // Fallback to localStorage
+              try{
+                const s=localStorage.getItem("gtm_orientation_dennis");
+                if(s){const p=JSON.parse(s);if(p.signed)setSigned(true);}
+              }catch(e){}
+            }
+          })
+          .catch(function(){
+            // Offline fallback
+            try{
+              const s=localStorage.getItem("gtm_orientation_dennis");
+              if(s){const p=JSON.parse(s);if(p.signed)setSigned(true);}
+            }catch(e){}
+          });
       }
     }catch(e){}
     setLoading(false);
@@ -274,6 +292,8 @@ export default function DennisBinder(){
     try{localStorage.setItem("gtm_orientation_dennis",JSON.stringify(sigData));}catch(e){}
     fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"binder_dennis",data:sigData})}).catch(()=>{});
     setSigned(true);
+    fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"orientation_dennis",data:sigData})}).catch(function(){});
+    fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"dennis",data:sigData})}).catch(function(){});
   }
 
   if(loading)return<div style={{minHeight:"100vh",background:C.dark,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter','Segoe UI',sans-serif"}}><div style={{color:C.muted}}>Loading...</div></div>;

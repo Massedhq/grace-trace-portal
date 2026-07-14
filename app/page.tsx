@@ -842,7 +842,7 @@ export default function WorkdayPortal() {
   }
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Reload alert data every time dashboard is shown or window gets focus
+  // Reload alert data every time dashboard is shown, window gets focus, or every 60 seconds
   useEffect(() => {
     if (screen === "dashboard" && currentUser) {
       const reload = () => {
@@ -852,7 +852,8 @@ export default function WorkdayPortal() {
       };
       reload();
       window.addEventListener("focus", reload);
-      return () => window.removeEventListener("focus", reload);
+      const interval = setInterval(reload, 60000);
+      return () => { window.removeEventListener("focus", reload); clearInterval(interval); };
     }
   }, [screen, currentUser?.id]);
 
@@ -1184,8 +1185,8 @@ export default function WorkdayPortal() {
           const meetings = alertMeetings;
           const pendingTasks = mandatoryTasks.filter((t: any) => t.assignedTo.includes(currentUser.id) && t.status === "active" && !t.submissions?.[currentUser.id]);
           const pendingMeetings = meetings.filter((m: any) => m.attendees.includes(currentUser.id) && m.status === "scheduled" && !m.responses?.[currentUser.id]);
-          const orientationSigned = alertSignatures["orientation_" + currentUser.id]?.signed || false;
-          const binderSigned = alertSignatures["binder_" + currentUser.id]?.signed || false;
+          const orientationSigned = alertSignatures["orientation_" + currentUser.id]?.signed || alertSignatures[currentUser.id]?.signed || false;
+          const binderSigned = alertSignatures["binder_" + currentUser.id]?.signed || alertSignatures[currentUser.id]?.signed || false;
           const binderUrl = "/" + currentUser.id + "-binder";
           const total = pendingTasks.length + pendingMeetings.length + (!orientationSigned ? 1 : 0) + (!binderSigned ? 1 : 0);
           if (total === 0) return null;

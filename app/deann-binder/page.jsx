@@ -256,14 +256,32 @@ export default function DeannBinder() {
   const [authorized,setAuthorized]=useState(false);
 
   useEffect(()=>{
-    try {
-      const uid=localStorage.getItem("gtm_current_user");
-      if(uid==="deann"||uid==="avy"||uid==="travis"){
+    try{
+      const uid2=localStorage.getItem("gtm_current_user");
+      const allowed = ["deann","avy","travis"];
+      if(uid2&&allowed.includes(uid2)){
         setAuthorized(true);
-        fetch("/api/signatures").then(function(r){return r.json();}).then(function(sigs){
-        if(sigs["binder_deann"]&&sigs["binder_deann"].signed){setSigned(true);}
-        else{try{const saved=localStorage.getItem("gtm_orientation_deann");if(saved){const p=JSON.parse(saved);if(p.signed)setSigned(true);}}catch(e){}}
-      }).catch(function(){try{const saved=localStorage.getItem("gtm_orientation_deann");if(saved){const p=JSON.parse(saved);if(p.signed)setSigned(true);}}catch(e){}});
+        // Always check API first — never rely on localStorage alone
+        fetch("/api/signatures")
+          .then(function(r){return r.json();})
+          .then(function(sigs){
+            if(sigs["binder_deann"]&&sigs["binder_deann"].signed){
+              setSigned(true);
+            } else {
+              // Fallback to localStorage
+              try{
+                const s=localStorage.getItem("gtm_orientation_deann");
+                if(s){const p=JSON.parse(s);if(p.signed)setSigned(true);}
+              }catch(e){}
+            }
+          })
+          .catch(function(){
+            // Offline fallback
+            try{
+              const s=localStorage.getItem("gtm_orientation_deann");
+              if(s){const p=JSON.parse(s);if(p.signed)setSigned(true);}
+            }catch(e){}
+          });
       }
     }catch(e){}
     setLoading(false);
@@ -276,6 +294,8 @@ export default function DeannBinder() {
     try{localStorage.setItem("gtm_orientation_deann",JSON.stringify(sigData));}catch(e){}
     fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"binder_deann",data:sigData})}).catch(()=>{});
     setSigned(true);
+    fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"orientation_deann",data:sigData})}).catch(function(){});
+    fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"deann",data:sigData})}).catch(function(){});
   }
 
   if(loading) return <div style={{minHeight:"100vh",background:C.dark,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter','Segoe UI',sans-serif"}}><div style={{color:C.muted}}>Loading...</div></div>;

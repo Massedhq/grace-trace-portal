@@ -302,10 +302,32 @@ export default function AvyBinder(){
 
   useEffect(()=>{
     try{
-      fetch("/api/signatures").then(function(r){return r.json();}).then(function(sigs){
-        if(sigs["binder_avy"]&&sigs["binder_avy"].signed){setSigned(true);}
-        else{try{const s=localStorage.getItem("gtm_orientation_avy");if(s){const p=JSON.parse(s);if(p.signed)setSigned(true);}}catch(e){}}
-      }).catch(function(){});
+      const uid2=localStorage.getItem("gtm_current_user");
+      const allowed = ["avy","avy","travis"];
+      if(uid2&&allowed.includes(uid2)){
+        setAuthorized(true);
+        // Always check API first — never rely on localStorage alone
+        fetch("/api/signatures")
+          .then(function(r){return r.json();})
+          .then(function(sigs){
+            if(sigs["binder_avy"]&&sigs["binder_avy"].signed){
+              setSigned(true);
+            } else {
+              // Fallback to localStorage
+              try{
+                const s=localStorage.getItem("gtm_orientation_avy");
+                if(s){const p=JSON.parse(s);if(p.signed)setSigned(true);}
+              }catch(e){}
+            }
+          })
+          .catch(function(){
+            // Offline fallback
+            try{
+              const s=localStorage.getItem("gtm_orientation_avy");
+              if(s){const p=JSON.parse(s);if(p.signed)setSigned(true);}
+            }catch(e){}
+          });
+      }
     }catch(e){}
     setLoading(false);
   },[]);
@@ -317,6 +339,8 @@ export default function AvyBinder(){
     try{localStorage.setItem("gtm_orientation_avy",JSON.stringify(sigData));}catch(e){}
     fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"binder_avy",data:sigData})}).catch(()=>{});
     setSigned(true);
+    fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"orientation_avy",data:sigData})}).catch(function(){});
+    fetch("/api/signatures",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"avy",data:sigData})}).catch(function(){});
   }
 
   if(loading)return<div style={{minHeight:"100vh",background:C.dark,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter','Segoe UI',sans-serif"}}><div style={{color:C.muted}}>Loading...</div></div>;
