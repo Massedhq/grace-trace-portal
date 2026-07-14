@@ -70,19 +70,7 @@ export default function PropertyOpportunities() {
     } catch(e) {}
     loadProperties().then(p => { setProperties(p); setLoading(false); });
   }, []);
-
-  const [importMsg, setImportMsg] = useState("");
-  const [importOk, setImportOk] = useState(false);
-
-  async function fetchFromUrl() {
-    if (!quickUrl.trim() || !quickUrl.startsWith("http")) return;
-    setQuickLoading(true);
-    setImportMsg("");
-    setImportOk(false);
-    try {
-      const res = await fetch("/api/scrape", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
+,
         body: JSON.stringify({ url: quickUrl })
       });
       const data = await res.json();
@@ -422,30 +410,42 @@ export default function PropertyOpportunities() {
         {/* SUBMIT FORM */}
         {view==="submit"&&(
           <div>
-            {/* Quick URL paste */}
+            {/* Listing URL + photo preview */}
             <div style={{background:C.card,border:"1px solid "+C.gold+"44",borderRadius:12,padding:"16px 20px",marginBottom:20}}>
-              <div style={{color:C.gold,fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>⚡ Quick Add from Listing Site</div>
-              <div style={{color:C.muted,fontSize:12,marginBottom:4}}>Copy the URL from Zillow, LoopNet, Crexi, Realtor.com or any listing site and paste it below</div>
-              <div style={{color:C.muted,fontSize:11,marginBottom:10}}>Note: Zillow blocks all auto-import tools. For Zillow, paste the link and fill details manually.</div>
-              <div style={{display:"flex",gap:8,marginBottom:quickUrl&&!quickUrl.startsWith("http")?8:0}}>
+              <div style={{color:C.gold,fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>🔗 Listing Link & Photo</div>
+              <div style={{color:C.muted,fontSize:12,marginBottom:10}}>Real estate sites block auto-import — paste the link below to save it, then fill in the details from the listing manually.</div>
+              <div style={{marginBottom:12}}>
+                <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:5}}>Listing URL (Zillow, LoopNet, Crexi, Realtor.com, etc.)</div>
                 <input
                   type="url"
-                  value={quickUrl}
-                  onChange={e=>setQuickUrl(e.target.value)}
-                  onPaste={e=>{e.preventDefault();const text=e.clipboardData.getData("text").trim();setQuickUrl(text);}}
-                  placeholder="Paste listing URL here — e.g. https://www.loopnet.com/listing/..."
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="off"
-                  spellCheck={false}
-                  style={{flex:1,background:C.dark,border:"1px solid "+(quickUrl&&!quickUrl.startsWith("http")?C.error:C.cardBorder),borderRadius:8,padding:"10px 14px",color:C.text,fontSize:13,outline:"none",fontFamily:"monospace"}}/>
-                <button onClick={fetchFromUrl} disabled={quickLoading||!quickUrl.startsWith("http")} style={{background:quickUrl.startsWith("http")?C.gold:C.muted,border:"none",borderRadius:8,padding:"10px 16px",color:C.dark,fontSize:13,fontWeight:800,cursor:(quickLoading||!quickUrl.startsWith("http"))?"not-allowed":"pointer",opacity:quickLoading?0.7:1,flexShrink:0}}>
-                  {quickLoading?"⏳ Loading...":"⚡ Import"}
-                </button>
+                  value={form.listingUrl}
+                  onChange={e=>setForm(p=>({...p,listingUrl:e.target.value}))}
+                  onPaste={e=>{e.preventDefault();const text=e.clipboardData.getData("text").trim();setForm(p=>({...p,listingUrl:text}));}}
+                  placeholder="https://www.loopnet.com/listing/..."
+                  autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
+                  style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:13,outline:"none",fontFamily:"monospace"}}/>
+                {form.listingUrl&&form.listingUrl.startsWith("http")&&(
+                  <div style={{marginTop:6,display:"flex",gap:8,alignItems:"center"}}>
+                    <div style={{color:"#4CAF50",fontSize:11}}>✓ Link saved</div>
+                    <a href={form.listingUrl} target="_blank" rel="noreferrer" style={{color:C.gold,fontSize:11,textDecoration:"none"}}>Open listing →</a>
+                  </div>
+                )}
               </div>
-              {quickUrl&&!quickUrl.startsWith("http")&&<div style={{color:C.error,fontSize:11,marginTop:6}}>URL must start with https://</div>}
-              {!importMsg&&quickUrl.startsWith("http")&&<div style={{color:"#4CAF50",fontSize:11,marginTop:6}}>✓ URL ready — click Import</div>}
-              {importMsg&&<div style={{color:importOk?"#4CAF50":C.gold,fontSize:12,marginTop:8,background:importOk?"#4CAF5011":C.gold+"11",borderRadius:8,padding:"8px 12px",lineHeight:1.6}}>{importMsg}</div>}
+              <div style={{marginBottom:0}}>
+                <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:5}}>Main photo URL <span style={{color:C.muted,fontWeight:400}}>(right-click any photo on the listing → Copy image address)</span></div>
+                <input
+                  type="url"
+                  value={form.photoUrl}
+                  onChange={e=>setForm(p=>({...p,photoUrl:e.target.value}))}
+                  placeholder="https://... paste image URL from listing"
+                  autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
+                  style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:13,outline:"none",fontFamily:"monospace"}}/>
+                {form.photoUrl&&form.photoUrl.startsWith("http")&&(
+                  <div style={{marginTop:8,borderRadius:8,overflow:"hidden",maxHeight:160,background:C.dark}}>
+                    <img src={form.photoUrl} alt="Property preview" style={{width:"100%",height:160,objectFit:"cover"}} onError={e=>{e.target.style.display="none";}}/>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div style={{background:C.card,border:"1px solid "+C.cardBorder,borderRadius:12,padding:"20px 22px"}}>
@@ -480,12 +480,7 @@ export default function PropertyOpportunities() {
                 </div>
               </div>
 
-              {/* Photo URL */}
-              <div style={{marginBottom:12}}>
-                <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:5}}>Main photo URL</div>
-                <input type="text" value={form.photoUrl} onChange={e=>setForm(p=>({...p,photoUrl:e.target.value}))} placeholder="https://... (paste image URL from listing)"
-                  style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"9px 14px",color:C.text,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
-              </div>
+
 
               {/* Building details */}
               <div style={{color:C.gold,fontSize:13,fontWeight:800,margin:"16px 0 12px"}}>Building Details</div>
