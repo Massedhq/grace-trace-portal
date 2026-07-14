@@ -58,8 +58,6 @@ export default function PropertyOpportunities() {
   const [formError, setFormError] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [newComment, setNewComment] = useState("");
-  const [quickUrl, setQuickUrl] = useState("");
-  const [quickLoading, setQuickLoading] = useState(false);
 
   const isLeadership = currentUser?.id === "avy" || currentUser?.id === "travis";
 
@@ -70,42 +68,6 @@ export default function PropertyOpportunities() {
     } catch(e) {}
     loadProperties().then(p => { setProperties(p); setLoading(false); });
   }, []);
-,
-        body: JSON.stringify({ url: quickUrl })
-      });
-      const data = await res.json();
-
-      // Always save the URL
-      setForm(p => ({
-        ...p,
-        listingUrl: quickUrl,
-        name: data.title && !data.error ? data.title : p.name,
-        description: data.description && !data.error ? data.description : p.description,
-        photoUrl: data.photo && !data.error ? data.photo : p.photoUrl,
-        askingPrice: data.price && !data.error ? data.price : p.askingPrice,
-        address: data.address && !data.error ? data.address : p.address,
-        squareFt: data.sqft && !data.error ? data.sqft : p.squareFt,
-        bathrooms: data.baths && !data.error ? data.baths : p.bathrooms,
-        numRooms: data.beds && !data.error ? data.beds : p.numRooms,
-      }));
-
-      if (data.error === "zillow_blocked") {
-        setImportMsg("Zillow blocks all auto-import tools — link saved. Please fill in the property details manually below.");
-        setImportOk(false);
-      } else if (data.error === "limited" || data.error) {
-        setImportMsg(data.message || "Link saved — some details could not be pulled automatically. Please fill them in below.");
-        setImportOk(false);
-      } else {
-        const fieldsGot = [data.title&&"title",data.photo&&"photo",data.price&&"price",data.address&&"address",data.description&&"description"].filter(Boolean);
-        setImportMsg("✓ Pulled: " + (fieldsGot.length>0 ? fieldsGot.join(", ") : "listing link") + ". Review and complete the form below.");
-        setImportOk(true);
-      }
-    } catch(e) {
-      setForm(p => ({...p, listingUrl: quickUrl}));
-      setImportMsg("Link saved — could not auto-import. Please fill in the details manually.");
-    }
-    setQuickLoading(false);
-  }
 
   function submitProperty() {
     if (!form.address.trim()) { setFormError("Please enter the property address."); return; }
