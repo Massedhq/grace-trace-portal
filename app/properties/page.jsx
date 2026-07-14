@@ -75,12 +75,32 @@ export default function PropertyOpportunities() {
     if (!quickUrl.trim()) return;
     setQuickLoading(true);
     try {
-      // Parse what we can from the URL
-      const domain = new URL(quickUrl).hostname.replace("www.","");
-      setForm(p => ({...p, listingUrl: quickUrl, name: `Property from ${domain}`, description: `Listing from ${quickUrl}`}));
-      alert(`Link saved from ${domain}. Please fill in the property details below.`);
+      const res = await fetch("/api/scrape", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ url: quickUrl })
+      });
+      const data = await res.json();
+      if (data.error) {
+        // Even if scraping fails, save the URL
+        setForm(p => ({...p, listingUrl: quickUrl}));
+        setQuickLoading(false);
+        return;
+      }
+      setForm(p => ({
+        ...p,
+        listingUrl: quickUrl,
+        name: data.title || p.name,
+        description: data.description || p.description,
+        photoUrl: data.photo || p.photoUrl,
+        askingPrice: data.price || p.askingPrice,
+        address: data.address || p.address,
+        squareFt: data.sqft || p.squareFt,
+        bathrooms: data.baths || p.bathrooms,
+        numRooms: data.beds || p.numRooms,
+      }));
     } catch(e) {
-      alert("Please enter a valid URL including https://");
+      setForm(p => ({...p, listingUrl: quickUrl}));
     }
     setQuickLoading(false);
   }
@@ -391,12 +411,12 @@ export default function PropertyOpportunities() {
             {/* Quick URL paste */}
             <div style={{background:C.card,border:"1px solid "+C.gold+"44",borderRadius:12,padding:"16px 20px",marginBottom:20}}>
               <div style={{color:C.gold,fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>⚡ Quick Add from Listing Site</div>
-              <div style={{color:C.muted,fontSize:12,marginBottom:10}}>Paste a Zillow, LoopNet, Crexi, or Realtor.com link to pre-fill the form</div>
+              <div style={{color:C.muted,fontSize:12,marginBottom:10}}>Paste a Zillow, LoopNet, Crexi, or Realtor.com link — we'll pull the photo, price, address and description automatically</div>
               <div style={{display:"flex",gap:8}}>
                 <input type="text" value={quickUrl} onChange={e=>setQuickUrl(e.target.value)} placeholder="https://www.zillow.com/homes/..."
                   style={{flex:1,background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:13,outline:"none",fontFamily:"inherit"}}/>
-                <button onClick={fetchFromUrl} disabled={quickLoading} style={{background:C.gold,border:"none",borderRadius:8,padding:"10px 16px",color:C.dark,fontSize:13,fontWeight:800,cursor:"pointer"}}>
-                  {quickLoading?"Loading...":"Import"}
+                <button onClick={fetchFromUrl} disabled={quickLoading} style={{background:C.gold,border:"none",borderRadius:8,padding:"10px 16px",color:C.dark,fontSize:13,fontWeight:800,cursor:quickLoading?"not-allowed":"pointer",opacity:quickLoading?0.7:1}}>
+                  {quickLoading?"⏳ Pulling info...":"⚡ Import"}
                 </button>
               </div>
             </div>
