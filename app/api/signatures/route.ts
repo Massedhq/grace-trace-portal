@@ -1,6 +1,7 @@
 import { neon } from '@neondatabase/serverless';
-export const runtime = 'edge';
 import { NextResponse } from 'next/server';
+
+export const runtime = 'edge';
 
 const sql = neon(process.env.DATABASE_URL!);
 
@@ -19,7 +20,29 @@ export async function GET() {
     await initDB();
     const rows = await sql`SELECT user_id, data FROM gtm_signatures`;
     const result: Record<string, any> = {};
-    rows.forEach((r: any) => { result[r.user_id] = r.data; });
+    
+    const STAFF_IDS = ["avy","travis","deann","erica","ialana","aubreyon","dennis"];
+    
+    rows.forEach((r: any) => {
+      result[r.user_id] = r.data;
+    });
+
+    // Migrate old keys to new format automatically
+    // If someone signed as "deann" (old key), copy it to "binder_deann" and "orientation_deann"
+    STAFF_IDS.forEach(uid => {
+      // Old format: just uid
+      if (result[uid] && result[uid].signed) {
+        if (!result["binder_" + uid]) result["binder_" + uid] = result[uid];
+        if (!result["orientation_" + uid]) result["orientation_" + uid] = result[uid];
+      }
+      // Old format: gtm_orientation_uid
+      const oldKey = "gtm_orientation_" + uid;
+      if (result[oldKey] && result[oldKey].signed) {
+        if (!result["binder_" + uid]) result["binder_" + uid] = result[oldKey];
+        if (!result["orientation_" + uid]) result["orientation_" + uid] = result[oldKey];
+      }
+    });
+
     return NextResponse.json(result);
   } catch (e) {
     return NextResponse.json({}, { status: 200 });
