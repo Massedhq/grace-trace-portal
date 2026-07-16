@@ -119,6 +119,16 @@ const USERS = [
           { key: "notes", label: "Additional notes", type: "textarea", ph: "Any other important information about this opportunity" },
         ]
       },
+    ,
+      {
+        id: "ops1", title: "Read & Acknowledge the Operations Binder — House Rules",
+        fields: [
+          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
+          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes — I understand all sections", "No — I have questions about some sections"] },
+          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on — bring these to Avy" },
+          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes — acknowledgment signed", "No — I need to complete it now"] },
+        ]
+      }
     ]
   },
   {
@@ -191,6 +201,16 @@ const USERS = [
           { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes — email added", "No — I will add it now"] },
           { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes — profile is complete", "No — still needs updates"] },
           { key: "notes", label: "Any updates needed?", type: "textarea", ph: "List anything that needs to be changed in your profile" },
+        ]
+      }
+    ,
+      {
+        id: "ops1", title: "Read & Acknowledge the Operations Binder — House Rules",
+        fields: [
+          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
+          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes — I understand all sections", "No — I have questions about some sections"] },
+          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on — bring these to Avy" },
+          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes — acknowledgment signed", "No — I need to complete it now"] },
         ]
       }
     ]
@@ -348,6 +368,16 @@ const USERS = [
           { key: "notes", label: "Any updates needed?", type: "textarea", ph: "List anything that needs to be changed in your profile" },
         ]
       }
+    ,
+      {
+        id: "ops1", title: "Read & Acknowledge the Operations Binder — House Rules",
+        fields: [
+          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
+          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes — I understand all sections", "No — I have questions about some sections"] },
+          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on — bring these to Avy" },
+          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes — acknowledgment signed", "No — I need to complete it now"] },
+        ]
+      }
     ]
   },
   {
@@ -498,6 +528,16 @@ const USERS = [
           { key: "notes", label: "Any updates needed?", type: "textarea", ph: "List anything that needs to be changed in your profile" },
         ]
       }
+    ,
+      {
+        id: "ops1", title: "Read & Acknowledge the Operations Binder — House Rules",
+        fields: [
+          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
+          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes — I understand all sections", "No — I have questions about some sections"] },
+          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on — bring these to Avy" },
+          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes — acknowledgment signed", "No — I need to complete it now"] },
+        ]
+      }
     ]
   },
   {
@@ -637,6 +677,16 @@ const USERS = [
           { key: "notes", label: "Any updates needed?", type: "textarea", ph: "List anything that needs to be changed in your profile" },
         ]
       }
+    ,
+      {
+        id: "ops1", title: "Read & Acknowledge the Operations Binder — House Rules",
+        fields: [
+          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
+          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes — I understand all sections", "No — I have questions about some sections"] },
+          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on — bring these to Avy" },
+          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes — acknowledgment signed", "No — I need to complete it now"] },
+        ]
+      }
     ]
   },
   {
@@ -724,6 +774,16 @@ const USERS = [
           { key: "tomorrowPriorities", label: "Top priorities for tomorrow", type: "textarea", ph: "What will you focus on first tomorrow" },
         ]
       },
+    ,
+      {
+        id: "ops1", title: "Read & Acknowledge the Operations Binder — House Rules",
+        fields: [
+          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
+          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes — I understand all sections", "No — I have questions about some sections"] },
+          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on — bring these to Avy" },
+          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes — acknowledgment signed", "No — I need to complete it now"] },
+        ]
+      }
     ]
   },
   {
@@ -824,6 +884,16 @@ const USERS = [
           { key: "notes", label: "Any updates needed?", type: "textarea", ph: "List anything that needs to be changed in your profile" },
         ]
       }
+    ,
+      {
+        id: "ops1", title: "Read & Acknowledge the Operations Binder — House Rules",
+        fields: [
+          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
+          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes — I understand all sections", "No — I have questions about some sections"] },
+          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on — bring these to Avy" },
+          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes — acknowledgment signed", "No — I need to complete it now"] },
+        ]
+      }
     ]
   },
 ];
@@ -891,11 +961,15 @@ export default function WorkdayPortal() {
     if (passwordInput !== user.password) { setLoginError("Incorrect password. Please try again."); return; }
     try { localStorage.setItem("gtm_current_user", user.id); localStorage.setItem("gtm_session_active", "true"); } catch(e) {}
     fetch("/api/taskdata").then(r => r.json()).then((allData: any) => {
+      // Build defaults for all current tasks
+      const d: Record<string, any> = {};
+      user.tasks.forEach((t: any) => { const fields: Record<string,string> = {}; t.fields.forEach((f: any) => { fields[f.key] = ""; }); d[t.id] = { completed: false, fields }; });
       if (allData && allData[user.id]) {
-        setTaskData(allData);
+        // START with saved data (preserves all completions), then ADD any new tasks not yet in saved data
+        const merged: Record<string, any> = { ...allData[user.id] };
+        Object.keys(d).forEach((taskId: string) => { if (!merged[taskId]) merged[taskId] = d[taskId]; });
+        setTaskData((prev: any) => ({ ...prev, [user.id]: merged }));
       } else {
-        const d: Record<string, any> = {};
-        user.tasks.forEach((t: any) => { const fields: Record<string,string> = {}; t.fields.forEach((f: any) => { fields[f.key] = ""; }); d[t.id] = { completed: false, fields }; });
         setTaskData((prev: any) => ({ ...prev, [user.id]: d }));
         fetch("/api/taskdata", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId: user.id, data: d }) }).catch(()=>{});
       }
@@ -945,10 +1019,8 @@ export default function WorkdayPortal() {
             const d: Record<string, any> = {};
             user.tasks.forEach((t: any) => { const fields: Record<string,string> = {}; t.fields.forEach((f: any) => { fields[f.key] = ""; }); d[t.id] = { completed: false, fields }; });
             if (allData && allData[user.id]) {
-              // Merge saved data with new tasks — never lose existing completions
-              const merged: Record<string, any> = { ...d };
-              Object.keys(allData[user.id]).forEach((taskId: string) => { merged[taskId] = allData[user.id][taskId]; });
-              // Add any new tasks that don't exist yet
+              // START with saved data (never overwrite completions), ADD only missing new tasks
+              const merged: Record<string, any> = { ...allData[user.id] };
               Object.keys(d).forEach((taskId: string) => { if (!merged[taskId]) merged[taskId] = d[taskId]; });
               setTaskData((prev: any) => ({ ...prev, [user.id]: merged }));
             } else {
@@ -1232,6 +1304,7 @@ export default function WorkdayPortal() {
               { label: "Vendor List", href: "/vendors", icon: "🏪" },
               { label: "Property Opportunities", href: "/properties", icon: "🏢" },
               { label: "Board & Team Directory", href: "/directory", icon: "👥" },
+              { label: "Operations Binder — House Rules", href: "/operations-binder", icon: "📋" },
               { label: "Task Requests — Kisses", href: "/task-requests", icon: "✉️" },
               ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Staff Reports", href: "/staff-reports", icon: "👥" }] : []),
               ...(currentUser.id === "ialana" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Ialana's Binder", href: "/ialana-binder", icon: "📘" }] : []),
