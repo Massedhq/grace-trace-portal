@@ -129,6 +129,15 @@ const USERS = [
           { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes — acknowledgment signed", "No — I need to complete it now"] },
         ]
       }
+    ,
+      {
+        id: "comp1", title: "Compensation Baseline & Pay Cap Declaration",
+        fields: [
+          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes — declaration submitted and locked", "No — I still need to complete it"] },
+          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes — I have reviewed and understand it", "No — I still need to review it"] },
+          { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
+        ]
+      }
     ]
   },
   {
@@ -211,6 +220,15 @@ const USERS = [
           { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes — I understand all sections", "No — I have questions about some sections"] },
           { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on — bring these to Avy" },
           { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes — acknowledgment signed", "No — I need to complete it now"] },
+        ]
+      }
+    ,
+      {
+        id: "comp1", title: "Compensation Baseline & Pay Cap Declaration",
+        fields: [
+          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes — declaration submitted and locked", "No — I still need to complete it"] },
+          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes — I have reviewed and understand it", "No — I still need to review it"] },
+          { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
         ]
       }
     ]
@@ -378,6 +396,15 @@ const USERS = [
           { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes — acknowledgment signed", "No — I need to complete it now"] },
         ]
       }
+    ,
+      {
+        id: "comp1", title: "Compensation Baseline & Pay Cap Declaration",
+        fields: [
+          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes — declaration submitted and locked", "No — I still need to complete it"] },
+          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes — I have reviewed and understand it", "No — I still need to review it"] },
+          { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
+        ]
+      }
     ]
   },
   {
@@ -538,6 +565,15 @@ const USERS = [
           { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes — acknowledgment signed", "No — I need to complete it now"] },
         ]
       }
+    ,
+      {
+        id: "comp1", title: "Compensation Baseline & Pay Cap Declaration",
+        fields: [
+          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes — declaration submitted and locked", "No — I still need to complete it"] },
+          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes — I have reviewed and understand it", "No — I still need to review it"] },
+          { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
+        ]
+      }
     ]
   },
   {
@@ -687,6 +723,15 @@ const USERS = [
           { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes — acknowledgment signed", "No — I need to complete it now"] },
         ]
       }
+    ,
+      {
+        id: "comp1", title: "Compensation Baseline & Pay Cap Declaration",
+        fields: [
+          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes — declaration submitted and locked", "No — I still need to complete it"] },
+          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes — I have reviewed and understand it", "No — I still need to review it"] },
+          { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
+        ]
+      }
     ]
   },
   {
@@ -782,6 +827,15 @@ const USERS = [
           { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes — I understand all sections", "No — I have questions about some sections"] },
           { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on — bring these to Avy" },
           { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes — acknowledgment signed", "No — I need to complete it now"] },
+        ]
+      }
+    ,
+      {
+        id: "comp1", title: "Compensation Baseline & Pay Cap Declaration",
+        fields: [
+          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes — declaration submitted and locked", "No — I still need to complete it"] },
+          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes — I have reviewed and understand it", "No — I still need to review it"] },
+          { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
         ]
       }
     ]
@@ -892,6 +946,15 @@ const USERS = [
           { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes — I understand all sections", "No — I have questions about some sections"] },
           { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on — bring these to Avy" },
           { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes — acknowledgment signed", "No — I need to complete it now"] },
+        ]
+      }
+    ,
+      {
+        id: "comp1", title: "Compensation Baseline & Pay Cap Declaration",
+        fields: [
+          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes — declaration submitted and locked", "No — I still need to complete it"] },
+          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes — I have reviewed and understand it", "No — I still need to review it"] },
+          { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
         ]
       }
     ]
@@ -1305,6 +1368,7 @@ export default function WorkdayPortal() {
               { label: "Property Opportunities", href: "/properties", icon: "🏢" },
               { label: "Board & Team Directory", href: "/directory", icon: "👥" },
               { label: "Operations Binder — House Rules", href: "/operations-binder", icon: "📋" },
+              { label: "Compensation Declaration", href: "/compensation", icon: "💼" },
               { label: "Task Requests — Kisses", href: "/task-requests", icon: "✉️" },
               ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Staff Reports", href: "/staff-reports", icon: "👥" }] : []),
               ...(currentUser.id === "ialana" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Ialana's Binder", href: "/ialana-binder", icon: "📘" }] : []),
