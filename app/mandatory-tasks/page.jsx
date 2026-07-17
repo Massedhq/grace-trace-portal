@@ -187,6 +187,7 @@ export default function MandatoryTaskBoard() {
       requiresDeliveryDate: form.requiresDeliveryDate,
       customFields: form.customFields,
       link: form.link,
+      linkType: form.linkType||'',
       attachmentName: form.attachmentName,
       attachmentData: form.attachmentData,
       attachmentType: form.attachmentType,
@@ -552,10 +553,20 @@ export default function MandatoryTaskBoard() {
                   style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:14,resize:"vertical",outline:"none",fontFamily:"inherit",lineHeight:1.6}}/>
               </div>
               <div style={{marginBottom:14}}>
-                <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>Link <span style={{color:C.muted,fontWeight:400}}>(optional — website, order page, or shared file)</span></div>
-                <input type="text" value={form.link||""} onChange={e=>setForm(p=>({...p,link:e.target.value}))} placeholder="e.g. https://orderlink.com/gracetrace or Google Drive link to a photo or file"
+                <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>Send staff to a portal section <span style={{color:C.muted,fontWeight:400}}>(optional)</span></div>
+                <select value={form.linkType||""} onChange={e=>{const val=e.target.value;setForm(p=>({...p,linkType:val,link:val==="__binder__"?"":val}));}}
+                  style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:14,outline:"none",fontFamily:"inherit",marginBottom:8}}>
+                  {PORTAL_LINKS.map(l=><option key={l.value} value={l.value}>{l.label}</option>)}
+                </select>
+                {form.linkType==="__binder__"&&(
+                  <div style={{background:C.gold+"22",border:"1px solid "+C.gold+"44",borderRadius:8,padding:"8px 12px",color:C.gold,fontSize:12,marginBottom:8}}>
+                    ℹ Each staff member will be linked to their own department binder automatically
+                  </div>
+                )}
+                <div style={{color:C.muted,fontSize:12,marginBottom:6}}>Or paste a custom link</div>
+                <input type="text" value={form.link||""} onChange={e=>setForm(p=>({...p,link:e.target.value,linkType:""}))} placeholder="e.g. https://orderlink.com/gracetrace or Google Drive link"
                   style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
-                <div style={{color:C.muted,fontSize:12,marginTop:5}}>This link will be visible to all staff on the task. Use it to share an order page, photo, document, or any file they need to reference.</div>
+                <div style={{color:C.muted,fontSize:12,marginTop:5}}>This link will be visible to all staff on the task.</div>
               </div>
               <div style={{marginBottom:14}}>
                 <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>Upload a file <span style={{color:C.muted,fontWeight:400}}>(optional — PDF, photo, or image)</span></div>
