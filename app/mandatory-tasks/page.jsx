@@ -31,11 +31,27 @@ export default function MandatoryTaskBoard() {
   const [view, setView] = useState("board");
   const [activeTask, setActiveTask] = useState(null);
 
+  const PORTAL_LINKS = [
+    {label:"— Custom link or none —", value:""},
+    {label:"📄 Orientation Package", value:"/orientation"},
+    {label:"📘 Department Binder — each person's own", value:"__binder__"},
+    {label:"📋 Operations Binder — House Rules", value:"/operations-binder"},
+    {label:"💼 Compensation Declaration", value:"/compensation"},
+    {label:"👥 Board & Team Directory — Update Profile", value:"/directory"},
+    {label:"🏢 Property Opportunities", value:"/properties"},
+    {label:"🏪 Vendor List — Suggest a Vendor", value:"/vendors"},
+    {label:"📋 Task Requests — Kisses", value:"/task-requests"},
+    {label:"💰 Expense Tracker", value:"/expenses"},
+    {label:"📅 Meeting Board", value:"/meetings"},
+    {label:"💡 Creative Ideas Board", value:"/creative"},
+    {label:"🗺 Navigation Guide", value:"/navigation"},
+  ];
+
   // Create task form
   const [form, setForm] = useState({
     title:"", description:"", deadline:"", requiresReceipt:true,
     requiresTracking:false, requiresMailingAddress:false,
-    requiresDeliveryDate:false, customFields:[], link:"",
+    requiresDeliveryDate:false, customFields:[], link:"", linkType:"",
     attachmentName:"", attachmentData:"", attachmentType:"",
     assignedTo:"all",
   });
@@ -87,6 +103,7 @@ export default function MandatoryTaskBoard() {
       requiresDeliveryDate: task.requiresDeliveryDate,
       customFields: task.customFields || [],
       link: task.link || "",
+      linkType: task.linkType || "",
       attachmentName: task.attachmentName || "",
       attachmentData: task.attachmentData || "",
       attachmentType: task.attachmentType || "",
@@ -145,6 +162,7 @@ export default function MandatoryTaskBoard() {
         requiresDeliveryDate: form.requiresDeliveryDate,
         customFields: form.customFields,
         link: form.link,
+      linkType: form.linkType||'',
         attachmentName: form.attachmentName,
         attachmentData: form.attachmentData,
         attachmentType: form.attachmentType,
@@ -152,7 +170,7 @@ export default function MandatoryTaskBoard() {
       setTasks(updated);
       saveTasks(updated);
       setEditingTask(null);
-      setForm({title:"",description:"",deadline:"",requiresReceipt:true,requiresTracking:false,requiresMailingAddress:false,requiresDeliveryDate:false,customFields:[],link:"",attachmentName:"",attachmentData:"",attachmentType:"",assignedTo:"all"});
+      setForm({title:"",description:"",deadline:"",requiresReceipt:true,requiresTracking:false,requiresMailingAddress:false,requiresDeliveryDate:false,customFields:[],link:"",linkType:"",attachmentName:"",attachmentData:"",attachmentType:"",assignedTo:"all"});
       setCreated(true);
       setTimeout(() => { setCreated(false); setView("board"); }, 1500);
       return;
@@ -192,7 +210,7 @@ export default function MandatoryTaskBoard() {
         url: "/mandatory-tasks"
       })
     }).catch(()=>{});
-    setForm({title:"",description:"",deadline:"",requiresReceipt:true,requiresTracking:false,requiresMailingAddress:false,requiresDeliveryDate:false,customFields:[],link:"",attachmentName:"",attachmentData:"",attachmentType:"",assignedTo:"all"});
+    setForm({title:"",description:"",deadline:"",requiresReceipt:true,requiresTracking:false,requiresMailingAddress:false,requiresDeliveryDate:false,customFields:[],link:"",linkType:"",attachmentName:"",attachmentData:"",attachmentType:"",assignedTo:"all"});
     setFormError("");
     setCreated(true);
     setTimeout(() => { setCreated(false); setView("board"); }, 1500);
@@ -336,12 +354,22 @@ export default function MandatoryTaskBoard() {
                 <div style={{background:C.dark,borderRadius:10,padding:"14px 16px",marginBottom:16}}>
                   <div style={{color:C.text,fontSize:14,lineHeight:1.8}}>{task.description}</div>
                 </div>
-                {task.link&&(
-                  <div style={{marginTop:12,padding:"12px 16px",background:C.dark,borderRadius:10,border:"1px solid "+C.cardBorder}}>
-                    <div style={{color:C.gold,fontSize:11,fontWeight:800,letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>Link / Resource</div>
-                    <a href={task.link} target="_blank" rel="noreferrer" style={{color:C.gold,fontSize:14,wordBreak:"break-all"}}>🔗 {task.link}</a>
-                  </div>
-                )}
+                {(task.link||task.linkType)&&(()=>{
+                  let href = task.link;
+                  let label = "🔗 " + (task.link||"");
+                  let btnLabel = "Open Link →";
+                  if(task.linkType==="__binder__"){ href="/"+currentUser.id+"-binder"; label="📘 Your Department Binder"; btnLabel="Go to My Binder →"; }
+                  else if(task.linkType){ href=task.linkType; const found=PORTAL_LINKS.find(l=>l.value===task.linkType); label=found?found.label:task.linkType; btnLabel="Complete This Step →"; }
+                  return (
+                    <div style={{marginTop:12,padding:"14px 16px",background:C.burgundy+"22",borderRadius:10,border:"1px solid "+C.gold+"44"}}>
+                      <div style={{color:C.gold,fontSize:11,fontWeight:800,letterSpacing:1,textTransform:"uppercase",marginBottom:8}}>Required Action</div>
+                      <div style={{color:C.text,fontSize:13,marginBottom:10}}>{label}</div>
+                      <a href={href} style={{display:"inline-block",background:C.burgundy,border:"1px solid "+C.gold+"66",borderRadius:8,padding:"9px 18px",color:C.ivory,fontSize:13,fontWeight:800,textDecoration:"none"}}>
+                        {btnLabel}
+                      </a>
+                    </div>
+                  );
+                })()}
                 {task.attachmentData&&(
                   <div style={{marginTop:12,padding:"14px 16px",background:C.dark,borderRadius:10,border:"1px solid "+C.cardBorder}}>
                     <div style={{color:C.gold,fontSize:11,fontWeight:800,letterSpacing:1,textTransform:"uppercase",marginBottom:10}}>Attached File</div>
@@ -602,7 +630,7 @@ export default function MandatoryTaskBoard() {
               <button onClick={createTask} style={{width:"100%",background:C.burgundy,border:"1px solid "+C.gold+"66",borderRadius:10,padding:"13px",color:C.ivory,fontSize:14,fontWeight:800,cursor:"pointer"}}>
                 {editingTask ? "✓ Save Changes" : "📌 Send Mandatory Task to Staff"}
               </button>
-              {editingTask && <button onClick={()=>{setEditingTask(null);setForm({title:"",description:"",deadline:"",requiresReceipt:true,requiresTracking:false,requiresMailingAddress:false,requiresDeliveryDate:false,customFields:[],link:"",attachmentName:"",attachmentData:"",attachmentType:"",assignedTo:"all"});setView("board");}} style={{width:"100%",background:"transparent",border:"1px solid "+C.cardBorder,borderRadius:10,padding:"11px",color:C.muted,fontSize:13,cursor:"pointer",marginTop:8}}>Cancel Edit</button>}
+              {editingTask && <button onClick={()=>{setEditingTask(null);setForm({title:"",description:"",deadline:"",requiresReceipt:true,requiresTracking:false,requiresMailingAddress:false,requiresDeliveryDate:false,customFields:[],link:"",linkType:"",attachmentName:"",attachmentData:"",attachmentType:"",assignedTo:"all"});setView("board");}} style={{width:"100%",background:"transparent",border:"1px solid "+C.cardBorder,borderRadius:10,padding:"11px",color:C.muted,fontSize:13,cursor:"pointer",marginTop:8}}>Cancel Edit</button>}
             </div>
           </div>
         )}
@@ -658,8 +686,20 @@ export default function MandatoryTaskBoard() {
                   style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
               </div>
               <div style={{marginBottom:14}}>
-                <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>Link <span style={{color:C.muted,fontWeight:400}}>(optional)</span></div>
-                <input type="text" value={form.link||""} onChange={e=>setForm(p=>({...p,link:e.target.value}))} placeholder="Order page, Google Drive link, or resource URL"
+                <div style={{color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>Send staff to a portal section <span style={{color:C.muted,fontWeight:400}}>(optional)</span></div>
+                <select value={form.linkType||""} onChange={e=>{
+                  const val=e.target.value;
+                  setForm(p=>({...p,linkType:val,link:val==="__binder__"?"":val}));
+                }} style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:14,outline:"none",fontFamily:"inherit",marginBottom:8}}>
+                  {PORTAL_LINKS.map(l=><option key={l.value} value={l.value}>{l.label}</option>)}
+                </select>
+                {form.linkType==="__binder__"&&(
+                  <div style={{background:C.gold+"22",border:"1px solid "+C.gold+"44",borderRadius:8,padding:"8px 12px",color:C.gold,fontSize:12,marginBottom:8}}>
+                    ℹ Each staff member will be linked to their own department binder automatically
+                  </div>
+                )}
+                <div style={{color:C.muted,fontSize:12,marginBottom:6}}>Or paste a custom link</div>
+                <input type="text" value={form.link||""} onChange={e=>setForm(p=>({...p,link:e.target.value,linkType:""}))} placeholder="Order page, Google Drive link, or any URL"
                   style={{width:"100%",background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
               </div>
               <div style={{marginBottom:14}}>
@@ -716,7 +756,7 @@ export default function MandatoryTaskBoard() {
               <button onClick={createTask} style={{width:"100%",background:C.green,border:"none",borderRadius:10,padding:"13px",color:C.ivory,fontSize:14,fontWeight:800,cursor:"pointer",marginBottom:10}}>
                 ✓ Save Changes
               </button>
-              <button onClick={()=>{setEditingTask(null);setForm({title:"",description:"",deadline:"",requiresReceipt:true,requiresTracking:false,requiresMailingAddress:false,requiresDeliveryDate:false,customFields:[],link:"",attachmentName:"",attachmentData:"",attachmentType:"",assignedTo:"all"});setView("board");}}
+              <button onClick={()=>{setEditingTask(null);setForm({title:"",description:"",deadline:"",requiresReceipt:true,requiresTracking:false,requiresMailingAddress:false,requiresDeliveryDate:false,customFields:[],link:"",linkType:"",attachmentName:"",attachmentData:"",attachmentType:"",assignedTo:"all"});setView("board");}}
                 style={{width:"100%",background:"transparent",border:"1px solid "+C.cardBorder,borderRadius:10,padding:"11px",color:C.muted,fontSize:13,cursor:"pointer"}}>
                 Cancel
               </button>
