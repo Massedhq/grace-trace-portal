@@ -144,7 +144,7 @@ function ReferenceTab() {
 
           {section.blocks?.map((block, i) => (
             <div key={i} className="mb-4">
-              <h3 className="font-semibold mb-1" style={{ color: BURGUNDY }}>
+              <h3 className="font-semibold mb-1" style={{ color: "#4CAF50" }}>
                 {block.heading}
               </h3>
               {block.type === "numbered" && (
@@ -166,7 +166,7 @@ function ReferenceTab() {
           {section.table && (
             <div className="overflow-x-auto mt-2">
               {section.table.heading && (
-                <h3 className="font-semibold mb-1" style={{ color: BURGUNDY }}>
+                <h3 className="font-semibold mb-1" style={{ color: "#4CAF50" }}>
                   {section.table.heading}
                 </h3>
               )}
@@ -211,6 +211,7 @@ function AcknowledgeTab({ currentStaff, leadership }) {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetch("/api/emergency-ack")
@@ -225,6 +226,7 @@ function AcknowledgeTab({ currentStaff, leadership }) {
   async function handleAcknowledge() {
     if (!currentStaff) return;
     setSubmitting(true);
+    setError(null);
     try {
       const res = await fetch("/api/emergency-ack", {
         method: "POST",
@@ -239,7 +241,12 @@ function AcknowledgeTab({ currentStaff, leadership }) {
         const { acknowledgment } = await res.json();
         setAcks((prev) => [acknowledgment, ...prev]);
         setDone(true);
+      } else {
+        const body = await res.json().catch(() => ({}));
+        setError(body.error || `Server error (${res.status}) — the acknowledgment table may not exist yet in the database.`);
       }
+    } catch (err) {
+      setError("Network error — could not reach the server. Check your connection and try again.");
     } finally {
       setSubmitting(false);
     }
@@ -271,14 +278,19 @@ function AcknowledgeTab({ currentStaff, leadership }) {
               ✅ You've already acknowledged this document.
             </p>
           ) : (
-            <button
-              onClick={handleAcknowledge}
-              disabled={submitting}
-              className="px-5 py-2 rounded text-white font-semibold"
-              style={{ backgroundColor: BURGUNDY }}
-            >
-              {submitting ? "Submitting…" : "I Acknowledge & Agree"}
-            </button>
+            <>
+              <button
+                onClick={handleAcknowledge}
+                disabled={submitting}
+                className="px-5 py-2 rounded text-white font-semibold"
+                style={{ backgroundColor: BURGUNDY }}
+              >
+                {submitting ? "Submitting…" : "I Acknowledge & Agree"}
+              </button>
+              {error && (
+                <p className="text-sm mt-2" style={{ color: WARN_TEXT }}>{error}</p>
+              )}
+            </>
           )}
         </div>
       )}
