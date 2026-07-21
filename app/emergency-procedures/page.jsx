@@ -26,7 +26,7 @@ const WARN_TEXT = "#8B0000";
 
 function getCurrentStaffId() {
   if (typeof window === "undefined") return null;
-  return window.localStorage.getItem("staffId");
+  return window.localStorage.getItem("gtm_current_user");
 }
 
 export default function EmergencyProceduresPage() {
@@ -57,8 +57,8 @@ export default function EmergencyProceduresPage() {
 
       {!staffId && (
         <div className="mb-6 p-3 rounded border text-sm" style={{ backgroundColor: WARN_BG, borderColor: WARN_TEXT, color: WARN_TEXT }}>
-          No staff identity found in this browser. Set <code>localStorage.staffId</code> (e.g. "erica")
-          or wire this to your real login — acknowledgment and incident forms need to know who's submitting.
+          No staff identity found in this browser. Please log in through the portal's normal sign-in page first —
+          acknowledgment and incident forms need to know who's submitting.
         </div>
       )}
 
