@@ -138,6 +138,17 @@ const USERS = [
           { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
         ]
       }
+    ,
+      {
+        id: "ep1", title: "Read & Acknowledge Emergency & Incident Procedures",
+        fields: [
+          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
+          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 — not to wait for approval?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
+          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
+          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on — bring these to Avy" },
+          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes — I acknowledge and agree", "No — I need to discuss this first"] },
+        ]
+      }
     ]
   },
   {
@@ -229,6 +240,17 @@ const USERS = [
           { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes — declaration submitted and locked", "No — I still need to complete it"] },
           { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes — I have reviewed and understand it", "No — I still need to review it"] },
           { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
+        ]
+      }
+    ,
+      {
+        id: "ep1", title: "Read & Acknowledge Emergency & Incident Procedures",
+        fields: [
+          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
+          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 — not to wait for approval?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
+          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
+          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on — bring these to Avy" },
+          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes — I acknowledge and agree", "No — I need to discuss this first"] },
         ]
       }
     ]
@@ -405,6 +427,17 @@ const USERS = [
           { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
         ]
       }
+    ,
+      {
+        id: "ep1", title: "Read & Acknowledge Emergency & Incident Procedures",
+        fields: [
+          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
+          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 — not to wait for approval?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
+          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
+          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on — bring these to Avy" },
+          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes — I acknowledge and agree", "No — I need to discuss this first"] },
+        ]
+      }
     ]
   },
   {
@@ -574,6 +607,17 @@ const USERS = [
           { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
         ]
       }
+    ,
+      {
+        id: "ep1", title: "Read & Acknowledge Emergency & Incident Procedures",
+        fields: [
+          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
+          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 — not to wait for approval?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
+          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
+          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on — bring these to Avy" },
+          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes — I acknowledge and agree", "No — I need to discuss this first"] },
+        ]
+      }
     ]
   },
   {
@@ -732,6 +776,17 @@ const USERS = [
           { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
         ]
       }
+    ,
+      {
+        id: "ep1", title: "Read & Acknowledge Emergency & Incident Procedures",
+        fields: [
+          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
+          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 — not to wait for approval?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
+          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
+          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on — bring these to Avy" },
+          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes — I acknowledge and agree", "No — I need to discuss this first"] },
+        ]
+      }
     ]
   },
   {
@@ -836,6 +891,17 @@ const USERS = [
           { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes — declaration submitted and locked", "No — I still need to complete it"] },
           { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes — I have reviewed and understand it", "No — I still need to review it"] },
           { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
+        ]
+      }
+    ,
+      {
+        id: "ep1", title: "Read & Acknowledge Emergency & Incident Procedures",
+        fields: [
+          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
+          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 — not to wait for approval?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
+          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
+          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on — bring these to Avy" },
+          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes — I acknowledge and agree", "No — I need to discuss this first"] },
         ]
       }
     ]
@@ -955,6 +1021,17 @@ const USERS = [
           { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes — declaration submitted and locked", "No — I still need to complete it"] },
           { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes — I have reviewed and understand it", "No — I still need to review it"] },
           { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
+        ]
+      }
+    ,
+      {
+        id: "ep1", title: "Read & Acknowledge Emergency & Incident Procedures",
+        fields: [
+          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
+          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 — not to wait for approval?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
+          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
+          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on — bring these to Avy" },
+          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes — I acknowledge and agree", "No — I need to discuss this first"] },
         ]
       }
     ]
@@ -1368,6 +1445,7 @@ export default function WorkdayPortal() {
               { label: "Property Opportunities", href: "/properties", icon: "🏢" },
               { label: "Board & Team Directory", href: "/directory", icon: "👥" },
               { label: "Operations Binder — House Rules", href: "/operations-binder", icon: "📋" },
+              { label: "Emergency & Incident Procedures", href: "/emergency-procedures", icon: "🚨" },
               { label: "Compensation Declaration", href: "/compensation", icon: "💼" },
               { label: "Task Requests — Kisses", href: "/task-requests", icon: "✉️" },
               ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Staff Reports", href: "/staff-reports", icon: "👥" }] : []),
