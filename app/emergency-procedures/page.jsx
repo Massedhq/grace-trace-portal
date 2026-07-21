@@ -243,7 +243,7 @@ function AcknowledgeTab({ currentStaff, leadership }) {
         setDone(true);
       } else {
         const body = await res.json().catch(() => ({}));
-        setError(body.error || `Server error (${res.status}) — the acknowledgment table may not exist yet in the database.`);
+        setError((body.error || `Server error (${res.status})`) + (body.detail ? ` — ${body.detail}` : ""));
       }
     } catch (err) {
       setError("Network error — could not reach the server. Check your connection and try again.");
