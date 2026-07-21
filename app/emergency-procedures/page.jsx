@@ -80,7 +80,7 @@ export default function EmergencyProceduresPage() {
       </nav>
 
       {tab === "reference" && <ReferenceTab />}
-      {tab === "acknowledge" && <AcknowledgeTab currentStaff={currentStaff} />}
+      {tab === "acknowledge" && <AcknowledgeTab currentStaff={currentStaff} leadership={leadership} />}
       {tab === "report" && <ReportTab currentStaff={currentStaff} />}
       {tab === "admin" && leadership && <AdminTab />}
     </div>
@@ -182,7 +182,7 @@ function ReferenceTab() {
                   {section.table.rows.map((row, i) => (
                     <tr key={i} style={{ backgroundColor: i % 2 === 0 ? IVORY : "white" }}>
                       {row.map((cell, j) => (
-                        <td key={j} className="p-2 border align-top">{cell}</td>
+                        <td key={j} className="p-2 border align-top" style={{ color: "#1A0F12" }}>{cell}</td>
                       ))}
                     </tr>
                   ))}
@@ -206,7 +206,7 @@ function ReferenceTab() {
 
 /* --------------------------- ACKNOWLEDGE TAB ---------------------------- */
 
-function AcknowledgeTab({ currentStaff }) {
+function AcknowledgeTab({ currentStaff, leadership }) {
   const [acks, setAcks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -283,23 +283,27 @@ function AcknowledgeTab({ currentStaff }) {
         </div>
       )}
 
-      <h3 className="font-semibold mb-2" style={{ color: BURGUNDY }}>Staff Acknowledgment Status</h3>
-      {loading ? (
-        <p className="text-sm text-gray-500">Loading…</p>
-      ) : (
-        <ul className="text-sm space-y-1">
-          {STAFF.map((s) => {
-            const ack = acks.find((a) => a.staff_id === s.id);
-            return (
-              <li key={s.id} className="flex justify-between border-b py-1">
-                <span>{s.name} — {s.position}</span>
-                <span style={{ color: ack ? "#2E7D32" : WARN_TEXT }}>
-                  {ack ? `✅ ${new Date(ack.acknowledged_at).toLocaleDateString()}` : "⏳ Not yet"}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
+      {leadership && (
+        <>
+          <h3 className="font-semibold mb-2" style={{ color: BURGUNDY }}>Staff Acknowledgment Status</h3>
+          {loading ? (
+            <p className="text-sm text-gray-500">Loading…</p>
+          ) : (
+            <ul className="text-sm space-y-1">
+              {STAFF.map((s) => {
+                const ack = acks.find((a) => a.staff_id === s.id);
+                return (
+                  <li key={s.id} className="flex justify-between border-b py-1">
+                    <span>{s.name} — {s.position}</span>
+                    <span style={{ color: ack ? "#2E7D32" : WARN_TEXT }}>
+                      {ack ? `✅ ${new Date(ack.acknowledged_at).toLocaleDateString()}` : "⏳ Not yet"}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </>
       )}
     </div>
   );
