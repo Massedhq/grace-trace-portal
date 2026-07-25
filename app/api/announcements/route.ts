@@ -75,3 +75,21 @@ export async function DELETE(req: Request) {
     return Response.json({ error: "Failed to delete announcement" }, { status: 500 });
   }
 }
+
+export async function PATCH(req: Request) {
+  try {
+    await ensureTable();
+    const { id, pinned } = await req.json();
+    if (!id) return Response.json({ error: "id is required" }, { status: 400 });
+
+    const [row] = await sql`
+      UPDATE announcements SET pinned = ${!!pinned} WHERE id = ${id}
+      RETURNING id, title, category, body, pinned, created_by, created_at
+    `;
+
+    return Response.json({ announcement: row });
+  } catch (err) {
+    console.error("PATCH /api/announcements failed:", err);
+    return Response.json({ error: "Failed to update pin status" }, { status: 500 });
+  }
+}

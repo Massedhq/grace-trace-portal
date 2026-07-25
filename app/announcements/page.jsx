@@ -57,12 +57,14 @@ function categoryMeta(value) {
 export default function AnnouncementsPage() {
   const [staffId, setStaffId] = useState(null);
   const [announcements, setAnnouncements] = useState([]);
+  const [reads, setReads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     setStaffId(getCurrentStaffId());
     loadAnnouncements();
+    loadReads();
   }, []);
 
   function loadAnnouncements() {
@@ -72,6 +74,13 @@ export default function AnnouncementsPage() {
       .then((d) => setAnnouncements(d.announcements || []))
       .catch(() => {})
       .finally(() => setLoading(false));
+  }
+
+  function loadReads() {
+    fetch("/api/announcement-reads")
+      .then((r) => r.json())
+      .then((d) => setReads(d.reads || []))
+      .catch(() => {});
   }
 
   const leadership = isLeadership(staffId);
@@ -118,7 +127,12 @@ export default function AnnouncementsPage() {
               key={a.id}
               announcement={a}
               leadership={leadership}
+              staffId={staffId}
+              currentName={currentName}
+              reads={reads.filter((r) => r.announcement_id === a.id)}
               onDeleted={loadAnnouncements}
+              onPinToggled={loadAnnouncements}
+              onRead={loadReads}
             />
           ))
         )}
@@ -209,10 +223,15 @@ function NewAnnouncementForm({ currentName, onPosted }) {
   );
 }
 
-function AnnouncementCard({ announcement, leadership, onDeleted }) {
+function AnnouncementCard({ announcement, leadership, staffId, currentName, reads, onDeleted, onPinToggled, onRead }) {
   const meta = categoryMeta(announcement.category);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [pinning, setPinning] = useState(false);
+  const [marking, setMarking] = useState(false);
+  const [showReadList, setShowReadList] = useState(false);
+
+  const alreadyRead = staffId && reads.some((r) => r.staff_id === staffId);
 
   async function handleDelete() {
     setDeleting(true);
@@ -225,6 +244,35 @@ function AnnouncementCard({ announcement, leadership, onDeleted }) {
       onDeleted();
     } finally {
       setDeleting(false);
+    }
+  }
+
+  async function handleTogglePin() {
+    setPinning(true);
+    try {
+      await fetch("/api/announcements", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: announcement.id, pinned: !announcement.pinned }),
+      });
+      onPinToggled();
+    } finally {
+      setPinning(false);
+    }
+  }
+
+  async function handleMarkRead() {
+    if (!staffId) return;
+    setMarking(true);
+    try {
+      await fetch("/api/announcement-reads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ announcementId: announcement.id, staffId, staffName: currentName }),
+      });
+      onRead();
+    } finally {
+      setMarking(false);
     }
   }
 
@@ -248,25 +296,66 @@ function AnnouncementCard({ announcement, leadership, onDeleted }) {
           </div>
         </div>
         {leadership && (
-          confirmingDelete ? (
-            <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-              <button onClick={handleDelete} disabled={deleting} style={{ background: C.error, border: "none", borderRadius: 6, padding: "5px 10px", color: "white", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
-                {deleting ? "…" : "Confirm"}
-              </button>
-              <button onClick={() => setConfirmingDelete(false)} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 6, padding: "5px 10px", color: C.muted, fontSize: 11, cursor: "pointer" }}>
-                Cancel
-              </button>
-            </div>
-          ) : (
-            <button onClick={() => setConfirmingDelete(true)} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 6, padding: "5px 10px", color: C.muted, fontSize: 11, cursor: "pointer", flexShrink: 0 }}>
-              Delete
+          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+            <button onClick={handleTogglePin} disabled={pinning} style={{ background: announcement.pinned ? C.gold : "transparent", border: "1px solid " + C.gold + "88", borderRadius: 6, padding: "5px 10px", color: announcement.pinned ? C.dark : C.gold, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+              {pinning ? "…" : announcement.pinned ? "📌 Pinned" : "Pin"}
             </button>
-          )
+            {confirmingDelete ? (
+              <>
+                <button onClick={handleDelete} disabled={deleting} style={{ background: C.error, border: "none", borderRadius: 6, padding: "5px 10px", color: "white", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+                  {deleting ? "…" : "Confirm"}
+                </button>
+                <button onClick={() => setConfirmingDelete(false)} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 6, padding: "5px 10px", color: C.muted, fontSize: 11, cursor: "pointer" }}>
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <button onClick={() => setConfirmingDelete(true)} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 6, padding: "5px 10px", color: C.muted, fontSize: 11, cursor: "pointer" }}>
+                Delete
+              </button>
+            )}
+          </div>
         )}
       </div>
       <div style={{ color: C.text, fontSize: 14, lineHeight: 1.7, whiteSpace: "pre-wrap", marginTop: 6 }}>
         {announcement.body}
       </div>
+
+      <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid " + C.cardBorder, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+        {staffId ? (
+          alreadyRead ? (
+            <span style={{ color: C.green, fontSize: 12, fontWeight: 700 }}>✅ You've read this</span>
+          ) : (
+            <button onClick={handleMarkRead} disabled={marking} style={{ background: C.burgundy, border: "none", borderRadius: 6, padding: "6px 14px", color: C.ivory, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+              {marking ? "Marking…" : "Mark as Read"}
+            </button>
+          )
+        ) : (
+          <span style={{ color: C.muted, fontSize: 12 }}>Log in to mark as read</span>
+        )}
+
+        {leadership && (
+          <button onClick={() => setShowReadList(!showReadList)} style={{ background: "transparent", border: "none", color: C.muted, fontSize: 12, cursor: "pointer", textDecoration: "underline" }}>
+            {reads.length} of 7 staff have read this
+          </button>
+        )}
+      </div>
+
+      {leadership && showReadList && (
+        <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid " + C.cardBorder }}>
+          {Object.keys(STAFF_NAMES).map((id) => {
+            const r = reads.find((x) => x.staff_id === id);
+            return (
+              <div key={id} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, padding: "3px 0" }}>
+                <span style={{ color: C.text }}>{STAFF_NAMES[id]}</span>
+                <span style={{ color: r ? C.green : C.muted }}>
+                  {r ? "✅ " + new Date(r.read_at).toLocaleDateString() : "⏳ Not yet"}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
