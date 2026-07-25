@@ -1052,6 +1052,7 @@ export default function WorkdayPortal() {
   const [alertTasks, setAlertTasks] = useState([]);
   const [alertMeetings, setAlertMeetings] = useState([]);
   const [alertSignatures, setAlertSignatures] = useState({});
+  const [pinnedAnnouncements, setPinnedAnnouncements] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
@@ -1117,6 +1118,7 @@ export default function WorkdayPortal() {
     fetch("/api/mandatory-tasks").then(r=>r.json()).then(t=>setAlertTasks(t)).catch(()=>{});
     fetch("/api/meetings").then(r=>r.json()).then(m=>setAlertMeetings(m)).catch(()=>{});
     fetch("/api/signatures").then(r=>r.json()).then(s=>setAlertSignatures(s)).catch(()=>{});
+    fetch("/api/announcements").then(r=>r.json()).then(d=>setPinnedAnnouncements((d.announcements||[]).filter(a=>a.pinned))).catch(()=>{});
     // Register service worker and push notifications
     if ("serviceWorker" in navigator && "PushManager" in window) {
       navigator.serviceWorker.register("/sw.js").then(reg => {
@@ -1140,6 +1142,7 @@ export default function WorkdayPortal() {
         fetch("/api/mandatory-tasks").then(r=>r.json()).then(t=>setAlertTasks(t)).catch(()=>{});
         fetch("/api/meetings").then(r=>r.json()).then(m=>setAlertMeetings(m)).catch(()=>{});
         fetch("/api/signatures").then(r=>r.json()).then(s=>setAlertSignatures(s)).catch(()=>{});
+    fetch("/api/announcements").then(r=>r.json()).then(d=>setPinnedAnnouncements((d.announcements||[]).filter(a=>a.pinned))).catch(()=>{});
       };
       reload();
       window.addEventListener("focus", reload);
@@ -1171,6 +1174,7 @@ export default function WorkdayPortal() {
           fetch("/api/mandatory-tasks").then(r=>r.json()).then(t=>setAlertTasks(t)).catch(()=>{});
           fetch("/api/meetings").then(r=>r.json()).then(m=>setAlertMeetings(m)).catch(()=>{});
           fetch("/api/signatures").then(r=>r.json()).then(s=>setAlertSignatures(s)).catch(()=>{});
+    fetch("/api/announcements").then(r=>r.json()).then(d=>setPinnedAnnouncements((d.announcements||[]).filter(a=>a.pinned))).catch(()=>{});
           setCurrentUser(user);
           setScreen("dashboard");
         }
@@ -1506,6 +1510,28 @@ export default function WorkdayPortal() {
             </div>
           );
         })()}
+
+        {pinnedAnnouncements.length > 0 && (
+          <div style={{ background: C.burgundyDark, border: "1px solid " + C.gold + "77", borderRadius: 12, padding: "14px 18px", marginBottom: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: pinnedAnnouncements.length > 0 ? 10 : 0 }}>
+              <span style={{ fontSize: 20 }}>📣</span>
+              <span style={{ color: C.gold, fontSize: 12, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase" }}>
+                Pinned Announcement{pinnedAnnouncements.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+            {pinnedAnnouncements.map((a) => (
+              <div key={a.id} style={{ marginBottom: 8 }}>
+                <div style={{ color: C.ivory, fontWeight: 700, fontSize: 14 }}>{a.title}</div>
+                <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>
+                  {a.body.length > 140 ? a.body.slice(0, 140) + "…" : a.body}
+                </div>
+              </div>
+            ))}
+            <a href="/announcements" style={{ display: "inline-block", marginTop: 6, background: C.gold, border: "none", borderRadius: 8, padding: "7px 14px", color: C.dark, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>
+              View Announcements 📣
+            </a>
+          </div>
+        )}
         <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "16px 20px", marginBottom: 24 }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
             <span style={{ color: C.text, fontSize: 14, fontWeight: 700 }}>Today's workday progress</span>
