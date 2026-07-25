@@ -1446,6 +1446,7 @@ export default function WorkdayPortal() {
               { label: "Board & Team Directory", href: "/directory", icon: "👥" },
               { label: "Operations Binder — House Rules", href: "/operations-binder", icon: "📋" },
               { label: "Emergency & Incident Procedures", href: "/emergency-procedures", icon: "🚨" },
+              { label: "Announcements", href: "/announcements", icon: "📣" },
               { label: "Compensation Declaration", href: "/compensation", icon: "💼" },
               { label: "Task Requests — Kisses", href: "/task-requests", icon: "✉️" },
               ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Staff Reports", href: "/staff-reports", icon: "👥" }] : []),
