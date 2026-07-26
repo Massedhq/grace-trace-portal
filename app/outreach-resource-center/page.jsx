@@ -220,9 +220,25 @@ function DynamicTemplateCard({ t, statusFor, onView }) {
 }
 
 function LearningCenterView({ data, dynamicItems, statusFor, onView }) {
+  const hasStaticContent = data.whatItIs || data.whyItMatters || data.howItWorks || data.terminology?.length || data.faqs?.length || data.bestPractices?.length;
+  const hasAnyContent = hasStaticContent || (dynamicItems && dynamicItems.length > 0);
+
+  if (!hasAnyContent) {
+    return (
+      <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "24px 20px", textAlign: "center" }}>
+        <div style={{ fontSize: 28, marginBottom: 10 }}>📖</div>
+        <div style={{ color: C.ivory, fontWeight: 700, fontSize: 14, marginBottom: 6 }}>No content yet</div>
+        <div style={{ color: C.muted, fontSize: 13, lineHeight: 1.6 }}>
+          Leadership hasn't added anything to this section yet. Content appears here once it's created in Manage Resource Templates.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       {dynamicItems?.map((t) => <DynamicTemplateCard key={t.id} t={t} statusFor={statusFor} onView={onView} />)}
+      {hasStaticContent && (
       <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "20px 22px" }}>
       <SectionHeading>What It Is</SectionHeading>
       <p style={{ color: C.text, fontSize: 14, lineHeight: 1.7 }}>{data.whatItIs}</p>
@@ -256,6 +272,7 @@ function LearningCenterView({ data, dynamicItems, statusFor, onView }) {
         </div>
       ))}
       </div>
+      )}
     </div>
   );
 }
@@ -270,20 +287,34 @@ function TemplatesView({ templates, dynamicItems, statusFor, onView }) {
     });
   }
 
+  const isEmpty = templates.length === 0 && (!dynamicItems || dynamicItems.length === 0);
+
   return (
     <div>
-      {dynamicItems?.map((t) => <DynamicTemplateCard key={t.id} t={t} statusFor={statusFor} onView={onView} />)}
-      {templates.map((t, i) => (
-        <div key={i} style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "16px 18px", marginBottom: 14 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-            <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>{t.title}</div>
-            <button onClick={() => handleCopy(t.body, i)} style={{ background: "transparent", border: "1px solid " + C.gold + "66", borderRadius: 6, padding: "5px 12px", color: C.gold, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
-              {copiedIndex === i ? "Copied ✓" : "Copy"}
-            </button>
+      {isEmpty ? (
+        <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "24px 20px", textAlign: "center" }}>
+          <div style={{ fontSize: 28, marginBottom: 10 }}>📄</div>
+          <div style={{ color: C.ivory, fontWeight: 700, fontSize: 14, marginBottom: 6 }}>No templates yet</div>
+          <div style={{ color: C.muted, fontSize: 13, lineHeight: 1.6 }}>
+            Templates appear here once leadership creates them in Manage Resource Templates.
           </div>
-          <pre style={{ color: C.text, fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-wrap", fontFamily: "inherit", margin: 0 }}>{t.body}</pre>
         </div>
-      ))}
+      ) : (
+        <>
+          {dynamicItems?.map((t) => <DynamicTemplateCard key={t.id} t={t} statusFor={statusFor} onView={onView} />)}
+          {templates.map((t, i) => (
+            <div key={i} style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "16px 18px", marginBottom: 14 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>{t.title}</div>
+                <button onClick={() => handleCopy(t.body, i)} style={{ background: "transparent", border: "1px solid " + C.gold + "66", borderRadius: 6, padding: "5px 12px", color: C.gold, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+                  {copiedIndex === i ? "Copied ✓" : "Copy"}
+                </button>
+              </div>
+              <pre style={{ color: C.text, fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-wrap", fontFamily: "inherit", margin: 0 }}>{t.body}</pre>
+            </div>
+          ))}
+        </>
+      )}
     </div>
   );
 }
