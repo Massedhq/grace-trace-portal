@@ -47,9 +47,24 @@ export default function OutreachResourceCenter() {
   const [view, setView] = useState("home"); // "home" | "category" | "training"
   const [activeCategoryId, setActiveCategoryId] = useState(null);
   const [activeTab, setActiveTab] = useState("Learning Center");
+  const [staffId, setStaffId] = useState(null);
+  const [dynamicTemplates, setDynamicTemplates] = useState([]);
+  const [reads, setReads] = useState([]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    const id = window.localStorage.getItem("gtm_current_user");
+    setStaffId(id);
+
+    fetch("/api/resource-templates?director=deann")
+      .then((r) => r.json())
+      .then((d) => setDynamicTemplates(d.templates || []))
+      .catch(() => {});
+    fetch("/api/resource-template-reads")
+      .then((r) => r.json())
+      .then((d) => setReads(d.reads || []))
+      .catch(() => {});
+
     const params = new URLSearchParams(window.location.search);
     const cat = params.get("cat");
     if (cat === "training") {
@@ -60,6 +75,30 @@ export default function OutreachResourceCenter() {
       setView("category");
     }
   }, []);
+
+  function markTemplateViewed(templateId) {
+    if (!staffId) return;
+    fetch("/api/resource-template-reads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ templateId, staffId }),
+    }).then(() => {
+      fetch("/api/resource-template-reads").then((r) => r.json()).then((d) => setReads(d.reads || [])).catch(() => {});
+    });
+  }
+
+  function dynamicFor(categoryTitle, section) {
+    return dynamicTemplates.filter(
+      (t) => t.category.trim().toLowerCase() === categoryTitle.trim().toLowerCase() && t.section === section
+    );
+  }
+
+  function statusFor(t) {
+    if (!staffId) return "seen";
+    const r = reads.find((x) => x.template_id === t.id && x.staff_id === staffId);
+    if (!r) return "new";
+    return new Date(t.updated_at) > new Date(r.viewed_at) ? "updated" : "seen";
+  }
 
   const activeCategory = CATEGORIES.find((c) => c.id === activeCategoryId);
 
@@ -142,13 +181,13 @@ export default function OutreachResourceCenter() {
               ))}
             </div>
 
-            {activeTab === "Learning Center" && <LearningCenterView data={activeCategory.learningCenter} />}
-            {activeTab === "Templates" && <TemplatesView templates={activeCategory.templates} />}
+            {activeTab === "Learning Center" && <LearningCenterView data={activeCategory.learningCenter} dynamicItems={dynamicFor(activeCategory.title, "Learning Center")} statusFor={statusFor} onView={markTemplateViewed} />}
+            {activeTab === "Templates" && <TemplatesView templates={activeCategory.templates} dynamicItems={dynamicFor(activeCategory.title, "Templates")} statusFor={statusFor} onView={markTemplateViewed} />}
             {activeTab === "Forms" && (
-              <FormsView fields={activeCategory.id === "potentialProperties" ? PROPERTY_FIELDS : RESEARCH_TEMPLATE_FIELDS} categoryTitle={activeCategory.title} />
+              <FormsView fields={activeCategory.id === "potentialProperties" ? PROPERTY_FIELDS : RESEARCH_TEMPLATE_FIELDS} categoryTitle={activeCategory.title} dynamicItems={dynamicFor(activeCategory.title, "Forms")} statusFor={statusFor} onView={markTemplateViewed} />
             )}
-            {activeTab === "Documents" && <DocumentsView documents={activeCategory.documents} />}
-            {activeTab === "Completed Examples" && <CompletedExamplesView examples={activeCategory.completedExamples} />}
+            {activeTab === "Documents" && <DocumentsView documents={activeCategory.documents} dynamicItems={dynamicFor(activeCategory.title, "Documents")} statusFor={statusFor} onView={markTemplateViewed} />}
+            {activeTab === "Completed Examples" && <CompletedExamplesView examples={activeCategory.completedExamples} dynamicItems={dynamicFor(activeCategory.title, "Completed Examples")} statusFor={statusFor} onView={markTemplateViewed} />}
           </div>
         )}
       </div>
@@ -160,9 +199,31 @@ function SectionHeading({ children }) {
   return <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10, marginTop: 20 }}>{children}</div>;
 }
 
-function LearningCenterView({ data }) {
+function DynamicTemplateCard({ t, statusFor, onView }) {
+  const status = statusFor(t);
   return (
-    <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "20px 22px" }}>
+    <div
+      onClick={() => status !== "seen" && onView(t.id)}
+      style={{ background: C.card, border: "1px solid " + (status !== "seen" ? C.gold + "88" : C.cardBorder), borderRadius: 12, padding: "16px 18px", marginBottom: 14, cursor: status !== "seen" ? "pointer" : "default" }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+        <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>{t.title}</div>
+        {status === "new" && <span style={{ background: C.gold, color: C.dark, fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 10 }}>🆕 NEW</span>}
+        {status === "updated" && <span style={{ background: C.burgundy, color: C.ivory, fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 10 }}>🔄 UPDATED</span>}
+      </div>
+      <pre style={{ color: C.text, fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-wrap", fontFamily: "inherit", margin: 0 }}>{t.body}</pre>
+      <div style={{ color: C.muted, fontSize: 11, marginTop: 8 }}>
+        Added by {t.created_by || "leadership"}{t.updated_by && t.updated_by !== t.created_by ? " · updated by " + t.updated_by : ""} — {new Date(t.updated_at).toLocaleDateString()}
+      </div>
+    </div>
+  );
+}
+
+function LearningCenterView({ data, dynamicItems, statusFor, onView }) {
+  return (
+    <div>
+      {dynamicItems?.map((t) => <DynamicTemplateCard key={t.id} t={t} statusFor={statusFor} onView={onView} />)}
+      <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "20px 22px" }}>
       <SectionHeading>What It Is</SectionHeading>
       <p style={{ color: C.text, fontSize: 14, lineHeight: 1.7 }}>{data.whatItIs}</p>
 
@@ -194,11 +255,12 @@ function LearningCenterView({ data }) {
           <span style={{ color: C.text, fontSize: 13, lineHeight: 1.6 }}>{b}</span>
         </div>
       ))}
+      </div>
     </div>
   );
 }
 
-function TemplatesView({ templates }) {
+function TemplatesView({ templates, dynamicItems, statusFor, onView }) {
   const [copiedIndex, setCopiedIndex] = useState(null);
 
   function handleCopy(text, i) {
@@ -210,6 +272,7 @@ function TemplatesView({ templates }) {
 
   return (
     <div>
+      {dynamicItems?.map((t) => <DynamicTemplateCard key={t.id} t={t} statusFor={statusFor} onView={onView} />)}
       {templates.map((t, i) => (
         <div key={i} style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "16px 18px", marginBottom: 14 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
@@ -225,7 +288,7 @@ function TemplatesView({ templates }) {
   );
 }
 
-function FormsView({ fields, categoryTitle }) {
+function FormsView({ fields, categoryTitle, dynamicItems, statusFor, onView }) {
   const [values, setValues] = useState({});
   const [generated, setGenerated] = useState(null);
 
@@ -251,6 +314,7 @@ function FormsView({ fields, categoryTitle }) {
 
   return (
     <div>
+      {dynamicItems?.map((t) => <DynamicTemplateCard key={t.id} t={t} statusFor={statusFor} onView={onView} />)}
       <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "18px 20px" }}>
         <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", marginBottom: 14 }}>
           Research Form — fill in what you know
@@ -287,25 +351,28 @@ function FormsView({ fields, categoryTitle }) {
   );
 }
 
-function DocumentsView({ documents }) {
+function DocumentsView({ documents, dynamicItems, statusFor, onView }) {
   return (
-    <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "18px 20px" }}>
-      {documents.length === 0 ? (
-        <p style={{ color: C.muted, fontSize: 14 }}>No reference documents added yet.</p>
-      ) : (
-        documents.map((d, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: i < documents.length - 1 ? "1px solid " + C.cardBorder : "none" }}>
-            <span style={{ fontSize: 16 }}>📄</span>
-            <span style={{ color: C.text, fontSize: 14 }}>{d}</span>
-          </div>
-        ))
-      )}
+    <div>
+      {dynamicItems?.map((t) => <DynamicTemplateCard key={t.id} t={t} statusFor={statusFor} onView={onView} />)}
+      <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "18px 20px" }}>
+        {documents.length === 0 ? (
+          <p style={{ color: C.muted, fontSize: 14 }}>No reference documents added yet.</p>
+        ) : (
+          documents.map((d, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: i < documents.length - 1 ? "1px solid " + C.cardBorder : "none" }}>
+              <span style={{ fontSize: 16 }}>📄</span>
+              <span style={{ color: C.text, fontSize: 14 }}>{d}</span>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }
 
-function CompletedExamplesView({ examples }) {
-  if (examples.length === 0) {
+function CompletedExamplesView({ examples, dynamicItems, statusFor, onView }) {
+  if (examples.length === 0 && (!dynamicItems || dynamicItems.length === 0)) {
     return (
       <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "24px 20px", textAlign: "center" }}>
         <div style={{ fontSize: 28, marginBottom: 10 }}>⭐</div>
@@ -318,6 +385,7 @@ function CompletedExamplesView({ examples }) {
   }
   return (
     <div>
+      {dynamicItems?.map((t) => <DynamicTemplateCard key={t.id} t={t} statusFor={statusFor} onView={onView} />)}
       {examples.map((ex, i) => (
         <div key={i} style={{ background: C.card, border: "1px solid " + C.gold + "44", borderRadius: 12, padding: "16px 18px", marginBottom: 14 }}>
           <div style={{ color: C.gold, fontWeight: 800, fontSize: 14, marginBottom: 8 }}>⭐ {ex.title}</div>

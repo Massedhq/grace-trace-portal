@@ -1054,6 +1054,23 @@ export default function WorkdayPortal() {
   const [alertMeetings, setAlertMeetings] = useState([]);
   const [alertSignatures, setAlertSignatures] = useState({});
   const [pinnedAnnouncements, setPinnedAnnouncements] = useState([]);
+  const [resourceTemplateAlert, setResourceTemplateAlert] = useState(0);
+
+  function loadResourceTemplateAlert(id: string) {
+    Promise.all([
+      fetch("/api/resource-templates?director=" + id).then(r => r.json()).catch(() => ({ templates: [] })),
+      fetch("/api/resource-template-reads").then(r => r.json()).catch(() => ({ reads: [] })),
+    ]).then(([tData, rData]) => {
+      const templates = tData.templates || [];
+      const reads = rData.reads || [];
+      const count = templates.filter((t: any) => {
+        const r = reads.find((x: any) => x.template_id === t.id && x.staff_id === id);
+        if (!r) return true;
+        return new Date(t.updated_at) > new Date(r.viewed_at);
+      }).length;
+      setResourceTemplateAlert(count);
+    }).catch(() => {});
+  }
   const [showPassword, setShowPassword] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
@@ -1120,6 +1137,7 @@ export default function WorkdayPortal() {
     fetch("/api/meetings").then(r=>r.json()).then(m=>setAlertMeetings(m)).catch(()=>{});
     fetch("/api/signatures").then(r=>r.json()).then(s=>setAlertSignatures(s)).catch(()=>{});
     fetch("/api/announcements").then(r=>r.json()).then(d=>setPinnedAnnouncements((d.announcements||[]).filter(a=>a.pinned))).catch(()=>{});
+    loadResourceTemplateAlert(user.id);
     // Register service worker and push notifications
     if ("serviceWorker" in navigator && "PushManager" in window) {
       navigator.serviceWorker.register("/sw.js").then(reg => {
@@ -1144,7 +1162,8 @@ export default function WorkdayPortal() {
         fetch("/api/mandatory-tasks").then(r=>r.json()).then(t=>setAlertTasks(t)).catch(()=>{});
         fetch("/api/meetings").then(r=>r.json()).then(m=>setAlertMeetings(m)).catch(()=>{});
         fetch("/api/signatures").then(r=>r.json()).then(s=>setAlertSignatures(s)).catch(()=>{});
-    fetch("/api/announcements").then(r=>r.json()).then(d=>setPinnedAnnouncements((d.announcements||[]).filter(a=>a.pinned))).catch(()=>{});
+        fetch("/api/announcements").then(r=>r.json()).then(d=>setPinnedAnnouncements((d.announcements||[]).filter(a=>a.pinned))).catch(()=>{});
+        loadResourceTemplateAlert(currentUser.id);
       };
       reload();
       window.addEventListener("focus", reload);
@@ -1177,6 +1196,7 @@ export default function WorkdayPortal() {
           fetch("/api/meetings").then(r=>r.json()).then(m=>setAlertMeetings(m)).catch(()=>{});
           fetch("/api/signatures").then(r=>r.json()).then(s=>setAlertSignatures(s)).catch(()=>{});
     fetch("/api/announcements").then(r=>r.json()).then(d=>setPinnedAnnouncements((d.announcements||[]).filter(a=>a.pinned))).catch(()=>{});
+          loadResourceTemplateAlert(uid);
           setCurrentUser(user);
           setScreen("dashboard");
         }
@@ -1453,9 +1473,11 @@ export default function WorkdayPortal() {
               { label: "Operations Binder — House Rules", href: "/operations-binder", icon: "📋" },
               { label: "Emergency & Incident Procedures", href: "/emergency-procedures", icon: "🚨" },
               { label: "Announcements", href: "/announcements", icon: "📣" },
+              { label: "My Resource Templates", href: "/my-resource-templates", icon: "📚" },
               { label: "Compensation Declaration", href: "/compensation", icon: "💼" },
               { label: "Task Requests — Kisses", href: "/task-requests", icon: "✉️" },
               ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Staff Reports", href: "/staff-reports", icon: "👥" }] : []),
+              ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Manage Resource Templates", href: "/admin/resource-templates", icon: "🛠️" }] : []),
               ...(currentUser.id === "ialana" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Ialana's Binder", href: "/ialana-binder", icon: "📘" }] : []),
               ...(currentUser.id === "erica" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Erica's Binder", href: "/erica-binder", icon: "📗" }] : []),
               ...(currentUser.id === "deann" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Deann's Binder", href: "/deann-binder", icon: "📙" }] : []),
@@ -1570,6 +1592,21 @@ export default function WorkdayPortal() {
             ))}
             <a href="/announcements" style={{ display: "inline-block", marginTop: 6, background: C.gold, border: "none", borderRadius: 8, padding: "7px 14px", color: C.dark, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>
               View Announcements 📣
+            </a>
+          </div>
+        )}
+
+        {resourceTemplateAlert > 0 && (
+          <div style={{ background: C.card, border: "1px solid " + C.gold + "77", borderRadius: 12, padding: "14px 18px", marginBottom: 20, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 22, flexShrink: 0 }}>📚</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>
+                {resourceTemplateAlert} new or updated resource template{resourceTemplateAlert !== 1 ? "s" : ""} for you
+              </div>
+              <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>Something's been added or changed in your Resource Center</div>
+            </div>
+            <a href="/my-resource-templates" style={{ background: C.gold, border: "none", borderRadius: 8, padding: "8px 14px", color: C.dark, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>
+              View Templates 📚
             </a>
           </div>
         )}
