@@ -1,6 +1,7 @@
 // @ts-nocheck
 "use client";
 import { useState, useEffect } from "react";
+import { CATEGORIES as OUTREACH_CATEGORIES } from "@/lib/outreachResourceContent";
 
 const C = {
   burgundy: "#6B1A2A",
@@ -1134,6 +1135,7 @@ export default function WorkdayPortal() {
     setCurrentUser(user); setActiveTask(null); setReportText(""); setReportVisible(false); setSent(false); setActiveTab("workday"); setScreen("dashboard");
   }
   const [menuOpen, setMenuOpen] = useState(false);
+  const [outreachMenuOpen, setOutreachMenuOpen] = useState(false);
 
   // Reload alert data every time dashboard is shown, window gets focus, or every 60 seconds
   useEffect(() => {
@@ -1470,6 +1472,45 @@ export default function WorkdayPortal() {
                 {item.label}
               </a>
             ))}
+
+            {(currentUser.id === "deann" || currentUser.id === "avy" || currentUser.id === "travis") && (
+              <div style={{ borderBottom: "1px solid " + C.cardBorder }}>
+                <button
+                  onClick={() => setOutreachMenuOpen(!outreachMenuOpen)}
+                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, padding: "14px 20px", color: C.text, background: "transparent", border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer", textAlign: "left" }}
+                  onMouseEnter={e => e.currentTarget.style.background = C.dark}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                >
+                  <span style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                    <span style={{ fontSize: 18 }}>📚</span>
+                    Outreach Resource Center
+                  </span>
+                  <span style={{ color: C.gold, fontSize: 14 }}>{outreachMenuOpen ? "▲" : "▼"}</span>
+                </button>
+                {outreachMenuOpen && (
+                  <div style={{ background: C.dark }}>
+                    <a href="/outreach-resource-center" onClick={() => setMenuOpen(false)}
+                      style={{ display: "block", padding: "10px 20px 10px 52px", color: C.gold, textDecoration: "none", fontSize: 13, fontWeight: 700 }}>
+                      Overview
+                    </a>
+                    {OUTREACH_CATEGORIES.map((cat) => (
+                      <a key={cat.id} href={"/outreach-resource-center?cat=" + cat.id} onClick={() => setMenuOpen(false)}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px 10px 52px", color: C.muted, textDecoration: "none", fontSize: 13 }}
+                        onMouseEnter={e => e.currentTarget.style.color = C.text}
+                        onMouseLeave={e => e.currentTarget.style.color = C.muted}>
+                        <span>{cat.icon}</span> {cat.title}
+                      </a>
+                    ))}
+                    <a href="/outreach-resource-center?cat=training" onClick={() => setMenuOpen(false)}
+                      style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px 14px 52px", color: C.muted, textDecoration: "none", fontSize: 13 }}
+                      onMouseEnter={e => e.currentTarget.style.color = C.text}
+                      onMouseLeave={e => e.currentTarget.style.color = C.muted}>
+                      <span>🎓</span> Director Training
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           <div style={{ padding: "16px 20px", borderTop: "1px solid " + C.cardBorder }}>
             <button onClick={logout} style={{ width: "100%", background: C.burgundy, border: "none", borderRadius: 8, padding: "11px", color: C.ivory, fontSize: 13, fontWeight: 800, cursor: "pointer" }}>Log out</button>
