@@ -5,9 +5,13 @@
 // Styled to match the portal's existing inline color palette.
 // Supports deep-linking: /outreach-resource-center?cat=veterans opens
 // directly into that category instead of the home grid.
+//
+// NOTE: reads the query string via window.location instead of
+// next/navigation's useSearchParams — that hook requires a Suspense
+// boundary for static generation, which isn't needed here since this
+// is a client-only lookup done after mount.
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
 import { CATEGORIES, DIRECTOR_TRAINING, RESEARCH_TEMPLATE_FIELDS } from "@/lib/outreachResourceContent";
 
 const C = {
@@ -40,13 +44,14 @@ const PROPERTY_FIELDS = [
 ];
 
 export default function OutreachResourceCenter() {
-  const searchParams = useSearchParams();
   const [view, setView] = useState("home"); // "home" | "category" | "training"
   const [activeCategoryId, setActiveCategoryId] = useState(null);
   const [activeTab, setActiveTab] = useState("Learning Center");
 
   useEffect(() => {
-    const cat = searchParams.get("cat");
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const cat = params.get("cat");
     if (cat === "training") {
       setView("training");
     } else if (cat && CATEGORIES.some((c) => c.id === cat)) {
@@ -54,7 +59,7 @@ export default function OutreachResourceCenter() {
       setActiveTab("Learning Center");
       setView("category");
     }
-  }, [searchParams]);
+  }, []);
 
   const activeCategory = CATEGORIES.find((c) => c.id === activeCategoryId);
 
