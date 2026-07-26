@@ -100,6 +100,15 @@ export default function OutreachResourceCenter() {
     return new Date(t.updated_at) > new Date(r.viewed_at) ? "updated" : "seen";
   }
 
+  function loadDynamicTemplates() {
+    fetch("/api/resource-templates?director=deann")
+      .then((r) => r.json())
+      .then((d) => setDynamicTemplates(d.templates || []))
+      .catch(() => {});
+  }
+
+  const leadership = staffId === "avy" || staffId === "travis";
+
   const activeCategory = CATEGORIES.find((c) => c.id === activeCategoryId);
 
   function openCategory(id) {
@@ -181,13 +190,13 @@ export default function OutreachResourceCenter() {
               ))}
             </div>
 
-            {activeTab === "Learning Center" && <LearningCenterView data={activeCategory.learningCenter} dynamicItems={dynamicFor(activeCategory.title, "Learning Center")} statusFor={statusFor} onView={markTemplateViewed} />}
-            {activeTab === "Templates" && <TemplatesView templates={activeCategory.templates} dynamicItems={dynamicFor(activeCategory.title, "Templates")} statusFor={statusFor} onView={markTemplateViewed} />}
+            {activeTab === "Learning Center" && <LearningCenterView data={activeCategory.learningCenter} dynamicItems={dynamicFor(activeCategory.title, "Learning Center")} statusFor={statusFor} onView={markTemplateViewed} leadership={leadership} onDeleted={loadDynamicTemplates} />}
+            {activeTab === "Templates" && <TemplatesView templates={activeCategory.templates} dynamicItems={dynamicFor(activeCategory.title, "Templates")} statusFor={statusFor} onView={markTemplateViewed} leadership={leadership} onDeleted={loadDynamicTemplates} />}
             {activeTab === "Forms" && (
-              <FormsView fields={activeCategory.id === "potentialProperties" ? PROPERTY_FIELDS : RESEARCH_TEMPLATE_FIELDS} categoryTitle={activeCategory.title} dynamicItems={dynamicFor(activeCategory.title, "Forms")} statusFor={statusFor} onView={markTemplateViewed} />
+              <FormsView fields={activeCategory.id === "potentialProperties" ? PROPERTY_FIELDS : RESEARCH_TEMPLATE_FIELDS} categoryTitle={activeCategory.title} dynamicItems={dynamicFor(activeCategory.title, "Forms")} statusFor={statusFor} onView={markTemplateViewed} leadership={leadership} onDeleted={loadDynamicTemplates} />
             )}
-            {activeTab === "Documents" && <DocumentsView documents={activeCategory.documents} dynamicItems={dynamicFor(activeCategory.title, "Documents")} statusFor={statusFor} onView={markTemplateViewed} />}
-            {activeTab === "Completed Examples" && <CompletedExamplesView examples={activeCategory.completedExamples} dynamicItems={dynamicFor(activeCategory.title, "Completed Examples")} statusFor={statusFor} onView={markTemplateViewed} />}
+            {activeTab === "Documents" && <DocumentsView documents={activeCategory.documents} dynamicItems={dynamicFor(activeCategory.title, "Documents")} statusFor={statusFor} onView={markTemplateViewed} leadership={leadership} onDeleted={loadDynamicTemplates} />}
+            {activeTab === "Completed Examples" && <CompletedExamplesView examples={activeCategory.completedExamples} dynamicItems={dynamicFor(activeCategory.title, "Completed Examples")} statusFor={statusFor} onView={markTemplateViewed} leadership={leadership} onDeleted={loadDynamicTemplates} />}
           </div>
         )}
       </div>
@@ -199,27 +208,64 @@ function SectionHeading({ children }) {
   return <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10, marginTop: 20 }}>{children}</div>;
 }
 
-function DynamicTemplateCard({ t, statusFor, onView }) {
+function DynamicTemplateCard({ t, statusFor, onView, leadership, onDeleted }) {
   const status = statusFor(t);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  async function handleDelete(e) {
+    e.stopPropagation();
+    setDeleting(true);
+    try {
+      await fetch("/api/resource-templates", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: t.id }),
+      });
+      onDeleted();
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
     <div
       onClick={() => status !== "seen" && onView(t.id)}
       style={{ background: C.card, border: "1px solid " + (status !== "seen" ? C.gold + "88" : C.cardBorder), borderRadius: 12, padding: "16px 18px", marginBottom: 14, cursor: status !== "seen" ? "pointer" : "default" }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
         <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>{t.title}</div>
-        {status === "new" && <span style={{ background: C.gold, color: C.dark, fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 10 }}>🆕 NEW</span>}
-        {status === "updated" && <span style={{ background: C.burgundy, color: C.ivory, fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 10 }}>🔄 UPDATED</span>}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {status === "new" && <span style={{ background: C.gold, color: C.dark, fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 10 }}>🆕 NEW</span>}
+          {status === "updated" && <span style={{ background: C.burgundy, color: C.ivory, fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 10 }}>🔄 UPDATED</span>}
+          {leadership && (
+            confirmingDelete ? (
+              <span style={{ display: "flex", gap: 6 }} onClick={(e) => e.stopPropagation()}>
+                <button onClick={handleDelete} disabled={deleting} style={{ background: C.error, border: "none", borderRadius: 6, padding: "4px 10px", color: "white", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+                  {deleting ? "…" : "Confirm"}
+                </button>
+                <button onClick={() => setConfirmingDelete(false)} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 6, padding: "4px 10px", color: C.muted, fontSize: 11, cursor: "pointer" }}>
+                  Cancel
+                </button>
+              </span>
+            ) : (
+              <button onClick={(e) => { e.stopPropagation(); setConfirmingDelete(true); }} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 6, padding: "4px 10px", color: C.muted, fontSize: 11, cursor: "pointer" }}>
+                Delete
+              </button>
+            )
+          )}
+        </div>
       </div>
       <pre style={{ color: C.text, fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-wrap", fontFamily: "inherit", margin: 0 }}>{t.body}</pre>
       <div style={{ color: C.muted, fontSize: 11, marginTop: 8 }}>
         Added by {t.created_by || "leadership"}{t.updated_by && t.updated_by !== t.created_by ? " · updated by " + t.updated_by : ""} — {new Date(t.updated_at).toLocaleDateString()}
+        {leadership && <> · <a href={"/admin/resource-templates"} style={{ color: C.gold, textDecoration: "underline" }} onClick={(e) => e.stopPropagation()}>Edit in Manage Resource Templates</a></>}
       </div>
     </div>
   );
 }
 
-function LearningCenterView({ data, dynamicItems, statusFor, onView }) {
+function LearningCenterView({ data, dynamicItems, statusFor, onView, leadership, onDeleted }) {
   const hasStaticContent = data.whatItIs || data.whyItMatters || data.howItWorks || data.terminology?.length || data.faqs?.length || data.bestPractices?.length;
   const hasAnyContent = hasStaticContent || (dynamicItems && dynamicItems.length > 0);
 
@@ -237,7 +283,7 @@ function LearningCenterView({ data, dynamicItems, statusFor, onView }) {
 
   return (
     <div>
-      {dynamicItems?.map((t) => <DynamicTemplateCard key={t.id} t={t} statusFor={statusFor} onView={onView} />)}
+      {dynamicItems?.map((t) => <DynamicTemplateCard key={t.id} t={t} statusFor={statusFor} onView={onView} leadership={leadership} onDeleted={onDeleted} />)}
       {hasStaticContent && (
       <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "20px 22px" }}>
       <SectionHeading>What It Is</SectionHeading>
@@ -277,7 +323,7 @@ function LearningCenterView({ data, dynamicItems, statusFor, onView }) {
   );
 }
 
-function TemplatesView({ templates, dynamicItems, statusFor, onView }) {
+function TemplatesView({ templates, dynamicItems, statusFor, onView, leadership, onDeleted }) {
   const [copiedIndex, setCopiedIndex] = useState(null);
 
   function handleCopy(text, i) {
@@ -301,7 +347,7 @@ function TemplatesView({ templates, dynamicItems, statusFor, onView }) {
         </div>
       ) : (
         <>
-          {dynamicItems?.map((t) => <DynamicTemplateCard key={t.id} t={t} statusFor={statusFor} onView={onView} />)}
+          {dynamicItems?.map((t) => <DynamicTemplateCard key={t.id} t={t} statusFor={statusFor} onView={onView} leadership={leadership} onDeleted={onDeleted} />)}
           {templates.map((t, i) => (
             <div key={i} style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "16px 18px", marginBottom: 14 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
@@ -319,7 +365,7 @@ function TemplatesView({ templates, dynamicItems, statusFor, onView }) {
   );
 }
 
-function FormsView({ fields, categoryTitle, dynamicItems, statusFor, onView }) {
+function FormsView({ fields, categoryTitle, dynamicItems, statusFor, onView, leadership, onDeleted }) {
   const [values, setValues] = useState({});
   const [generated, setGenerated] = useState(null);
 
@@ -345,7 +391,7 @@ function FormsView({ fields, categoryTitle, dynamicItems, statusFor, onView }) {
 
   return (
     <div>
-      {dynamicItems?.map((t) => <DynamicTemplateCard key={t.id} t={t} statusFor={statusFor} onView={onView} />)}
+      {dynamicItems?.map((t) => <DynamicTemplateCard key={t.id} t={t} statusFor={statusFor} onView={onView} leadership={leadership} onDeleted={onDeleted} />)}
       <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "18px 20px" }}>
         <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", marginBottom: 14 }}>
           Research Form — fill in what you know
@@ -382,10 +428,10 @@ function FormsView({ fields, categoryTitle, dynamicItems, statusFor, onView }) {
   );
 }
 
-function DocumentsView({ documents, dynamicItems, statusFor, onView }) {
+function DocumentsView({ documents, dynamicItems, statusFor, onView, leadership, onDeleted }) {
   return (
     <div>
-      {dynamicItems?.map((t) => <DynamicTemplateCard key={t.id} t={t} statusFor={statusFor} onView={onView} />)}
+      {dynamicItems?.map((t) => <DynamicTemplateCard key={t.id} t={t} statusFor={statusFor} onView={onView} leadership={leadership} onDeleted={onDeleted} />)}
       <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "18px 20px" }}>
         {documents.length === 0 ? (
           <p style={{ color: C.muted, fontSize: 14 }}>No reference documents added yet.</p>
@@ -402,7 +448,7 @@ function DocumentsView({ documents, dynamicItems, statusFor, onView }) {
   );
 }
 
-function CompletedExamplesView({ examples, dynamicItems, statusFor, onView }) {
+function CompletedExamplesView({ examples, dynamicItems, statusFor, onView, leadership, onDeleted }) {
   if (examples.length === 0 && (!dynamicItems || dynamicItems.length === 0)) {
     return (
       <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "24px 20px", textAlign: "center" }}>
@@ -416,7 +462,7 @@ function CompletedExamplesView({ examples, dynamicItems, statusFor, onView }) {
   }
   return (
     <div>
-      {dynamicItems?.map((t) => <DynamicTemplateCard key={t.id} t={t} statusFor={statusFor} onView={onView} />)}
+      {dynamicItems?.map((t) => <DynamicTemplateCard key={t.id} t={t} statusFor={statusFor} onView={onView} leadership={leadership} onDeleted={onDeleted} />)}
       {examples.map((ex, i) => (
         <div key={i} style={{ background: C.card, border: "1px solid " + C.gold + "44", borderRadius: 12, padding: "16px 18px", marginBottom: 14 }}>
           <div style={{ color: C.gold, fontWeight: 800, fontSize: 14, marginBottom: 8 }}>⭐ {ex.title}</div>
