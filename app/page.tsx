@@ -1473,7 +1473,6 @@ export default function WorkdayPortal() {
               { label: "Operations Binder — House Rules", href: "/operations-binder", icon: "📋" },
               { label: "Emergency & Incident Procedures", href: "/emergency-procedures", icon: "🚨" },
               { label: "Announcements", href: "/announcements", icon: "📣" },
-              { label: "My Resource Templates", href: "/my-resource-templates", icon: "📚" },
               { label: "Compensation Declaration", href: "/compensation", icon: "💼" },
               { label: "Task Requests — Kisses", href: "/task-requests", icon: "✉️" },
               ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Staff Reports", href: "/staff-reports", icon: "👥" }] : []),
@@ -1605,7 +1604,7 @@ export default function WorkdayPortal() {
               </div>
               <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>Something's been added or changed in your Resource Center</div>
             </div>
-            <a href="/my-resource-templates" style={{ background: C.gold, border: "none", borderRadius: 8, padding: "8px 14px", color: C.dark, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>
+            <a href="/outreach-resource-center" style={{ background: C.gold, border: "none", borderRadius: 8, padding: "8px 14px", color: C.dark, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>
               View Templates 📚
             </a>
           </div>

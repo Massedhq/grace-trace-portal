@@ -7,6 +7,7 @@
 // a category/folder, and a section.
 
 import { useState, useEffect } from "react";
+import { CATEGORIES as OUTREACH_CATEGORIES } from "@/lib/outreachResourceContent";
 
 const C = {
   burgundy: "#6B1A2A",
@@ -181,7 +182,7 @@ export default function ResourceTemplatesAdmin() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
             <div>
               <label style={{ color: C.text, fontSize: 12, fontWeight: 700, display: "block", marginBottom: 6 }}>Assign To</label>
-              <select value={form.directorId} onChange={(e) => update("directorId", e.target.value)}
+              <select value={form.directorId} onChange={(e) => { update("directorId", e.target.value); update("category", ""); }}
                 style={{ width: "100%", background: C.dark, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "9px 12px", color: C.text, fontSize: 13 }}>
                 <option value="all">All Staff</option>
                 {STAFF.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -198,9 +199,24 @@ export default function ResourceTemplatesAdmin() {
 
           <div style={{ marginBottom: 14 }}>
             <label style={{ color: C.text, fontSize: 12, fontWeight: 700, display: "block", marginBottom: 6 }}>Category / Folder</label>
-            <input type="text" value={form.category} onChange={(e) => update("category", e.target.value)}
-              placeholder="e.g. Veterans Services, Property Development, Workforce Development"
-              style={{ width: "100%", background: C.dark, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "9px 12px", color: C.text, fontSize: 13 }} />
+            {form.directorId === "deann" ? (
+              <select value={form.category} onChange={(e) => update("category", e.target.value)}
+                style={{ width: "100%", background: C.dark, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "9px 12px", color: form.category ? C.text : C.muted, fontSize: 13 }}>
+                <option value="">Select a category…</option>
+                {OUTREACH_CATEGORIES.map((c) => (
+                  <option key={c.id} value={c.title}>{c.icon} {c.title}</option>
+                ))}
+              </select>
+            ) : (
+              <>
+                <input type="text" value={form.category} onChange={(e) => update("category", e.target.value)}
+                  placeholder="This director doesn't have a fixed category list yet — type one (e.g. Payroll, Vendor Relations)"
+                  style={{ width: "100%", background: C.dark, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "9px 12px", color: C.text, fontSize: 13 }} />
+                <div style={{ color: C.muted, fontSize: 11, marginTop: 5 }}>
+                  Only Deann's Outreach Resource Center has predefined categories right now — pick "Deann Evans" above to choose from the dropdown.
+                </div>
+              </>
+            )}
           </div>
 
           <div style={{ marginBottom: 14 }}>
