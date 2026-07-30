@@ -1079,6 +1079,18 @@ export default function WorkdayPortal() {
       setResourceTemplateAlert(breakdown);
     }).catch(() => {});
   }
+
+  const [outreachContactAlert, setOutreachContactAlert] = useState(0);
+
+  function loadOutreachContactAlert(id: string) {
+    fetch("/api/outreach-contacts?assignedTo=" + id)
+      .then((r) => r.json())
+      .then((d) => {
+        const pending = (d.contacts || []).filter((c: any) => !c.completed).length;
+        setOutreachContactAlert(pending);
+      })
+      .catch(() => {});
+  }
   const [showPassword, setShowPassword] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
@@ -1146,6 +1158,7 @@ export default function WorkdayPortal() {
     fetch("/api/signatures").then(r=>r.json()).then(s=>setAlertSignatures(s)).catch(()=>{});
     fetch("/api/announcements").then(r=>r.json()).then(d=>setPinnedAnnouncements((d.announcements||[]).filter(a=>a.pinned))).catch(()=>{});
     loadResourceTemplateAlert(user.id);
+    loadOutreachContactAlert(user.id);
     // Register service worker and push notifications
     if ("serviceWorker" in navigator && "PushManager" in window) {
       navigator.serviceWorker.register("/sw.js").then(reg => {
@@ -1172,6 +1185,7 @@ export default function WorkdayPortal() {
         fetch("/api/signatures").then(r=>r.json()).then(s=>setAlertSignatures(s)).catch(()=>{});
         fetch("/api/announcements").then(r=>r.json()).then(d=>setPinnedAnnouncements((d.announcements||[]).filter(a=>a.pinned))).catch(()=>{});
         loadResourceTemplateAlert(currentUser.id);
+        loadOutreachContactAlert(currentUser.id);
       };
       reload();
       window.addEventListener("focus", reload);
@@ -1205,6 +1219,7 @@ export default function WorkdayPortal() {
           fetch("/api/signatures").then(r=>r.json()).then(s=>setAlertSignatures(s)).catch(()=>{});
     fetch("/api/announcements").then(r=>r.json()).then(d=>setPinnedAnnouncements((d.announcements||[]).filter(a=>a.pinned))).catch(()=>{});
           loadResourceTemplateAlert(uid);
+          loadOutreachContactAlert(uid);
           setCurrentUser(user);
           setScreen("dashboard");
         }
@@ -1481,10 +1496,12 @@ export default function WorkdayPortal() {
               { label: "Operations Binder — House Rules", href: "/operations-binder", icon: "📋" },
               { label: "Emergency & Incident Procedures", href: "/emergency-procedures", icon: "🚨" },
               { label: "Announcements", href: "/announcements", icon: "📣" },
+              { label: "My Outreach Contacts", href: "/my-outreach-contacts", icon: "📇" },
               { label: "Compensation Declaration", href: "/compensation", icon: "💼" },
               { label: "Task Requests — Kisses", href: "/task-requests", icon: "✉️" },
               ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Staff Reports", href: "/staff-reports", icon: "👥" }] : []),
               ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Manage Resource Templates", href: "/admin/resource-templates", icon: "🛠️" }] : []),
+              ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Assign Outreach Contacts", href: "/admin/outreach-contacts", icon: "📇" }] : []),
               ...(currentUser.id === "ialana" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Ialana's Binder", href: "/ialana-binder", icon: "📘" }] : []),
               ...(currentUser.id === "erica" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Erica's Binder", href: "/erica-binder", icon: "📗" }] : []),
               ...(currentUser.id === "deann" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Deann's Binder", href: "/deann-binder", icon: "📙" }] : []),
@@ -1619,6 +1636,21 @@ export default function WorkdayPortal() {
                 <span style={{ background: C.gold, color: C.dark, fontSize: 11, fontWeight: 800, padding: "2px 9px", borderRadius: 10 }}>{cat.count} new →</span>
               </a>
             ))}
+          </div>
+        )}
+
+        {outreachContactAlert > 0 && (
+          <div style={{ background: C.card, border: "1px solid " + C.gold + "77", borderRadius: 12, padding: "14px 18px", marginBottom: 20, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 22, flexShrink: 0 }}>📇</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>
+                {outreachContactAlert} outreach contact{outreachContactAlert !== 1 ? "s" : ""} to reach out to
+              </div>
+              <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>Assigned by leadership — check them off as you complete them</div>
+            </div>
+            <a href="/my-outreach-contacts" style={{ background: C.gold, border: "none", borderRadius: 8, padding: "8px 14px", color: C.dark, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>
+              View Contacts 📇
+            </a>
           </div>
         )}
         <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "16px 20px", marginBottom: 24 }}>
