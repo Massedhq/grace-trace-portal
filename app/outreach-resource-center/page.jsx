@@ -100,6 +100,12 @@ export default function OutreachResourceCenter() {
     return new Date(t.updated_at) > new Date(r.viewed_at) ? "updated" : "seen";
   }
 
+  function categoryBadgeCount(categoryTitle) {
+    return dynamicTemplates.filter(
+      (t) => t.category.trim().toLowerCase() === categoryTitle.trim().toLowerCase() && statusFor(t) !== "seen"
+    ).length;
+  }
+
   function loadDynamicTemplates() {
     fetch("/api/resource-templates?director=deann")
       .then((r) => r.json())
@@ -141,17 +147,25 @@ export default function OutreachResourceCenter() {
         {view === "home" && (
           <>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 12, marginBottom: 24 }}>
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => openCategory(cat.id)}
-                  style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "18px 16px", textAlign: "left", cursor: "pointer" }}
-                >
-                  <div style={{ fontSize: 26, marginBottom: 8 }}>{cat.icon}</div>
-                  <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>{cat.title}</div>
-                  <div style={{ color: C.muted, fontSize: 12, marginTop: 4, lineHeight: 1.4 }}>{cat.tagline}</div>
-                </button>
-              ))}
+              {CATEGORIES.map((cat) => {
+                const badgeCount = categoryBadgeCount(cat.title);
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => openCategory(cat.id)}
+                    style={{ position: "relative", background: C.card, border: "1px solid " + (badgeCount > 0 ? C.gold + "88" : C.cardBorder), borderRadius: 12, padding: "18px 16px", textAlign: "left", cursor: "pointer" }}
+                  >
+                    {badgeCount > 0 && (
+                      <span style={{ position: "absolute", top: 10, right: 10, background: C.gold, color: C.dark, fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 10 }}>
+                        {badgeCount} new
+                      </span>
+                    )}
+                    <div style={{ fontSize: 26, marginBottom: 8 }}>{cat.icon}</div>
+                    <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>{cat.title}</div>
+                    <div style={{ color: C.muted, fontSize: 12, marginTop: 4, lineHeight: 1.4 }}>{cat.tagline}</div>
+                  </button>
+                );
+              })}
             </div>
 
             <button

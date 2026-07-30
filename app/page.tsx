@@ -1054,7 +1054,7 @@ export default function WorkdayPortal() {
   const [alertMeetings, setAlertMeetings] = useState([]);
   const [alertSignatures, setAlertSignatures] = useState({});
   const [pinnedAnnouncements, setPinnedAnnouncements] = useState([]);
-  const [resourceTemplateAlert, setResourceTemplateAlert] = useState(0);
+  const [resourceTemplateAlert, setResourceTemplateAlert] = useState<any[]>([]);
 
   function loadResourceTemplateAlert(id: string) {
     Promise.all([
@@ -1063,12 +1063,20 @@ export default function WorkdayPortal() {
     ]).then(([tData, rData]) => {
       const templates = tData.templates || [];
       const reads = rData.reads || [];
-      const count = templates.filter((t: any) => {
+      const pending = templates.filter((t: any) => {
         const r = reads.find((x: any) => x.template_id === t.id && x.staff_id === id);
         if (!r) return true;
         return new Date(t.updated_at) > new Date(r.viewed_at);
-      }).length;
-      setResourceTemplateAlert(count);
+      });
+      const byCategory: Record<string, number> = {};
+      pending.forEach((t: any) => {
+        byCategory[t.category] = (byCategory[t.category] || 0) + 1;
+      });
+      const breakdown = Object.keys(byCategory).map((categoryTitle) => {
+        const match = OUTREACH_CATEGORIES.find((c: any) => c.title.trim().toLowerCase() === categoryTitle.trim().toLowerCase());
+        return { categoryTitle, categoryId: match ? match.id : null, icon: match ? match.icon : "📚", count: byCategory[categoryTitle] };
+      });
+      setResourceTemplateAlert(breakdown);
     }).catch(() => {});
   }
   const [showPassword, setShowPassword] = useState(false);
@@ -1595,18 +1603,22 @@ export default function WorkdayPortal() {
           </div>
         )}
 
-        {resourceTemplateAlert > 0 && (
-          <div style={{ background: C.card, border: "1px solid " + C.gold + "77", borderRadius: 12, padding: "14px 18px", marginBottom: 20, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 22, flexShrink: 0 }}>📚</span>
-            <div style={{ flex: 1 }}>
-              <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>
-                {resourceTemplateAlert} new or updated resource template{resourceTemplateAlert !== 1 ? "s" : ""} for you
-              </div>
-              <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>Something's been added or changed in your Resource Center</div>
+        {resourceTemplateAlert.length > 0 && (
+          <div style={{ background: C.card, border: "1px solid " + C.gold + "77", borderRadius: 12, padding: "14px 18px", marginBottom: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+              <span style={{ fontSize: 20 }}>📚</span>
+              <span style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>
+                New or updated in your Resource Center
+              </span>
             </div>
-            <a href="/outreach-resource-center" style={{ background: C.gold, border: "none", borderRadius: 8, padding: "8px 14px", color: C.dark, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>
-              View Templates 📚
-            </a>
+            {resourceTemplateAlert.map((cat: any) => (
+              <a key={cat.categoryTitle}
+                href={cat.categoryId ? "/outreach-resource-center?cat=" + cat.categoryId : "/outreach-resource-center"}
+                style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", background: C.dark, borderRadius: 8, marginBottom: 6, textDecoration: "none" }}>
+                <span style={{ color: C.text, fontSize: 13 }}>{cat.icon} {cat.categoryTitle}</span>
+                <span style={{ background: C.gold, color: C.dark, fontSize: 11, fontWeight: 800, padding: "2px 9px", borderRadius: 10 }}>{cat.count} new →</span>
+              </a>
+            ))}
           </div>
         )}
         <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "16px 20px", marginBottom: 24 }}>
