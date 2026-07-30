@@ -128,8 +128,12 @@ export default function OutreachResourceCenter() {
       </div>
 
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "24px 20px" }}>
+        <a href="/" style={{ display: "inline-block", background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "7px 14px", color: C.muted, fontSize: 12, textDecoration: "none", marginBottom: 20 }}>
+          ← Back to Portal
+        </a>
+
         {view !== "home" && (
-          <button onClick={() => setView("home")} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "7px 14px", color: C.muted, fontSize: 12, cursor: "pointer", marginBottom: 20 }}>
+          <button onClick={() => setView("home")} style={{ display: "block", background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "7px 14px", color: C.muted, fontSize: 12, cursor: "pointer", marginBottom: 20 }}>
             ← Back to Resource Center
           </button>
         )}
