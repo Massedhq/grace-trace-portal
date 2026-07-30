@@ -1083,13 +1083,16 @@ export default function WorkdayPortal() {
   }
 
   const [outreachContactAlert, setOutreachContactAlert] = useState(0);
+  const [hasOutreachContacts, setHasOutreachContacts] = useState(false);
 
   function loadOutreachContactAlert(id: string) {
     fetch("/api/outreach-contacts?assignedTo=" + id)
       .then((r) => r.json())
       .then((d) => {
-        const pending = (d.contacts || []).filter((c: any) => !c.completed).length;
+        const contacts = d.contacts || [];
+        const pending = contacts.filter((c: any) => !c.completed).length;
         setOutreachContactAlert(pending);
+        setHasOutreachContacts(contacts.length > 0);
       })
       .catch(() => {});
   }
@@ -1498,7 +1501,7 @@ export default function WorkdayPortal() {
               { label: "Operations Binder — House Rules", href: "/operations-binder", icon: "📋" },
               { label: "Emergency & Incident Procedures", href: "/emergency-procedures", icon: "🚨" },
               { label: "Announcements", href: "/announcements", icon: "📣" },
-              { label: "My Outreach Contacts", href: "/my-outreach-contacts", icon: "📇" },
+              ...(hasOutreachContacts ? [{ label: "My Outreach Contacts", href: "/my-outreach-contacts", icon: "📇" }] : []),
               { label: "Compensation Declaration", href: "/compensation", icon: "💼" },
               { label: "Task Requests — Kisses", href: "/task-requests", icon: "✉️" },
               ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Staff Reports", href: "/staff-reports", icon: "👥" }] : []),
