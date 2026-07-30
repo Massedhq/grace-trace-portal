@@ -67,11 +67,13 @@ export default function OutreachResourceCenter() {
 
     const params = new URLSearchParams(window.location.search);
     const cat = params.get("cat");
+    const section = params.get("section");
+    const validSections = ["Learning Center", "Templates", "Forms", "Documents", "Completed Examples"];
     if (cat === "training") {
       setView("training");
     } else if (cat && CATEGORIES.some((c) => c.id === cat)) {
       setActiveCategoryId(cat);
-      setActiveTab("Learning Center");
+      setActiveTab(section && validSections.includes(section) ? section : "Learning Center");
       setView("category");
     }
   }, []);
@@ -117,9 +119,16 @@ export default function OutreachResourceCenter() {
 
   const activeCategory = CATEGORIES.find((c) => c.id === activeCategoryId);
 
-  function openCategory(id) {
+  function categoryPrimarySection(categoryTitle) {
+    const pending = dynamicTemplates
+      .filter((t) => t.category.trim().toLowerCase() === categoryTitle.trim().toLowerCase() && statusFor(t) !== "seen")
+      .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+    return pending.length > 0 ? pending[0].section : "Learning Center";
+  }
+
+  function openCategory(id, section) {
     setActiveCategoryId(id);
-    setActiveTab("Learning Center");
+    setActiveTab(section || "Learning Center");
     setView("category");
   }
 
@@ -152,7 +161,7 @@ export default function OutreachResourceCenter() {
                 return (
                   <button
                     key={cat.id}
-                    onClick={() => openCategory(cat.id)}
+                    onClick={() => openCategory(cat.id, categoryPrimarySection(cat.title))}
                     style={{ position: "relative", background: C.card, border: "1px solid " + (badgeCount > 0 ? C.gold + "88" : C.cardBorder), borderRadius: 12, padding: "18px 16px", textAlign: "left", cursor: "pointer" }}
                   >
                     {badgeCount > 0 && (

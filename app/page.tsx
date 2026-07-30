@@ -1068,13 +1068,15 @@ export default function WorkdayPortal() {
         if (!r) return true;
         return new Date(t.updated_at) > new Date(r.viewed_at);
       });
-      const byCategory: Record<string, number> = {};
+      const byCategorySection: Record<string, number> = {};
       pending.forEach((t: any) => {
-        byCategory[t.category] = (byCategory[t.category] || 0) + 1;
+        const key = t.category + "|||" + t.section;
+        byCategorySection[key] = (byCategorySection[key] || 0) + 1;
       });
-      const breakdown = Object.keys(byCategory).map((categoryTitle) => {
+      const breakdown = Object.keys(byCategorySection).map((key) => {
+        const [categoryTitle, section] = key.split("|||");
         const match = OUTREACH_CATEGORIES.find((c: any) => c.title.trim().toLowerCase() === categoryTitle.trim().toLowerCase());
-        return { categoryTitle, categoryId: match ? match.id : null, icon: match ? match.icon : "📚", count: byCategory[categoryTitle] };
+        return { categoryTitle, section, categoryId: match ? match.id : null, icon: match ? match.icon : "📚", count: byCategorySection[key] };
       });
       setResourceTemplateAlert(breakdown);
     }).catch(() => {});
@@ -1629,10 +1631,10 @@ export default function WorkdayPortal() {
               </span>
             </div>
             {resourceTemplateAlert.map((cat: any) => (
-              <a key={cat.categoryTitle}
-                href={cat.categoryId ? "/outreach-resource-center?cat=" + cat.categoryId : "/outreach-resource-center"}
+              <a key={cat.categoryTitle + cat.section}
+                href={cat.categoryId ? "/outreach-resource-center?cat=" + cat.categoryId + "&section=" + encodeURIComponent(cat.section) : "/outreach-resource-center"}
                 style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", background: C.dark, borderRadius: 8, marginBottom: 6, textDecoration: "none" }}>
-                <span style={{ color: C.text, fontSize: 13 }}>{cat.icon} {cat.categoryTitle}</span>
+                <span style={{ color: C.text, fontSize: 13 }}>{cat.icon} {cat.categoryTitle} — {cat.section}</span>
                 <span style={{ background: C.gold, color: C.dark, fontSize: 11, fontWeight: 800, padding: "2px 9px", borderRadius: 10 }}>{cat.count} new →</span>
               </a>
             ))}
