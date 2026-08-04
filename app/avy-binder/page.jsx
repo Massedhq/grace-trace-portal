@@ -299,11 +299,12 @@ export default function AvyBinder(){
   const[signError,setSignError]=useState("");
   const[signed,setSigned]=useState(false);
   const[loading,setLoading]=useState(true);
+  const[authorized,setAuthorized]=useState(false);
 
   useEffect(()=>{
     try{
       const uid2=localStorage.getItem("gtm_current_user");
-      const allowed = ["avy","avy","travis"];
+      const allowed = ["avy","travis"];
       if(uid2&&allowed.includes(uid2)){
         setAuthorized(true);
         // Always check API first — never rely on localStorage alone
@@ -343,6 +344,7 @@ export default function AvyBinder(){
   }
 
   if(loading)return<div style={{minHeight:"100vh",background:C.dark,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter','Segoe UI',sans-serif"}}><div style={{color:C.muted}}>Loading...</div></div>;
+  if(!authorized)return<div style={{minHeight:"100vh",background:C.dark,display:"flex",alignItems:"center",justifyContent:"center",padding:20,fontFamily:"'Inter','Segoe UI',sans-serif"}}><div style={{textAlign:"center"}}><div style={{color:C.ivory,fontSize:16,fontWeight:700,marginBottom:12}}>Access restricted — log in to the Staff Portal first</div><a href="/" style={{background:C.burgundy,border:"1px solid "+C.gold+"66",borderRadius:8,padding:"11px 24px",color:C.ivory,fontSize:14,fontWeight:800,textDecoration:"none"}}>Go to Staff Portal</a></div></div>;
 
   const current=SECTIONS.find(s=>s.id===activeSection);
   const idx=SECTIONS.findIndex(s=>s.id===activeSection);
@@ -410,23 +412,6 @@ export default function AvyBinder(){
                       Continue to Next Required Document
                     </button>
                     <button onClick={()=>{window.location.href="/";}} style={{background:"transparent",border:"1px solid "+C.cardBorder,borderRadius:10,padding:"12px",color:C.muted,fontSize:13,cursor:"pointer"}}>
-                      Return to My Workday Dashboard
-                    </button>
-                  </div>
-                  <div style={{marginTop:20,display:"flex",flexDirection:"column",gap:10}}>
-                    <div style={{color:"#4CAF5088",fontSize:12,textAlign:"center",marginBottom:4}}>What would you like to do next?</div>
-                    <button onClick={function(){
-                      var uid2=localStorage.getItem("gtm_current_user")||"";
-                      fetch("/api/signatures").then(function(r){return r.json();}).then(function(sigs){
-                        var oSigned=sigs["orientation_"+uid2]?sigs["orientation_"+uid2].signed:false;
-                        // Binder was just signed so treat it as signed
-                        if(!oSigned){window.location.href="/orientation";}
-                        else{window.location.href="/";}
-                      }).catch(function(){window.location.href="/";});
-                    }} style={{background:C.burgundy,border:"1px solid "+C.gold+"66",borderRadius:10,padding:"12px",color:C.ivory,fontSize:14,fontWeight:800,cursor:"pointer"}}>
-                      Continue to Next Pending Item
-                    </button>
-                    <button onClick={function(){window.location.href="/";}} style={{background:"transparent",border:"1px solid "+C.cardBorder,borderRadius:10,padding:"12px",color:C.muted,fontSize:13,cursor:"pointer"}}>
                       Return to My Workday Dashboard
                     </button>
                   </div>
