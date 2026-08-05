@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 // app/my-outreach-contacts/page.jsx
 //
@@ -29,6 +29,33 @@ const STAFF_NAMES = {
 function getCurrentStaffId() {
   if (typeof window === "undefined") return null;
   return window.localStorage.getItem("gtm_current_user");
+}
+
+// Breaks a long notes string into readable paragraphs. If the person already
+// typed line breaks, those are respected as-is. Otherwise, the text is split
+// on sentence boundaries so a dense paragraph doesn't render as one unbroken
+// wall of text.
+function formatNotesIntoParagraphs(text) {
+  if (!text) return [];
+  if (text.includes("\n")) {
+    return text.split(/\n+/).map((p) => p.trim()).filter(Boolean);
+  }
+  const sentences = text.split(/(?<=[.?!])\s+(?=[A-Z"“])/).map((s) => s.trim()).filter(Boolean);
+  return sentences.length > 1 ? sentences : [text.trim()];
+}
+
+function NotesBlock({ notes }) {
+  const paragraphs = formatNotesIntoParagraphs(notes);
+  if (paragraphs.length === 0) return null;
+  return (
+    <div style={{ marginTop: 8, background: C.dark, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "12px 14px" }}>
+      {paragraphs.map((p, i) => (
+        <p key={i} style={{ color: C.muted, fontSize: 13, lineHeight: 1.7, margin: i === paragraphs.length - 1 ? 0 : "0 0 10px" }}>
+          {p}
+        </p>
+      ))}
+    </div>
+  );
 }
 
 export default function MyOutreachContacts() {
@@ -108,12 +135,12 @@ export default function MyOutreachContacts() {
                   <div key={c.id} style={{ background: C.card, border: "1px solid " + C.gold + "66", borderRadius: 12, padding: "14px 16px", marginBottom: 10, display: "flex", gap: 14 }}>
                     <input type="checkbox" checked={false} disabled={updatingId === c.id} onChange={() => toggleComplete(c)}
                       style={{ width: 20, height: 20, marginTop: 2, flexShrink: 0, cursor: "pointer" }} />
-                    <div style={{ flex: 1 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ color: C.ivory, fontWeight: 800, fontSize: 15 }}>{c.organization_name}</div>
                       {c.contact_name && <div style={{ color: C.text, fontSize: 13, marginTop: 3 }}>{c.contact_name}</div>}
                       {c.phone && <div style={{ color: C.gold, fontSize: 13, marginTop: 2 }}>📞 {c.phone}</div>}
-                      {c.notes && <div style={{ color: C.muted, fontSize: 13, marginTop: 6, lineHeight: 1.5 }}>{c.notes}</div>}
-                      <div style={{ color: C.muted, fontSize: 11, marginTop: 6 }}>Assigned by {c.assigned_by || "leadership"} — {new Date(c.created_at).toLocaleDateString()}</div>
+                      <NotesBlock notes={c.notes} />
+                      <div style={{ color: C.muted, fontSize: 11, marginTop: 8 }}>Assigned by {c.assigned_by || "leadership"} — {new Date(c.created_at).toLocaleDateString()}</div>
                     </div>
                   </div>
                 ))}

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 // app/admin/outreach-contacts/page.jsx
 //
@@ -39,6 +39,33 @@ function getCurrentStaffId() {
 }
 function isLeadership(id) {
   return id === "avy" || id === "travis";
+}
+
+// Breaks a long notes string into readable paragraphs. If the person already
+// typed line breaks, those are respected as-is. Otherwise, the text is split
+// on sentence boundaries so a dense paragraph doesn't render as one unbroken
+// wall of text.
+function formatNotesIntoParagraphs(text) {
+  if (!text) return [];
+  if (text.includes("\n")) {
+    return text.split(/\n+/).map((p) => p.trim()).filter(Boolean);
+  }
+  const sentences = text.split(/(?<=[.?!])\s+(?=[A-Z"“])/).map((s) => s.trim()).filter(Boolean);
+  return sentences.length > 1 ? sentences : [text.trim()];
+}
+
+function NotesBlock({ notes }) {
+  const paragraphs = formatNotesIntoParagraphs(notes);
+  if (paragraphs.length === 0) return null;
+  return (
+    <div style={{ marginTop: 10, background: C.dark, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "12px 14px" }}>
+      {paragraphs.map((p, i) => (
+        <p key={i} style={{ color: C.text, fontSize: 13, lineHeight: 1.7, margin: i === paragraphs.length - 1 ? 0 : "0 0 10px" }}>
+          {p}
+        </p>
+      ))}
+    </div>
+  );
 }
 
 const emptyForm = { organizationName: "", contactName: "", phone: "", notes: "", assignedTo: "deann" };
@@ -171,8 +198,9 @@ export default function OutreachContactsAdmin() {
 
           <div style={{ marginBottom: 14 }}>
             <label style={{ color: C.text, fontSize: 12, fontWeight: 700, display: "block", marginBottom: 6 }}>Notes — why reach out, what to ask</label>
-            <textarea value={form.notes} onChange={(e) => update("notes", e.target.value)} rows={4}
-              style={{ width: "100%", background: C.dark, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "9px 12px", color: C.text, fontSize: 13, resize: "vertical", fontFamily: "inherit" }} />
+            <textarea value={form.notes} onChange={(e) => update("notes", e.target.value)} rows={6}
+              placeholder="Tip: press Enter between separate points or questions — it keeps things organized when Deann reads it back."
+              style={{ width: "100%", background: C.dark, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "9px 12px", color: C.text, fontSize: 13, resize: "vertical", fontFamily: "inherit", lineHeight: 1.6 }} />
           </div>
 
           {error && <div style={{ color: C.error, fontSize: 13, marginBottom: 12 }}>{error}</div>}
@@ -202,13 +230,13 @@ export default function OutreachContactsAdmin() {
               <div style={{ marginBottom: 20 }}>
                 <div style={{ color: C.gold, fontSize: 12, fontWeight: 700, marginBottom: 8 }}>⏳ Pending ({pending.length})</div>
                 {pending.map((c) => (
-                  <div key={c.id} style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 10, padding: "12px 16px", marginBottom: 8 }}>
+                  <div key={c.id} style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 10, padding: "14px 16px", marginBottom: 8 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ color: C.muted, fontSize: 11, marginBottom: 2 }}>Assigned to {STAFF_NAMES[c.assigned_to]}</div>
-                        <div style={{ color: C.text, fontWeight: 700, fontSize: 14 }}>{c.organization_name}</div>
-                        {c.contact_name && <div style={{ color: C.muted, fontSize: 12 }}>{c.contact_name}{c.phone ? " — " + c.phone : ""}</div>}
-                        {c.notes && <div style={{ color: C.muted, fontSize: 12, marginTop: 4 }}>{c.notes}</div>}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ color: C.muted, fontSize: 11, marginBottom: 3 }}>Assigned to {STAFF_NAMES[c.assigned_to]}</div>
+                        <div style={{ color: C.text, fontWeight: 700, fontSize: 15 }}>{c.organization_name}</div>
+                        {c.contact_name && <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>{c.contact_name}{c.phone ? " — " + c.phone : ""}</div>}
+                        <NotesBlock notes={c.notes} />
                       </div>
                       {confirmDeleteId === c.id ? (
                         <span style={{ display: "flex", gap: 6, flexShrink: 0 }}>
