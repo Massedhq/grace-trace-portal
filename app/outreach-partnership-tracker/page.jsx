@@ -1,11 +1,13 @@
-"use client";
+﻿"use client";
 
 // app/outreach-partnership-tracker/page.jsx
 //
 // Shared Outreach Partnership Contact Tracker for Avy and Deann.
 // No assignment model — both work every contact collaboratively.
 // Active Tracker holds working contacts; Mark Complete moves a contact
-// permanently into the Completed Partnership File (the official record).
+// permanently into the Completed Partnership File. Each contact tracks
+// whether Avy and/or Deann have seen its current state, so nothing gets
+// missed silently.
 
 import { useState, useEffect } from "react";
 
@@ -23,10 +25,7 @@ const C = {
   error: "#EF5350",
 };
 
-const STAFF_NAMES = {
-  avy: "Avrial Evans (Avy)", travis: "Travis Ramar", deann: "Deann Evans",
-  erica: "Erica Evans", ialana: "Ialana Tippins", aubreyon: "AuBreyon Woodley", dennis: "Dennis Pride",
-};
+const STAFF_NAMES = { avy: "Avrial Evans (Avy)", deann: "Deann Evans" };
 
 const ORG_TYPES = ["Workforce", "TDCJ", "VA", "Court", "Community Org", "Faith-Based", "Employer", "Other"];
 const STATUSES = ["Not Started", "In Progress", "Waiting on Response", "Information Gathered", "Application Submitted"];
@@ -73,9 +72,27 @@ function labelStyle() {
   return { color: C.text, fontSize: 12, fontWeight: 700, marginBottom: 5, display: "block" };
 }
 
+function SeenBadges({ reads, contactId, updatedAt }) {
+  const avyRead = reads.find((r) => r.contact_id === contactId && r.staff_id === "avy");
+  const deannRead = reads.find((r) => r.contact_id === contactId && r.staff_id === "deann");
+  const avySeen = avyRead && new Date(avyRead.viewed_at) >= new Date(updatedAt);
+  const deannSeen = deannRead && new Date(deannRead.viewed_at) >= new Date(updatedAt);
+  return (
+    <div style={{ display: "flex", gap: 12, marginTop: 6 }}>
+      <span style={{ fontSize: 11, fontWeight: avySeen ? 700 : 400, color: avySeen ? "#4CAF50" : C.muted }}>
+        {avySeen ? "✓" : "○"} Avy
+      </span>
+      <span style={{ fontSize: 11, fontWeight: deannSeen ? 700 : 400, color: deannSeen ? "#4CAF50" : C.muted }}>
+        {deannSeen ? "✓" : "○"} Deann
+      </span>
+    </div>
+  );
+}
+
 export default function OutreachPartnershipTracker() {
   const [staffId, setStaffId] = useState(null);
   const [contacts, setContacts] = useState([]);
+  const [reads, setReads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newForm, setNewForm] = useState(BLANK_FORM);
@@ -89,20 +106,33 @@ export default function OutreachPartnershipTracker() {
   useEffect(() => {
     const id = getCurrentStaffId();
     setStaffId(id);
-    if (id) loadContacts();
+    if (id) loadAll();
     else setLoading(false);
   }, []);
 
-  function loadContacts() {
-    fetch("/api/outreach-partnership-tracker")
-      .then((r) => r.json())
-      .then((d) => setContacts(d.contacts || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+  function loadAll() {
+    Promise.all([
+      fetch("/api/outreach-partnership-tracker").then((r) => r.json()).catch(() => ({ contacts: [] })),
+      fetch("/api/outreach-partnership-tracker-reads").then((r) => r.json()).catch(() => ({ reads: [] })),
+    ]).then(([cData, rData]) => {
+      setContacts(cData.contacts || []);
+      setReads(rData.reads || []);
+    }).finally(() => setLoading(false));
   }
 
   const actorName = STAFF_NAMES[staffId] || staffId;
   const authorized = staffId === "avy" || staffId === "deann";
+
+  function markRead(contactId) {
+    if (!staffId) return;
+    fetch("/api/outreach-partnership-tracker-reads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contactId, staffId }),
+    }).then(() => {
+      fetch("/api/outreach-partnership-tracker-reads").then((r) => r.json()).then((d) => setReads(d.reads || [])).catch(() => {});
+    }).catch(() => {});
+  }
 
   function updateNewForm(key, val) {
     setNewForm((f) => ({ ...f, [key]: val }));
@@ -112,14 +142,16 @@ export default function OutreachPartnershipTracker() {
     if (!newForm.organizationName.trim()) return;
     setSaving(true);
     try {
-      await fetch("/api/outreach-partnership-tracker", {
+      const res = await fetch("/api/outreach-partnership-tracker", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...newForm, createdBy: actorName }),
       });
+      const data = await res.json();
       setNewForm(BLANK_FORM);
       setShowAddForm(false);
-      loadContacts();
+      loadAll();
+      if (data && data.contact && data.contact.id) markRead(data.contact.id);
     } finally {
       setSaving(false);
     }
@@ -140,6 +172,7 @@ export default function OutreachPartnershipTracker() {
       },
     }));
     setExpandedId(c.id);
+    markRead(c.id);
   }
 
   function updateEditField(id, key, val) {
@@ -154,7 +187,8 @@ export default function OutreachPartnershipTracker() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, action: "update", actorName, ...editForms[id] }),
       });
-      loadContacts();
+      loadAll();
+      markRead(id);
     } finally {
       setBusyId(null);
     }
@@ -177,7 +211,8 @@ export default function OutreachPartnershipTracker() {
           partnershipAgreementDetails: c.partnership_agreement_details,
         }),
       });
-      loadContacts();
+      loadAll();
+      markRead(c.id);
     } finally {
       setBusyId(null);
     }
@@ -194,7 +229,8 @@ export default function OutreachPartnershipTracker() {
         body: JSON.stringify({ id, action: "addNote", actorName, text }),
       });
       setNewNoteText((prev) => ({ ...prev, [id]: "" }));
-      loadContacts();
+      loadAll();
+      markRead(id);
     } finally {
       setBusyId(null);
     }
@@ -210,7 +246,8 @@ export default function OutreachPartnershipTracker() {
       });
       setConfirmCompleteId(null);
       setExpandedId(null);
-      loadContacts();
+      loadAll();
+      markRead(id);
     } finally {
       setBusyId(null);
     }
@@ -224,7 +261,8 @@ export default function OutreachPartnershipTracker() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, action: "reopen", actorName }),
       });
-      loadContacts();
+      loadAll();
+      markRead(id);
     } finally {
       setBusyId(null);
     }
@@ -354,6 +392,7 @@ export default function OutreachPartnershipTracker() {
               <ContactCard
                 key={c.id}
                 c={c}
+                reads={reads}
                 expanded={expandedId === c.id}
                 onToggle={() => (expandedId === c.id ? setExpandedId(null) : startEdit(c))}
                 editForm={editForms[c.id]}
@@ -388,8 +427,9 @@ export default function OutreachPartnershipTracker() {
             <CompletedCard
               key={c.id}
               c={c}
+              reads={reads}
               expanded={expandedId === c.id}
-              onToggle={() => setExpandedId(expandedId === c.id ? null : c.id)}
+              onToggle={() => { const willExpand = expandedId !== c.id; setExpandedId(willExpand ? c.id : null); if (willExpand) markRead(c.id); }}
               onReopen={() => reopenContact(c.id)}
               busy={busyId === c.id}
             />
@@ -412,7 +452,7 @@ function StatusBadge({ status }) {
 }
 
 function ContactCard({
-  c, expanded, onToggle, editForm, onEditField, onSave, onQuickStatus, busy,
+  c, reads, expanded, onToggle, editForm, onEditField, onSave, onQuickStatus, busy,
   newNoteText, onNoteChange, onAddNote, confirmingComplete, onRequestComplete, onCancelComplete, onConfirmComplete, actorName,
 }) {
   const notesLog = Array.isArray(c.notes_log) ? c.notes_log : [];
@@ -432,6 +472,7 @@ function ContactCard({
             {[c.org_type, c.region].filter(Boolean).join(" — ") || "No type or region set"}
             {c.contact_name ? " · " + c.contact_name : ""}
           </div>
+          <SeenBadges reads={reads} contactId={c.id} updatedAt={c.updated_at} />
         </div>
         <span style={{ color: C.gold, fontSize: 18 }}>{expanded ? "−" : "+"}</span>
       </button>
@@ -569,7 +610,7 @@ function ContactCard({
   );
 }
 
-function CompletedCard({ c, expanded, onToggle, onReopen, busy }) {
+function CompletedCard({ c, reads, expanded, onToggle, onReopen, busy }) {
   const notesLog = Array.isArray(c.notes_log) ? c.notes_log : [];
 
   return (
@@ -584,6 +625,7 @@ function CompletedCard({ c, expanded, onToggle, onReopen, busy }) {
           <div style={{ color: "#4CAF50", fontSize: 12, marginTop: 3 }}>
             Completed {c.completed_at ? new Date(c.completed_at).toLocaleDateString() : ""}{c.completed_by ? " by " + c.completed_by : ""}
           </div>
+          <SeenBadges reads={reads} contactId={c.id} updatedAt={c.updated_at} />
         </div>
         <span style={{ color: C.gold, fontSize: 18 }}>{expanded ? "−" : "+"}</span>
       </button>

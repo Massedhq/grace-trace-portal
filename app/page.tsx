@@ -1084,6 +1084,7 @@ export default function WorkdayPortal() {
 
   const [outreachContactAlert, setOutreachContactAlert] = useState(0);
   const [hasOutreachContacts, setHasOutreachContacts] = useState(false);
+  const [partnershipAlertCount, setPartnershipAlertCount] = useState(0);
 
   function loadOutreachContactAlert(id: string) {
     fetch("/api/outreach-contacts?assignedTo=" + id)
@@ -1095,6 +1096,23 @@ export default function WorkdayPortal() {
         setHasOutreachContacts(contacts.length > 0);
       })
       .catch(() => {});
+  }
+
+  function loadPartnershipAlert(id: string) {
+    if (id !== "avy" && id !== "deann") return;
+    Promise.all([
+      fetch("/api/outreach-partnership-tracker").then((r) => r.json()).catch(() => ({ contacts: [] })),
+      fetch("/api/outreach-partnership-tracker-reads").then((r) => r.json()).catch(() => ({ reads: [] })),
+    ]).then(([cData, rData]) => {
+      const contacts = cData.contacts || [];
+      const reads = rData.reads || [];
+      const unseen = contacts.filter((c: any) => {
+        const r = reads.find((x: any) => x.contact_id === c.id && x.staff_id === id);
+        if (!r) return true;
+        return new Date(c.updated_at) > new Date(r.viewed_at);
+      });
+      setPartnershipAlertCount(unseen.length);
+    }).catch(() => {});
   }
   const [showPassword, setShowPassword] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
@@ -1164,6 +1182,7 @@ export default function WorkdayPortal() {
     fetch("/api/announcements").then(r=>r.json()).then(d=>setPinnedAnnouncements((d.announcements||[]).filter(a=>a.pinned))).catch(()=>{});
     loadResourceTemplateAlert(user.id);
     loadOutreachContactAlert(user.id);
+    loadPartnershipAlert(user.id);
     // Register service worker and push notifications
     if ("serviceWorker" in navigator && "PushManager" in window) {
       navigator.serviceWorker.register("/sw.js").then(reg => {
@@ -1191,6 +1210,7 @@ export default function WorkdayPortal() {
         fetch("/api/announcements").then(r=>r.json()).then(d=>setPinnedAnnouncements((d.announcements||[]).filter(a=>a.pinned))).catch(()=>{});
         loadResourceTemplateAlert(currentUser.id);
         loadOutreachContactAlert(currentUser.id);
+        loadPartnershipAlert(currentUser.id);
       };
       reload();
       window.addEventListener("focus", reload);
@@ -1225,6 +1245,7 @@ export default function WorkdayPortal() {
     fetch("/api/announcements").then(r=>r.json()).then(d=>setPinnedAnnouncements((d.announcements||[]).filter(a=>a.pinned))).catch(()=>{});
           loadResourceTemplateAlert(uid);
           loadOutreachContactAlert(uid);
+          loadPartnershipAlert(uid);
           setCurrentUser(user);
           setScreen("dashboard");
         }
@@ -1645,7 +1666,19 @@ export default function WorkdayPortal() {
           </div>
         )}
 
-        {outreachContactAlert > 0 && (
+                {(currentUser.id === "avy" || currentUser.id === "deann") && partnershipAlertCount > 0 && (
+          <div style={{ background: C.card, border: "1px solid " + C.gold + "77", borderRadius: 12, padding: "14px 18px", marginBottom: 20, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>
+                {partnershipAlertCount} update{partnershipAlertCount !== 1 ? "s" : ""} in the Partnership Contact Tracker
+              </div>
+              <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>New or changed contacts since you last checked</div>
+            </div>
+            <a href="/outreach-partnership-tracker" style={{ background: C.gold, border: "none", borderRadius: 8, padding: "8px 14px", color: C.dark, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>
+              View Tracker
+            </a>
+          </div>
+        )}{outreachContactAlert > 0 && (
           <div style={{ background: C.card, border: "1px solid " + C.gold + "77", borderRadius: 12, padding: "14px 18px", marginBottom: 20, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
             <span style={{ fontSize: 22, flexShrink: 0 }}>📇</span>
             <div style={{ flex: 1 }}>
