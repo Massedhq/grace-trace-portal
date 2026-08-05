@@ -1,8 +1,9 @@
-// app/api/outreach-contacts/route.ts
+﻿// app/api/outreach-contacts/route.ts
 //
-// Self-healing table, same pattern as resource_templates and announcements.
-// Leadership assigns specific contacts (organization + person + phone) to a
-// staff member. That staff member checks them off as completed.
+// Self-healing table. Leadership assigns specific contacts (organization +
+// person + phone) to a staff member. That staff member acknowledges the
+// task first, then marks it complete once the outreach is done. Both steps
+// are timestamped and attributed for accountability.
 
 import { neon } from "@neondatabase/serverless";
 
@@ -24,6 +25,10 @@ async function ensureTable() {
       completed_by TEXT
     )
   `;
+  // Self-healing additions for the acknowledge step — safe to run every time.
+  await sql`ALTER TABLE outreach_contacts ADD COLUMN IF NOT EXISTS acknowledged BOOLEAN NOT NULL DEFAULT FALSE`;
+  await sql`ALTER TABLE outreach_contacts ADD COLUMN IF NOT EXISTS acknowledged_at TIMESTAMPTZ`;
+  await sql`ALTER TABLE outreach_contacts ADD COLUMN IF NOT EXISTS acknowledged_by TEXT`;
 }
 
 export async function GET(req: Request) {
@@ -71,6 +76,18 @@ export async function PATCH(req: Request) {
     const body = await req.json();
     const { id } = body;
     if (!id) return Response.json({ error: "id is required" }, { status: 400 });
+
+    if (typeof body.acknowledged === "boolean") {
+      const [row] = await sql`
+        UPDATE outreach_contacts
+        SET acknowledged = ${body.acknowledged},
+            acknowledged_at = ${body.acknowledged ? new Date().toISOString() : null},
+            acknowledged_by = ${body.acknowledged ? (body.acknowledgedBy || null) : null}
+        WHERE id = ${id}
+        RETURNING *
+      `;
+      return Response.json({ contact: row });
+    }
 
     if (typeof body.completed === "boolean") {
       const [row] = await sql`

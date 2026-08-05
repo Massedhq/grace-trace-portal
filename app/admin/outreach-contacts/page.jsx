@@ -3,8 +3,8 @@
 // app/admin/outreach-contacts/page.jsx
 //
 // Leadership assigns specific contacts to reach out to — organization,
-// contact name, phone, notes — to a staff member. Tracks who completed
-// what and when.
+// contact name, phone, notes — to a staff member. Displays acknowledge
+// and completion status/timestamps for accountability tracking.
 
 import { useState, useEffect } from "react";
 
@@ -41,31 +41,23 @@ function isLeadership(id) {
   return id === "avy" || id === "travis";
 }
 
-// Breaks a long notes string into readable paragraphs. If the person already
-// typed line breaks, those are respected as-is. Otherwise, the text is split
-// on sentence boundaries so a dense paragraph doesn't render as one unbroken
-// wall of text.
-function formatNotesIntoParagraphs(text) {
-  if (!text) return [];
-  if (text.includes("\n")) {
-    return text.split(/\n+/).map((p) => p.trim()).filter(Boolean);
+// Renders notes as flowing paragraph(s) — like a real email body, not a
+// stack of individually broken-out sentences.
+function NotesBody({ notes }) {
+  if (!notes || !notes.trim()) return null;
+  if (notes.includes("\n")) {
+    return notes.split(/\n+/).map((p, i) => (
+      <p key={i} style={{ margin: "0 0 10px", color: C.text, fontSize: 13, lineHeight: 1.75 }}>
+        {p.trim()}
+      </p>
+    ));
   }
-  const sentences = text.split(/(?<=[.?!])\s+(?=[A-Z"“])/).map((s) => s.trim()).filter(Boolean);
-  return sentences.length > 1 ? sentences : [text.trim()];
+  return <p style={{ margin: "8px 0 0", color: C.text, fontSize: 13, lineHeight: 1.75 }}>{notes}</p>;
 }
 
-function NotesBlock({ notes }) {
-  const paragraphs = formatNotesIntoParagraphs(notes);
-  if (paragraphs.length === 0) return null;
-  return (
-    <div style={{ marginTop: 10, background: C.dark, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "12px 14px" }}>
-      {paragraphs.map((p, i) => (
-        <p key={i} style={{ color: C.text, fontSize: 13, lineHeight: 1.7, margin: i === paragraphs.length - 1 ? 0 : "0 0 10px" }}>
-          {p}
-        </p>
-      ))}
-    </div>
-  );
+function formatDateTime(iso) {
+  if (!iso) return "";
+  return new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
 }
 
 const emptyForm = { organizationName: "", contactName: "", phone: "", notes: "", assignedTo: "deann" };
@@ -199,7 +191,7 @@ export default function OutreachContactsAdmin() {
           <div style={{ marginBottom: 14 }}>
             <label style={{ color: C.text, fontSize: 12, fontWeight: 700, display: "block", marginBottom: 6 }}>Notes — why reach out, what to ask</label>
             <textarea value={form.notes} onChange={(e) => update("notes", e.target.value)} rows={6}
-              placeholder="Tip: press Enter between separate points or questions — it keeps things organized when Deann reads it back."
+              placeholder="Write this like you would a task email. Press Enter for a new paragraph if it helps organize longer notes."
               style={{ width: "100%", background: C.dark, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "9px 12px", color: C.text, fontSize: 13, resize: "vertical", fontFamily: "inherit", lineHeight: 1.6 }} />
           </div>
 
@@ -236,7 +228,16 @@ export default function OutreachContactsAdmin() {
                         <div style={{ color: C.muted, fontSize: 11, marginBottom: 3 }}>Assigned to {STAFF_NAMES[c.assigned_to]}</div>
                         <div style={{ color: C.text, fontWeight: 700, fontSize: 15 }}>{c.organization_name}</div>
                         {c.contact_name && <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>{c.contact_name}{c.phone ? " — " + c.phone : ""}</div>}
-                        <NotesBlock notes={c.notes} />
+                        <NotesBody notes={c.notes} />
+                        <div style={{ marginTop: 10 }}>
+                          {c.acknowledged ? (
+                            <span style={{ color: "#4CAF50", fontSize: 11, fontWeight: 700 }}>
+                              ✓ Acknowledged {formatDateTime(c.acknowledged_at)} by {c.acknowledged_by}
+                            </span>
+                          ) : (
+                            <span style={{ color: C.muted, fontSize: 11, fontStyle: "italic" }}>Not yet acknowledged</span>
+                          )}
+                        </div>
                       </div>
                       {confirmDeleteId === c.id ? (
                         <span style={{ display: "flex", gap: 6, flexShrink: 0 }}>
@@ -260,7 +261,7 @@ export default function OutreachContactsAdmin() {
                     <div style={{ color: C.muted, fontSize: 11, marginBottom: 2 }}>Assigned to {STAFF_NAMES[c.assigned_to]}</div>
                     <div style={{ color: C.text, fontWeight: 700, fontSize: 14 }}>{c.organization_name}</div>
                     <div style={{ color: "#4CAF50", fontSize: 12, marginTop: 4 }}>
-                      Completed {new Date(c.completed_at).toLocaleDateString()} by {c.completed_by}
+                      Completed {formatDateTime(c.completed_at)} by {c.completed_by}
                     </div>
                   </div>
                 ))}
