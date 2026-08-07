@@ -509,19 +509,24 @@ export default function HousingRegistryDashboard() {
   useEffect(() => {
     try {
       const uid = localStorage.getItem("gtm_current_user");
-      if (uid === "avy" || uid === "ialana" || uid === "travis") {
-        // Allowed users
-        const names = { avy: "Avrial Evans (Avy)", ialana: "Ialana Tippins", travis: "Travis Ramar" };
-        setCurrentUser({ id: uid, name: names[uid] });
-      } else if (uid) {
-        // Other staff — redirect
-        window.location.href = "/";
-        return;
-      } else {
+      const active = localStorage.getItem("gtm_session_active");
+      // Not logged in at all — go to login
+      if (!uid || active !== "true") {
         window.location.href = "/";
         return;
       }
-    } catch (e) { window.location.href = "/"; return; }
+      const allowed = ["avy", "ialana", "travis"];
+      if (!allowed.includes(uid)) {
+        // Logged in but not allowed — go back to portal home
+        window.location.href = "/";
+        return;
+      }
+      const names = { avy: "Avrial Evans (Avy)", ialana: "Ialana Tippins", travis: "Travis Ramar" };
+      setCurrentUser({ id: uid, name: names[uid] });
+    } catch (e) {
+      window.location.href = "/";
+      return;
+    }
     loadData();
   }, []);
 
