@@ -1,7 +1,6 @@
 ﻿// @ts-nocheck
 "use client";
-import { useState, useEffect } from "react";
-import { CATEGORIES as OUTREACH_CATEGORIES } from "@/lib/outreachResourceContent";
+import { useState, useEffect, useRef } from "react";
 
 const C = {
   burgundy: "#6B1A2A",
@@ -15,1762 +14,805 @@ const C = {
   text: "#F0EAE2",
   muted: "#A08878",
   error: "#EF5350",
+  success: "#4CAF50",
 };
 
-const USERS = [
-  {
-    id: "avy",
-    name: "Avrial Evans (Avy)",
-    initials: "AE",
-    color: C.burgundy,
-    password: "GTM@Avy2026",
-    role: "President / Executive Director / Board Chair",
-    tasks: [
-      {
-        id: "a1", title: "Overnight Report Review",
-        fields: [
-          { key: "incidents", label: "Were there any incidents or curfew violations reported overnight?", type: "textarea", ph: "Describe any incidents, violations, or notes from last night" },
-          { key: "action", label: "What action was taken or is needed?", type: "textarea", ph: "Document your response or next steps" },
-          { key: "staffNotified", label: "Which staff members were notified?", type: "text", ph: "Names of staff contacted" },
-          { key: "time", label: "Time reviewed", type: "text", ph: "e.g. 8:00 AM" },
-        ]
-      },
-      {
-        id: "a2", title: "Board and Contract Communications",
-        fields: [
-          { key: "emailsReviewed", label: "What emails or correspondence were reviewed today?", type: "textarea", ph: "Summarize key emails, calls, or messages received" },
-          { key: "agenciesContacted", label: "Which agencies or contacts were communicated with?", type: "text", ph: "e.g. TDCJ, BOP, VA, legal counsel" },
-          { key: "actionItems", label: "What action items came out of these communications?", type: "textarea", ph: "List follow-up tasks and who is responsible" },
-          { key: "time", label: "Time completed", type: "text", ph: "e.g. 9:30 AM" },
-        ]
-      },
-      {
-        id: "a3", title: "Financial Oversight Review",
-        fields: [
-          { key: "bankReviewed", label: "Was the bank account reviewed today?", type: "select", options: ["Yes", "No"] },
-          { key: "expenses", label: "Any notable expenses or transactions to document?", type: "textarea", ph: "Describe any payments made, received, or pending" },
-          { key: "concerns", label: "Any financial concerns or discrepancies?", type: "textarea", ph: "Document any issues or flags" },
-          { key: "time", label: "Time completed", type: "text", ph: "e.g. 10:00 AM" },
-        ]
-      },
-      {
-        id: "a4", title: "Staff Report Review",
-        fields: [
-          { key: "reportsReceived", label: "Which staff submitted their daily reports today?", type: "textarea", ph: "List names of staff who submitted" },
-          { key: "missing", label: "Who has not submitted a report yet?", type: "text", ph: "Names of staff with missing reports" },
-          { key: "keyNotes", label: "Key items noted from staff reports", type: "textarea", ph: "Summarize important updates from across the team" },
-          { key: "time", label: "Time reviewed", type: "text", ph: "e.g. 11:00 AM" },
-        ]
-      },
-      {
-        id: "a5", title: "Contract Opportunity Follow-Ups",
-        fields: [
-          { key: "agency", label: "Which agency or contract was followed up on today?", type: "text", ph: "e.g. TDCJ, BOP, VA GPD" },
-          { key: "contactName", label: "Who was contacted?", type: "text", ph: "Name and title of contact" },
-          { key: "outcome", label: "What was the outcome or status?", type: "textarea", ph: "Describe the conversation, email, or response received" },
-          { key: "nextStep", label: "What is the next step and when?", type: "textarea", ph: "Document follow-up action and timeline" },
-        ]
-      },
-      {
-        id: "a6", title: "Strategic Planning",
-        fields: [
-          { key: "decisions", label: "What decisions were made today?", type: "textarea", ph: "Document key decisions for the organization" },
-          { key: "priorities", label: "What are the top priorities for this week?", type: "textarea", ph: "List priorities in order of importance" },
-          { key: "blockers", label: "What blockers or challenges need to be addressed?", type: "textarea", ph: "Document any obstacles and how they will be resolved" },
-          { key: "time", label: "Time completed", type: "text", ph: "e.g. 3:00 PM" },
-        ]
-      },
-      {
-        id: "a7", title: "Community and Partner Outreach",
-        fields: [
-          { key: "who", label: "Who was contacted today?", type: "text", ph: "Name and organization" },
-          { key: "purpose", label: "What was the purpose of the outreach?", type: "textarea", ph: "Describe the goal of the call or meeting" },
-          { key: "outcome", label: "What was the outcome?", type: "textarea", ph: "Describe what was accomplished or agreed upon" },
-          { key: "followUp", label: "Is a follow-up needed? When?", type: "text", ph: "Follow-up date or action needed" },
-        ]
-      },
-      {
-        id: "a9", title: "Complete Your Board & Team Directory Profile",
-        fields: [
-          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes — confirmed correct", "No — needs updating"] },
-          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes — phone added", "No — I will add it now", "I prefer not to share"] },
-          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes — email added", "No — I will add it now"] },
-          { key: "cityAdded", label: "Have you added your city and state?", type: "select", options: ["Yes — city added", "No — I will add it now"] },
-          { key: "contactPref", label: "Have you set your preferred contact method?", type: "select", options: ["Yes — preference set", "No — I will set it now"] },
-          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes — profile is complete", "No — still needs updates"] },
-          { key: "notes", label: "Any corrections or updates needed?", type: "textarea", ph: "List anything that needs to be changed or added to your profile" },
-        ]
-      },
-      {
-        id: "a8", title: "Government Grants & Procurement Tracker",
-        fields: [
-          { key: "grantName", label: "Grant or funding opportunity name", type: "text", ph: "e.g. VA GPD Per Diem, DOJ Second Chance Act, HUD CoC" },
-          { key: "agency", label: "Agency or funding source", type: "text", ph: "e.g. VA, HUD, DOJ, Texas Veterans Commission, SAM.gov" },
-          { key: "grantLink", label: "Link to grant or opportunity", type: "text", ph: "Paste URL to the grant page, SAM.gov listing, or Grants.gov opportunity" },
-          { key: "contactName", label: "Contact name", type: "text", ph: "Program officer or agency contact" },
-          { key: "contactInfo", label: "Contact phone or email", type: "text", ph: "Direct phone or email for this opportunity" },
-          { key: "applicationStatus", label: "Application status", type: "select", options: ["Researching — not applied", "Preparing application", "Application submitted", "Under review", "Awarded", "Denied", "On hold"] },
-          { key: "applicationDate", label: "Date applied or submitted", type: "text", ph: "e.g. July 10, 2026" },
-          { key: "amountRequested", label: "Amount requested or award amount", type: "text", ph: "e.g. $50,000" },
-          { key: "deadline", label: "Application deadline or next deadline", type: "text", ph: "e.g. August 1, 2026" },
-          { key: "requirementsNotes", label: "Requirements and eligibility notes", type: "textarea", ph: "What does this grant require — 501c3, SAM.gov, minimum capacity, match?" },
-          { key: "followUpDate", label: "Follow-up date", type: "text", ph: "When do you need to check back on this?" },
-          { key: "followUpAction", label: "Follow-up action needed", type: "textarea", ph: "What needs to happen next for this opportunity?" },
-          { key: "statusUpdate", label: "Latest status update", type: "textarea", ph: "Most recent update — what happened, what was said, what changed" },
-          { key: "notes", label: "Additional notes", type: "textarea", ph: "Any other important information about this opportunity" },
-        ]
-      },
-    ,
-      {
-        id: "ops1", title: "Read & Acknowledge the Operations Binder — House Rules",
-        fields: [
-          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
-          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes — I understand all sections", "No — I have questions about some sections"] },
-          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on — bring these to Avy" },
-          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes — acknowledgment signed", "No — I need to complete it now"] },
-        ]
-      }
-    ,
-      {
-        id: "comp1", title: "Compensation Baseline & Pay Cap Declaration",
-        fields: [
-          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes — declaration submitted and locked", "No — I still need to complete it"] },
-          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes — I have reviewed and understand it", "No — I still need to review it"] },
-          { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
-        ]
-      }
-    ,
-      {
-        id: "ep1", title: "Read & Acknowledge Emergency & Incident Procedures",
-        fields: [
-          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
-          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 — not to wait for approval?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
-          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
-          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on — bring these to Avy" },
-          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes — I acknowledge and agree", "No — I need to discuss this first"] },
-        ]
-      }
-    ]
-  },
-  {
-    id: "travis",
-    name: "Travis Ramar",
-    initials: "TR",
-    color: C.green,
-    password: "GTM@Travis2026",
-    role: "VP / COO / Board Member",
-    tasks: [
-      {
-        id: "t1", title: "Staff Report Review",
-        fields: [
-          { key: "received", label: "Which staff submitted reports today?", type: "textarea", ph: "List names of staff who submitted workday reports" },
-          { key: "missing", label: "Who has not submitted?", type: "text", ph: "Names of staff with missing reports" },
-          { key: "keyFindings", label: "Key findings from today's reports", type: "textarea", ph: "Summarize the most important updates across all staff reports" },
-          { key: "escalations", label: "Any issues that need to be escalated to Avy?", type: "textarea", ph: "Describe any urgent matters requiring the President's attention" },
-        ]
-      },
-      {
-        id: "t2", title: "Operations Oversight",
-        fields: [
-          { key: "issuesReported", label: "What operational issues were reported today?", type: "textarea", ph: "Describe any facility, resident, or staff issues" },
-          { key: "actionTaken", label: "What action was taken?", type: "textarea", ph: "Document your response and resolution steps" },
-          { key: "openItems", label: "What items remain open and need follow-up?", type: "textarea", ph: "List unresolved items and who is responsible" },
-          { key: "time", label: "Time completed", type: "text", ph: "e.g. 10:00 AM" },
-        ]
-      },
-      {
-        id: "t3", title: "Contract and Agency Follow-Ups",
-        fields: [
-          { key: "agency", label: "Which agency or contract was followed up on?", type: "text", ph: "e.g. TDCJ, BOP, VA GPD" },
-          { key: "contact", label: "Who was contacted?", type: "text", ph: "Name and title" },
-          { key: "status", label: "What is the current status?", type: "textarea", ph: "Describe the outcome of the follow-up" },
-          { key: "nextStep", label: "Next step and timeline", type: "textarea", ph: "Document what happens next and when" },
-        ]
-      },
-      {
-        id: "t4", title: "Executive Coordination with Avy",
-        fields: [
-          { key: "topicsDiscussed", label: "What was discussed with Avy today?", type: "textarea", ph: "Summarize the conversation or coordination points" },
-          { key: "decisions", label: "What decisions or agreements were made?", type: "textarea", ph: "Document outcomes from the conversation" },
-          { key: "myActionItems", label: "What are your action items coming out of this?", type: "textarea", ph: "List your personal follow-up tasks" },
-        ]
-      },
-      {
-        id: "t5", title: "Community and Stakeholder Outreach",
-        fields: [
-          { key: "who", label: "Who was contacted today?", type: "text", ph: "Name and organization" },
-          { key: "purpose", label: "Purpose of the outreach", type: "textarea", ph: "Describe the goal of the contact" },
-          { key: "outcome", label: "Outcome", type: "textarea", ph: "What was accomplished?" },
-          { key: "followUp", label: "Follow-up needed?", type: "text", ph: "Date or action required" },
-        ]
-      },
-      {
-        id: "t6", title: "Program Compliance Review",
-        fields: [
-          { key: "areaReviewed", label: "What area of compliance was reviewed today?", type: "text", ph: "e.g. resident documentation, service delivery, house rules" },
-          { key: "findings", label: "What did the review find?", type: "textarea", ph: "Describe what is in compliance and what needs attention" },
-          { key: "gaps", label: "Any gaps or concerns identified?", type: "textarea", ph: "Document anything that needs to be corrected" },
-          { key: "correctionPlan", label: "Correction plan or next steps", type: "textarea", ph: "How and when will gaps be addressed?" },
-        ]
-      },
-    ,
-      {
-        id: "dir1", title: "Complete Your Board & Team Directory Profile",
-        fields: [
-          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes — confirmed correct", "No — needs updating"] },
-          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes — phone added", "No — I will add it now", "I prefer not to share"] },
-          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes — email added", "No — I will add it now"] },
-          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes — profile is complete", "No — still needs updates"] },
-          { key: "notes", label: "Any updates needed?", type: "textarea", ph: "List anything that needs to be changed in your profile" },
-        ]
-      }
-    ,
-      {
-        id: "ops1", title: "Read & Acknowledge the Operations Binder — House Rules",
-        fields: [
-          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
-          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes — I understand all sections", "No — I have questions about some sections"] },
-          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on — bring these to Avy" },
-          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes — acknowledgment signed", "No — I need to complete it now"] },
-        ]
-      }
-    ,
-      {
-        id: "comp1", title: "Compensation Baseline & Pay Cap Declaration",
-        fields: [
-          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes — declaration submitted and locked", "No — I still need to complete it"] },
-          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes — I have reviewed and understand it", "No — I still need to review it"] },
-          { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
-        ]
-      }
-    ,
-      {
-        id: "ep1", title: "Read & Acknowledge Emergency & Incident Procedures",
-        fields: [
-          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
-          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 — not to wait for approval?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
-          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
-          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on — bring these to Avy" },
-          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes — I acknowledge and agree", "No — I need to discuss this first"] },
-        ]
-      }
-    ]
-  },
-  {
-    id: "deann",
-    name: "Deann Evans",
-    initials: "DE",
-    color: "#8B2A3E",
-    password: "GTM@Deann2026",
-    role: "Program and Outreach Director / House Manager Oversight / Registered Agent",
-    tasks: [
-      {
-        id: "d1", title: "Registered Agent — Mail and Legal Notices",
-        fields: [
-          { key: "mailReceived", label: "Was any legal mail or registered agent correspondence received?", type: "select", options: ["Yes", "No"] },
-          { key: "description", label: "If yes, describe the correspondence", type: "textarea", ph: "Sender, subject, and content of the notice" },
-          { key: "actionRequired", label: "What action is required?", type: "textarea", ph: "Document response needed and deadline" },
-          { key: "avyNotified", label: "Was Avy notified?", type: "select", options: ["Yes", "No", "Not required"] },
-        ]
-      },
-      {
-        id: "d2", title: "Outreach Contact Log",
-        fields: [
-          { key: "contactName", label: "Full name of person contacted", type: "text", ph: "First and last name" },
-          { key: "contactTitle", label: "Title and organization", type: "text", ph: "e.g. Parole Officer, TDCJ District 4 — Houston" },
-          { key: "contactType", label: "Type of contact", type: "select", options: ["Phone call", "Email", "In-person visit", "Virtual meeting", "Text message", "Voicemail left"] },
-          { key: "contactPhone", label: "Phone number", type: "text", ph: "Direct phone number" },
-          { key: "contactEmail", label: "Email address collected", type: "text", ph: "Email address" },
-          { key: "agencyType", label: "Agency or facility type", type: "select", options: ["Parole office", "Probation office", "TDCJ facility", "Federal BOP facility", "VA Medical Center", "Veterans service organization", "Reentry coalition", "Faith-based organization", "Workforce agency", "Legal aid", "Community nonprofit", "Employer", "Other"] },
-          { key: "purpose", label: "What was the purpose of this contact?", type: "textarea", ph: "What was the goal — introduce Grace Trace, follow up on referral, build relationship, request to be added to vendor list?" },
-          { key: "whatWasNeeded", label: "What did they say is needed from Grace Trace Ministries?", type: "textarea", ph: "Any qualifications, certifications, paperwork, or requirements they mentioned" },
-          { key: "vendorApproval", label: "Is vendor or provider approval required to receive referrals from this contact?", type: "select", options: ["Yes — already approved", "Yes — application in progress", "Yes — need to apply", "No — referrals can start now", "Unknown — need to follow up"] },
-          { key: "vendorRequirements", label: "What is required to get on their vendor or referral list?", type: "textarea", ph: "List every requirement they mentioned — licensing, insurance, capacity, documentation, background checks, site visits, etc." },
-          { key: "outcome", label: "What was the outcome of this contact?", type: "textarea", ph: "What was accomplished, agreed upon, or committed to?" },
-          { key: "referralExpected", label: "Is a referral expected from this contact?", type: "select", options: ["Yes — referral incoming", "Maybe — follow up needed", "No — not at this time", "They are adding us to their list"] },
-          { key: "followUpDate", label: "Follow-up date and time", type: "text", ph: "e.g. July 15, 2026 at 10:00 AM" },
-          { key: "followUpAction", label: "What is the follow-up action?", type: "textarea", ph: "What needs to happen next — call back, send documents, schedule a visit, submit application?" },
-        ]
-      },
-      {
-        id: "d3", title: "Parole & Probation Officer Outreach",
-        fields: [
-          { key: "officerName", label: "Officer name", type: "text", ph: "Full name of parole or probation officer" },
-          { key: "officerTitle", label: "Title and office", type: "text", ph: "e.g. Parole Officer — TDCJ Houston District 3" },
-          { key: "officerPhone", label: "Direct phone number", type: "text", ph: "Direct line" },
-          { key: "officerEmail", label: "Email address", type: "text", ph: "Email address" },
-          { key: "districtOrRegion", label: "District or region they cover", type: "text", ph: "e.g. Houston South, Harris County" },
-          { key: "howContacted", label: "How was contact made?", type: "select", options: ["Phone call — spoke directly", "Phone call — voicemail left", "Email sent", "In-person visit", "Referred by another officer"] },
-          { key: "clientsSupervising", label: "How many clients are they currently supervising who may need housing?", type: "text", ph: "Approximate number" },
-          { key: "referralProcess", label: "What is their referral process?", type: "textarea", ph: "How do they refer clients — phone, email, form, through TDCJ system?" },
-          { key: "requirementsForReferral", label: "What does Grace Trace need to provide to receive referrals from them?", type: "textarea", ph: "Any documentation, capacity info, certifications, or program details they need" },
-          { key: "currentNeed", label: "Do they have anyone in immediate need of housing right now?", type: "select", options: ["Yes — details in notes", "Not right now — but soon", "No current need", "Unknown"] },
-          { key: "immediateNeedDetails", label: "If yes — describe the immediate housing need", type: "textarea", ph: "Name or initials, release date, special requirements, supervision conditions" },
-          { key: "relationshipStatus", label: "What is the relationship status with this officer?", type: "select", options: ["New contact — first time speaking", "Warm — they are interested", "Active — referrals expected", "Established — sending referrals regularly"] },
-          { key: "followUpDate", label: "Follow-up date", type: "text", ph: "e.g. July 14, 2026" },
-          { key: "notes", label: "Additional notes", type: "textarea", ph: "Anything else important to document about this officer or conversation" },
-        ]
-      },
-      {
-        id: "d4", title: "TDCJ / Federal / Veterans Facility Outreach",
-        fields: [
-          { key: "facilityName", label: "Facility name", type: "text", ph: "e.g. TDCJ Wynne Unit, FCI Beaumont, Michael E. DeBakey VA Medical Center" },
-          { key: "facilityType", label: "Facility type", type: "select", options: ["TDCJ state prison or unit", "Federal BOP facility", "VA Medical Center", "Veterans service organization", "Halfway house or RRC", "Reentry center", "Other federal or state facility"] },
-          { key: "facilityCity", label: "City and state", type: "text", ph: "City, TX" },
-          { key: "contactName", label: "Contact name", type: "text", ph: "Case manager, reentry coordinator, veterans coordinator, or social worker" },
-          { key: "contactTitle", label: "Contact title", type: "text", ph: "e.g. Reentry Coordinator, Homeless Veterans Coordinator" },
-          { key: "contactPhone", label: "Phone number", type: "text", ph: "Direct line" },
-          { key: "contactEmail", label: "Email address", type: "text", ph: "Email address" },
-          { key: "vendorApprovedStatus", label: "Is Grace Trace Ministries currently vendor approved with this facility?", type: "select", options: ["Yes — already approved", "Application submitted — pending", "Not yet — need to apply", "Not applicable"] },
-          { key: "vendorApprovalRequirements", label: "What is required to get on their approved vendor or provider list?", type: "textarea", ph: "List every requirement — 501c3 status, SAM.gov registration, TDCJ provider application, site inspection, capacity minimums, staffing ratios, insurance, background checks, program documentation" },
-          { key: "applicationProcess", label: "What is the application or approval process?", type: "textarea", ph: "Step by step — who to contact, what forms to submit, timeline, point of contact for application" },
-          { key: "referralVolume", label: "How many residents could they potentially refer per month?", type: "text", ph: "Approximate monthly referral volume" },
-          { key: "releaseDates", label: "Are there residents with upcoming release dates who need housing now?", type: "select", options: ["Yes — details below", "Not currently", "Unknown"] },
-          { key: "upcomingReleases", label: "Upcoming release details", type: "textarea", ph: "Any residents with imminent release dates and housing needs — initials, release date, program type needed" },
-          { key: "outcome", label: "Outcome of this contact", type: "textarea", ph: "What was accomplished or agreed upon?" },
-          { key: "nextStep", label: "Next step and date", type: "textarea", ph: "What needs to happen next to advance this relationship or get approved?" },
-        ]
-      },
-      {
-        id: "d5", title: "Active Referral Follow-Ups",
-        fields: [
-          { key: "referralName", label: "Prospective resident name or initials", type: "text", ph: "First name or initials" },
-          { key: "referralSource", label: "Referral source", type: "text", ph: "Who referred them and from where?" },
-          { key: "referralSourceContact", label: "Referral source contact info", type: "text", ph: "Phone or email of referring officer or case manager" },
-          { key: "programType", label: "Program type needed", type: "select", options: ["Male reentry", "Female reentry", "Veterans housing", "Disability program", "Unknown — pending screening"] },
-          { key: "releaseDate", label: "Release date or availability date", type: "text", ph: "When are they available to move in?" },
-          { key: "supervisionStatus", label: "Supervision status", type: "select", options: ["TDCJ parole", "TDCJ probation", "Federal supervised release", "BOP halfway house discharge", "VA referral", "Court ordered", "Self-referral — no supervision", "Other"] },
-          { key: "specialRequirements", label: "Any special requirements or conditions?", type: "textarea", ph: "Medical needs, supervision conditions, distance restrictions, employment requirements" },
-          { key: "qualificationsMet", label: "Does this person meet Grace Trace program qualifications?", type: "select", options: ["Yes — qualified", "Partially — review needed", "No — does not qualify", "Pending — more information needed"] },
-          { key: "status", label: "Current status of this referral", type: "textarea", ph: "Where are they in the process — screened, approved, waitlisted, scheduled for intake?" },
-          { key: "handedToIalana", label: "Has this been handed to Ialana for intake screening?", type: "select", options: ["Yes", "No — not yet ready", "Ialana is already working with them"] },
-          { key: "followUpDate", label: "Follow-up date", type: "text", ph: "e.g. July 12, 2026" },
-          { key: "nextStep", label: "Next step", type: "textarea", ph: "What needs to happen next for this referral?" },
-        ]
-      },
-      {
-        id: "d6", title: "Partner & Community Organization Outreach",
-        fields: [
-          { key: "orgName", label: "Organization name", type: "text", ph: "Full name of the organization" },
-          { key: "orgType", label: "Organization type", type: "select", options: ["Faith-based organization", "Workforce development agency", "Legal aid organization", "Behavioral health provider", "Substance abuse treatment", "Food bank or pantry", "Clothing closet", "Community nonprofit", "Employer — willing to hire", "Educational institution", "Other"] },
-          { key: "contactName", label: "Contact name and title", type: "text", ph: "Who did you speak with?" },
-          { key: "contactPhone", label: "Phone number", type: "text", ph: "Direct line" },
-          { key: "contactEmail", label: "Email address", type: "text", ph: "Email address" },
-          { key: "purpose", label: "Purpose of this contact", type: "textarea", ph: "Why did you reach out — partnership, referral agreement, resource for residents?" },
-          { key: "whatTheyOffer", label: "What services or resources do they offer?", type: "textarea", ph: "Describe what they can provide to Grace Trace residents" },
-          { key: "partnershipOpportunity", label: "Is there a formal partnership opportunity?", type: "select", options: ["Yes — MOU or referral agreement needed", "Yes — informal partnership agreed", "Possibly — follow up needed", "No — resource only"] },
-          { key: "outcome", label: "Outcome", type: "textarea", ph: "What was accomplished or agreed upon?" },
-          { key: "followUpDate", label: "Follow-up date", type: "text", ph: "e.g. July 16, 2026" },
-          { key: "followUpAction", label: "Follow-up action needed", type: "textarea", ph: "What needs to happen next?" },
-        ]
-      },
-      {
-        id: "d7", title: "Morning House Check",
-        fields: [
-          { key: "residentsPresent", label: "How many residents are currently in the house?", type: "text", ph: "Number of residents present" },
-          { key: "roomsInspected", label: "Were rooms inspected this morning?", type: "select", options: ["Yes", "No"] },
-          { key: "inspectionNotes", label: "Room inspection notes", type: "textarea", ph: "Describe the condition of rooms — any violations or concerns" },
-          { key: "choresAssigned", label: "Were chores assigned?", type: "select", options: ["Yes", "No"] },
-          { key: "signInStarted", label: "Was the sign-in log started for today?", type: "select", options: ["Yes", "No"] },
-          { key: "time", label: "Time completed", type: "text", ph: "e.g. 7:30 AM" },
-        ]
-      },
-      {
-        id: "d8", title: "Nightly Curfew Close-Out",
-        fields: [
-          { key: "allResidentsIn", label: "Are all residents in for the night?", type: "select", options: ["Yes", "No — see notes"] },
-          { key: "curfewNotes", label: "Document any curfew issues", type: "textarea", ph: "Name of resident and circumstances if not in by curfew" },
-          { key: "logCompleted", label: "Was the nightly sign-in log completed?", type: "select", options: ["Yes", "No"] },
-          { key: "houseStatus", label: "Overall house status for tonight", type: "textarea", ph: "Describe the general state of the house — quiet, any tension, concerns" },
-          { key: "time", label: "Time completed", type: "text", ph: "e.g. 10:30 PM" },
-        ]
-      },
-      {
-        id: "d9", title: "Daily Outreach Summary Report",
-        fields: [
-          { key: "totalContacts", label: "Total number of contacts made today", type: "text", ph: "Total calls, emails, and visits combined" },
-          { key: "newContactsAdded", label: "New contacts added to the database today", type: "text", ph: "Number of new contacts" },
-          { key: "referralsReceived", label: "Any referrals received today?", type: "select", options: ["Yes — details below", "No"] },
-          { key: "referralDetails", label: "Referral details", type: "textarea", ph: "Name or initials, source, program type, and next step" },
-          { key: "vendorProgressMade", label: "Any progress made on vendor or provider approvals today?", type: "textarea", ph: "Which facility, what step was completed, what is next?" },
-          { key: "summary", label: "Overall summary of today's outreach activity", type: "textarea", ph: "What was accomplished today across all outreach activities?" },
-          { key: "urgentItems", label: "Anything urgent for Avy and Travis to know?", type: "textarea", ph: "Flag anything that needs immediate leadership attention" },
-          { key: "tomorrowPriorities", label: "Top priorities for tomorrow", type: "textarea", ph: "What will you focus on first tomorrow?" },
-        ]
-      },
-    ,
-      {
-        id: "dir1", title: "Complete Your Board & Team Directory Profile",
-        fields: [
-          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes — confirmed correct", "No — needs updating"] },
-          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes — phone added", "No — I will add it now", "I prefer not to share"] },
-          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes — email added", "No — I will add it now"] },
-          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes — profile is complete", "No — still needs updates"] },
-          { key: "notes", label: "Any updates needed?", type: "textarea", ph: "List anything that needs to be changed in your profile" },
-        ]
-      }
-    ,
-      {
-        id: "ops1", title: "Read & Acknowledge the Operations Binder — House Rules",
-        fields: [
-          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
-          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes — I understand all sections", "No — I have questions about some sections"] },
-          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on — bring these to Avy" },
-          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes — acknowledgment signed", "No — I need to complete it now"] },
-        ]
-      }
-    ,
-      {
-        id: "comp1", title: "Compensation Baseline & Pay Cap Declaration",
-        fields: [
-          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes — declaration submitted and locked", "No — I still need to complete it"] },
-          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes — I have reviewed and understand it", "No — I still need to review it"] },
-          { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
-        ]
-      }
-    ,
-      {
-        id: "ep1", title: "Read & Acknowledge Emergency & Incident Procedures",
-        fields: [
-          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
-          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 — not to wait for approval?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
-          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
-          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on — bring these to Avy" },
-          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes — I acknowledge and agree", "No — I need to discuss this first"] },
-        ]
-      }
-    ]
-  },
-  {
-    id: "erica",
-    name: "Erica Evans",
-    initials: "EE",
-    color: "#5C3010",
-    password: "GTM@Erica2026",
-    role: "Director of Residential Services and Standards",
-    tasks: [
-      {
-        id: "e1", title: "House Rules and Standards Compliance Audit",
-        fields: [
-          { key: "residentReviewed", label: "Which residents were reviewed for compliance today?", type: "textarea", ph: "Names or room assignments" },
-          { key: "compliant", label: "Who is fully compliant with program expectations?", type: "textarea", ph: "List residents in good standing" },
-          { key: "violations", label: "Who has compliance concerns or violations?", type: "textarea", ph: "List resident names and specific issues" },
-          { key: "actionTaken", label: "What action was taken for violations?", type: "textarea", ph: "Document warnings issued, conversations had, or escalations made" },
-        ]
-      },
-      {
-        id: "e2", title: "Service Quality Audit",
-        fields: [
-          { key: "serviceChecked", label: "Which service was audited today?", type: "select", options: ["Case management", "Life skills training", "Employment assistance", "Financial literacy", "Peer support", "Drug testing", "Other"] },
-          { key: "wasDelivered", label: "Was the service delivered on schedule?", type: "select", options: ["Yes", "No", "Partially"] },
-          { key: "qualityNotes", label: "Quality notes", type: "textarea", ph: "Describe the quality and completeness of the service delivered" },
-          { key: "gaps", label: "Any gaps in service delivery?", type: "textarea", ph: "What was missed and why?" },
-          { key: "correctionNeeded", label: "What correction is needed?", type: "textarea", ph: "How and when will the gap be addressed?" },
-        ]
-      },
-      {
-        id: "e3", title: "Weekly Schedule Execution Review",
-        fields: [
-          { key: "houseMeetingHeld", label: "Was the weekly house meeting held?", type: "select", options: ["Yes", "No"] },
-          { key: "peerSupportHeld", label: "Was peer support group held?", type: "select", options: ["Yes", "No"] },
-          { key: "roomInspectionDone", label: "Were room inspections completed?", type: "select", options: ["Yes", "No"] },
-          { key: "curfewChecksLogged", label: "Were curfew checks logged?", type: "select", options: ["Yes", "No"] },
-          { key: "missedItems", label: "What was missed from the schedule this week?", type: "textarea", ph: "Document anything that did not happen as scheduled" },
-          { key: "reason", label: "Reason for any missed items", type: "textarea", ph: "Explain why items were missed" },
-        ]
-      },
-      {
-        id: "e4", title: "Residential Documentation Review",
-        fields: [
-          { key: "filesReviewed", label: "Whose resident files were reviewed today?", type: "textarea", ph: "Names or initials of residents whose files were checked" },
-          { key: "ispCurrent", label: "Are ISP progress notes current and complete?", type: "select", options: ["Yes", "No — gaps found"] },
-          { key: "drugTestLogCurrent", label: "Is the drug test log current?", type: "select", options: ["Yes", "No"] },
-          { key: "incidentReportsCurrent", label: "Are incident reports documented and filed?", type: "select", options: ["Yes", "No"] },
-          { key: "documentationGaps", label: "What documentation gaps were found?", type: "textarea", ph: "List specific gaps and whose files are incomplete" },
-        ]
-      },
-      {
-        id: "e5", title: "Standards and Policy Review",
-        fields: [
-          { key: "policyReviewed", label: "Which policy or procedure was reviewed?", type: "text", ph: "Name of the policy or section reviewed" },
-          { key: "gapsFound", label: "Were any gaps or outdated sections found?", type: "textarea", ph: "Describe what needs to be updated" },
-          { key: "recommendedChange", label: "What change do you recommend?", type: "textarea", ph: "Describe the update or revision needed" },
-          { key: "submittedToAvy", label: "Was the recommendation submitted to Avy?", type: "select", options: ["Yes", "No", "Will submit tomorrow"] },
-        ]
-      },
-      {
-        id: "e6", title: "Resident Concern Coordination",
-        fields: [
-          { key: "concernResident", label: "Which resident has a concern or issue?", type: "text", ph: "Resident name or initials" },
-          { key: "concernDescription", label: "Describe the concern", type: "textarea", ph: "What is the issue? When was it identified?" },
-          { key: "staffCoordinated", label: "Which staff were involved in addressing it?", type: "text", ph: "Names of staff consulted (e.g. Deann, Ialana)" },
-          { key: "resolution", label: "What was the resolution or next step?", type: "textarea", ph: "Document what was done and what still needs to happen" },
-        ]
-      },
-      {
-        id: "e7", title: "Resident Phase Progression Tracker",
-        fields: [
-          { key: "residentName", label: "Resident name or initials", type: "text", ph: "Who is being reviewed for phase advancement?" },
-          { key: "currentPhase", label: "Current phase", type: "select", options: ["Phase 1 — Orientation", "Phase 2 — Stabilization", "Phase 3 — Development", "Phase 4 — Transition"] },
-          { key: "meetsRequirements", label: "Does this resident meet all requirements for advancement?", type: "select", options: ["Yes — ready to advance", "No — still in progress", "Needs review"] },
-          { key: "advancementNotes", label: "Advancement notes", type: "textarea", ph: "Document progress toward requirements — employment, savings, compliance, housing plan" },
-          { key: "recommendedAction", label: "Recommended action", type: "textarea", ph: "Advance to next phase, extend current phase, or flag for review?" },
-        ]
-      },
-      {
-        id: "e8", title: "Daily Residential Services Report",
-        fields: [
-          { key: "summary", label: "Summary of residential services today", type: "textarea", ph: "Overall summary of what was reviewed and accomplished" },
-          { key: "flagsForLeadership", label: "Anything to flag for Avy and Travis?", type: "textarea", ph: "Urgent items or concerns for leadership" },
-          { key: "tomorrowFocus", label: "Focus areas for tomorrow", type: "textarea", ph: "What will you prioritize tomorrow?" },
-        ]
-      },
-      {
-        id: "e9", title: "Laundry Room Schedule",
-        sharedWith: ["avy", "travis"],
-        fields: [
-          { key: "scheduleDate", label: "Schedule date or week", type: "text", ph: "e.g. Week of July 7, 2026" },
-          { key: "room1Name", label: "Room 1 — Resident name", type: "text", ph: "Resident name" },
-          { key: "room1Time", label: "Room 1 — Assigned laundry time", type: "text", ph: "e.g. Monday 8:00 AM to 9:00 AM" },
-          { key: "room2Name", label: "Room 2 — Resident name", type: "text", ph: "Resident name" },
-          { key: "room2Time", label: "Room 2 — Assigned laundry time", type: "text", ph: "e.g. Monday 9:00 AM to 10:00 AM" },
-          { key: "room3Name", label: "Room 3 — Resident name", type: "text", ph: "Resident name" },
-          { key: "room3Time", label: "Room 3 — Assigned laundry time", type: "text", ph: "e.g. Tuesday 8:00 AM to 9:00 AM" },
-          { key: "room4Name", label: "Room 4 — Resident name", type: "text", ph: "Resident name" },
-          { key: "room4Time", label: "Room 4 — Assigned laundry time", type: "text", ph: "e.g. Tuesday 9:00 AM to 10:00 AM" },
-          { key: "room5Name", label: "Room 5 — Resident name", type: "text", ph: "Resident name" },
-          { key: "room5Time", label: "Room 5 — Assigned laundry time", type: "text", ph: "e.g. Wednesday 8:00 AM to 9:00 AM" },
-          { key: "room6Name", label: "Room 6 — Resident name", type: "text", ph: "Resident name" },
-          { key: "room6Time", label: "Room 6 — Assigned laundry time", type: "text", ph: "e.g. Wednesday 9:00 AM to 10:00 AM" },
-          { key: "laundryRules", label: "Laundry room rules or notes to communicate", type: "textarea", ph: "e.g. Clean lint trap after each use, remove clothes promptly, no bleach without approval" },
-          { key: "schedulePosted", label: "Was the schedule posted in the laundry room?", type: "select", options: ["Yes", "No — will post today"] },
-          { key: "residentsNotified", label: "Were all residents notified of their assigned time?", type: "select", options: ["Yes", "No — in progress"] },
-        ]
-      },
-      {
-        id: "e10", title: "Move-Out Room Readiness Checklist",
-        sharedWith: ["avy", "travis"],
-        fields: [
-          { key: "roomNumber", label: "Room number being cleared", type: "text", ph: "e.g. Room 3" },
-          { key: "residentName", label: "Name of resident who vacated", type: "text", ph: "Resident name or initials" },
-          { key: "vacateDate", label: "Date resident vacated", type: "text", ph: "e.g. July 7, 2026" },
-          { key: "nextResidentDate", label: "Expected move-in date for next resident", type: "text", ph: "e.g. July 10, 2026" },
-          { key: "personalItemsRemoved", label: "All personal belongings removed?", type: "select", options: ["Yes — room cleared", "No — items left behind (see notes)"] },
-          { key: "leftBehindItems", label: "Items left behind — describe", type: "textarea", ph: "What was left and what was done with it?" },
-          { key: "bedLinensWashed", label: "Bed linens washed and replaced?", type: "select", options: ["Yes", "No"] },
-          { key: "mattressInspected", label: "Mattress inspected for damage?", type: "select", options: ["Yes — no damage", "Yes — damage found (see notes)"] },
-          { key: "mattressNotes", label: "Mattress damage notes", type: "textarea", ph: "Describe any damage found" },
-          { key: "floorsCleaned", label: "Floors swept, mopped, or vacuumed?", type: "select", options: ["Yes", "No"] },
-          { key: "surfacesWiped", label: "All surfaces wiped down?", type: "select", options: ["Yes", "No"] },
-          { key: "closetCleared", label: "Closet cleared and cleaned?", type: "select", options: ["Yes", "No"] },
-          { key: "windowsCleaned", label: "Windows cleaned and blinds dusted?", type: "select", options: ["Yes", "No"] },
-          { key: "doorLocksTested", label: "Door and locks tested and functioning?", type: "select", options: ["Yes", "No — needs repair"] },
-          { key: "lightsBulbsWorking", label: "All lights and bulbs working?", type: "select", options: ["Yes", "No — replaced"] },
-          { key: "outletsTested", label: "Outlets and switches tested?", type: "select", options: ["Yes", "No — issue found"] },
-          { key: "smokeDetectorTested", label: "Smoke detector tested?", type: "select", options: ["Yes — working", "No — needs battery or replacement"] },
-          { key: "trashRemoved", label: "All trash removed from room?", type: "select", options: ["Yes", "No"] },
-          { key: "odorCheck", label: "Room odor check passed?", type: "select", options: ["Yes — room is fresh", "No — treated with cleaning product"] },
-          { key: "freshLinensPlaced", label: "Fresh linens and towels placed?", type: "select", options: ["Yes", "No"] },
-          { key: "welcomePacketPlaced", label: "Welcome packet and house rules placed in room?", type: "select", options: ["Yes", "No"] },
-          { key: "roomReadyStatus", label: "Is this room ready for the next resident?", type: "select", options: ["Yes — room ready", "No — items still outstanding"] },
-          { key: "outstandingItems", label: "Outstanding items before room is fully ready", type: "textarea", ph: "What still needs to be done and by when?" },
-          { key: "inspectedBy", label: "Checklist completed by", type: "text", ph: "Erica Evans" },
-          { key: "inspectionTime", label: "Date and time of inspection", type: "text", ph: "e.g. July 8, 2026 at 2:00 PM" },
-        ]
-      },
-    ,
-      {
-        id: "dir1", title: "Complete Your Board & Team Directory Profile",
-        fields: [
-          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes — confirmed correct", "No — needs updating"] },
-          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes — phone added", "No — I will add it now", "I prefer not to share"] },
-          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes — email added", "No — I will add it now"] },
-          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes — profile is complete", "No — still needs updates"] },
-          { key: "notes", label: "Any updates needed?", type: "textarea", ph: "List anything that needs to be changed in your profile" },
-        ]
-      }
-    ,
-      {
-        id: "ops1", title: "Read & Acknowledge the Operations Binder — House Rules",
-        fields: [
-          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
-          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes — I understand all sections", "No — I have questions about some sections"] },
-          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on — bring these to Avy" },
-          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes — acknowledgment signed", "No — I need to complete it now"] },
-        ]
-      }
-    ,
-      {
-        id: "comp1", title: "Compensation Baseline & Pay Cap Declaration",
-        fields: [
-          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes — declaration submitted and locked", "No — I still need to complete it"] },
-          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes — I have reviewed and understand it", "No — I still need to review it"] },
-          { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
-        ]
-      }
-    ,
-      {
-        id: "ep1", title: "Read & Acknowledge Emergency & Incident Procedures",
-        fields: [
-          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
-          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 — not to wait for approval?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
-          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
-          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on — bring these to Avy" },
-          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes — I acknowledge and agree", "No — I need to discuss this first"] },
-        ]
-      }
-    ]
-  },
-  {
-    id: "ialana",
-    name: "Ialana Tippins",
-    initials: "IT",
-    color: "#1A3D2B",
-    password: "GTM@Ialana2026",
-    role: "Director of Intake, Resident Relations, Case Management, and Peer Support",
-    tasks: [
-      {
-        id: "i1", title: "New Referral Review and Screening",
-        fields: [
-          { key: "referralName", label: "Referral name or initials", type: "text", ph: "Name or initials of prospective resident" },
-          { key: "referralSource", label: "Who referred them?", type: "text", ph: "Probation officer, parole officer, court, self-referral, etc." },
-          { key: "eligibilityDetermination", label: "Eligibility determination", type: "select", options: ["Eligible — proceed with intake", "Not eligible — does not meet criteria", "More information needed", "Waitlisted"] },
-          { key: "screeningNotes", label: "Screening notes", type: "textarea", ph: "Document key details from the screening call or review" },
-          { key: "nextStep", label: "Next step", type: "textarea", ph: "What happens next and when?" },
-        ]
-      },
-      {
-        id: "i2", title: "Intake Screening Conducted",
-        fields: [
-          { key: "residentName", label: "Resident full legal name", type: "text", ph: "Full legal name as it appears on their ID" },
-          { key: "fileNumber", label: "Grace Trace File Number", type: "text", ph: "Auto-format: GTM-2026-001 — assign next available number" },
-          { key: "dateOfBirth", label: "Date of birth", type: "text", ph: "MM/DD/YYYY" },
-          { key: "screeningType", label: "Type of screening", type: "select", options: ["Phone screening", "In-person screening", "Virtual screening"] },
-          { key: "eligibilityStatus", label: "Eligibility status", type: "select", options: ["Approved for intake", "Denied", "On hold — more info needed"] },
-          { key: "idCollected", label: "Was a valid government-issued photo ID collected?", type: "select", options: ["Yes — original presented and copied", "Yes — copy only received", "No — pending", "No — resident does not have ID"] },
-          { key: "idType", label: "Type of ID collected", type: "select", options: ["Texas Driver's License", "Texas State ID", "Out of state Driver's License", "Out of state ID", "US Passport", "Military ID", "Tribal ID", "No ID — see notes"] },
-          { key: "idNumber", label: "ID number (last 4 digits only)", type: "text", ph: "Last 4 digits only — e.g. XXXX1234" },
-          { key: "idExpiration", label: "ID expiration date", type: "text", ph: "MM/YYYY" },
-          { key: "idExpired", label: "Is the ID expired?", type: "select", options: ["No — valid", "Yes — expired — resident needs renewal", "No ID at all — needs to obtain"] },
-          { key: "idActionNeeded", label: "If ID is missing or expired — what action is being taken?", type: "textarea", ph: "e.g. Scheduled appointment at DPS, assisting with birth certificate request, referred to legal aid for ID recovery" },
-          { key: "ssnCollected", label: "Was Social Security card or SSN documentation collected?", type: "select", options: ["Yes — card presented and copied", "Yes — SSN provided verbally", "No — pending", "No — lost or unknown"] },
-          { key: "supervisionDocsCollected", label: "Was supervision paperwork collected?", type: "select", options: ["Yes — parole certificate", "Yes — probation conditions", "Yes — federal supervised release", "Yes — court order", "No — pending"] },
-          { key: "drugTestCompleted", label: "Was intake drug test administered?", type: "select", options: ["Yes — passed", "Yes — failed — see notes", "No — scheduled", "Refused"] },
-          { key: "drugTestNotes", label: "Drug test notes", type: "textarea", ph: "Results, substances found if failed, action taken" },
-          { key: "agreementSigned", label: "Was the Resident Agreement signed?", type: "select", options: ["Yes", "No — pending", "Refused"] },
-          { key: "programsRequired", label: "What programs are REQUIRED by their supervising institution?", type: "textarea", ph: "List every program mandated by parole, probation, court, BOP, or VA — e.g. drug testing, substance abuse treatment, anger management, sex offender treatment, employment program, mental health counseling" },
-          { key: "programsEnrolled", label: "What programs has the resident already enrolled in or completed?", type: "textarea", ph: "List programs they are currently in or have already completed — include provider name and dates if known" },
-          { key: "programsNeeded", label: "What additional programs does Grace Trace recommend or need to connect them to?", type: "textarea", ph: "Life skills, employment assistance, financial literacy, peer support, GED, vocational training, benefits enrollment, housing search assistance" },
-          { key: "institutionRequirements", label: "Are there any specific institution requirements Grace Trace must meet for this resident?", type: "textarea", ph: "e.g. Facility must be within X miles of parole office, resident must check in weekly, specific curfew time required by parole, employment requirement within 30 days" },
-          { key: "referringInstitution", label: "Referring institution and contact", type: "text", ph: "e.g. TDCJ Parole Officer Jane Smith — 713-555-0100" },
-          { key: "intakeNotes", label: "Additional intake notes", type: "textarea", ph: "Anything else important to document about this resident or their intake" },
-        ]
-      },
-      {
-        id: "i3", title: "Individual Service Plan (ISP) Updates",
-        fields: [
-          { key: "residentName", label: "Resident name or initials", type: "text", ph: "Whose ISP was updated today?" },
-          { key: "goalsReviewed", label: "What goals were reviewed?", type: "textarea", ph: "List the goals discussed and assessed" },
-          { key: "progressMade", label: "What progress has been made?", type: "textarea", ph: "Describe accomplishments since last review" },
-          { key: "challengesFaced", label: "What challenges is the resident facing?", type: "textarea", ph: "Barriers to progress" },
-          { key: "planUpdates", label: "What updates were made to the ISP?", type: "textarea", ph: "Document changes to goals, timelines, or action steps" },
-          { key: "nextReviewDate", label: "Next ISP review date", type: "text", ph: "e.g. July 21, 2026" },
-        ]
-      },
-      {
-        id: "i4", title: "Resident Case Management Check-In",
-        fields: [
-          { key: "residentName", label: "Resident name or initials", type: "text", ph: "Who was checked in with today?" },
-          { key: "employmentStatus", label: "Employment status", type: "select", options: ["Employed — full time", "Employed — part time", "Actively job searching", "In job training", "Not employed — concern"] },
-          { key: "savingsUpdate", label: "Savings update", type: "textarea", ph: "How much are they saving? Are they meeting the savings goal for their phase?" },
-          { key: "housingPlanUpdate", label: "Housing plan update", type: "textarea", ph: "Where are they in the housing search? Applications submitted? Landlord contacts?" },
-          { key: "personalGoalUpdate", label: "Personal goals update", type: "textarea", ph: "Any other goals — ID, benefits, legal, education, family" },
-          { key: "resourcesProvided", label: "What resources or referrals were provided?", type: "textarea", ph: "Services connected, referrals made, resources shared" },
-          { key: "concerns", label: "Any concerns about this resident?", type: "textarea", ph: "Anything that needs escalation to Erica, Deann, Avy, or Travis?" },
-        ]
-      },
-      {
-        id: "i5", title: "Peer Support Group Session",
-        fields: [
-          { key: "sessionHeld", label: "Was peer support group held today?", type: "select", options: ["Yes", "No — rescheduled", "No — cancelled"] },
-          { key: "attendance", label: "How many residents attended?", type: "text", ph: "Number of attendees" },
-          { key: "topicDiscussed", label: "What topic was discussed?", type: "textarea", ph: "Describe the theme or focus of today's group session" },
-          { key: "keyTakeaways", label: "Key takeaways or moments from the session", type: "textarea", ph: "What stood out? Any breakthroughs or concerns that emerged?" },
-          { key: "followUpNeeded", label: "Does any resident need a follow-up after today's session?", type: "textarea", ph: "Name and reason for follow-up" },
-        ]
-      },
-      {
-        id: "i6", title: "Resident Relations — Concerns and Needs",
-        fields: [
-          { key: "residentName", label: "Resident name or initials", type: "text", ph: "Who came to you with a concern or need?" },
-          { key: "concern", label: "What was the concern or need?", type: "textarea", ph: "Describe what the resident shared" },
-          { key: "actionTaken", label: "What action was taken?", type: "textarea", ph: "How did you respond? What was done to address it?" },
-          { key: "escalated", label: "Was this escalated to another staff member?", type: "select", options: ["Yes — to Deann", "Yes — to Erica", "Yes — to Avy", "No — resolved at my level"] },
-          { key: "resolution", label: "Was the concern resolved?", type: "select", options: ["Yes — fully resolved", "Partially resolved", "Still in progress"] },
-        ]
-      },
-      {
-        id: "i7", title: "Bed Availability and Waitlist Management",
-        fields: [
-          { key: "currentOccupancy", label: "Current number of residents in the house", type: "text", ph: "e.g. 4 of 6 beds occupied" },
-          { key: "availableBeds", label: "Number of available beds", type: "text", ph: "e.g. 2 beds available" },
-          { key: "waitlistCount", label: "Number of people on the waitlist", type: "text", ph: "Number of approved referrals waiting for a bed" },
-          { key: "communicatedTo", label: "Was availability communicated to Deann and Avy?", type: "select", options: ["Yes", "No", "Not needed today"] },
-          { key: "upcomingIntakes", label: "Any upcoming intakes scheduled?", type: "textarea", ph: "Names, dates, and details of confirmed upcoming intakes" },
-        ]
-      },
-      {
-        id: "i8", title: "Discharge and Aftercare Planning",
-        fields: [
-          { key: "residentName", label: "Resident name or initials", type: "text", ph: "Who is being prepared for discharge?" },
-          { key: "targetDischargeDate", label: "Target discharge date", type: "text", ph: "e.g. August 1, 2026" },
-          { key: "housingSecured", label: "Is permanent housing secured?", type: "select", options: ["Yes — move-in date confirmed", "In progress — applications submitted", "Not yet started"] },
-          { key: "aftercarePlan", label: "What aftercare services are in place?", type: "textarea", ph: "Services connected after discharge — mental health, employment, benefits, support groups" },
-          { key: "exitPlanWritten", label: "Has the written exit plan been completed?", type: "select", options: ["Yes", "No — in progress"] },
-          { key: "certificateReady", label: "Is the certificate of completion ready?", type: "select", options: ["Yes", "No"] },
-        ]
-      },
-      {
-        id: "i9", title: "Referral Source Relationship Management",
-        fields: [
-          { key: "sourceContacted", label: "Which referral source was contacted today?", type: "text", ph: "Name and organization" },
-          { key: "purpose", label: "Purpose of contact", type: "textarea", ph: "Why did you reach out? Were you following up on a referral or building the relationship?" },
-          { key: "outcome", label: "Outcome", type: "textarea", ph: "What was discussed or decided?" },
-          { key: "newReferralExpected", label: "Is a new referral expected from this source?", type: "select", options: ["Yes", "Maybe", "No"] },
-        ]
-      },
-      {
-        id: "i10", title: "Daily Intake and Case Management Report",
-        fields: [
-          { key: "summary", label: "Summary of today's intake and case management activity", type: "textarea", ph: "Overall summary of what was accomplished today" },
-          { key: "urgentFlags", label: "Anything urgent for Avy and Travis to know?", type: "textarea", ph: "Flag any residents, referrals, or situations that need leadership attention" },
-          { key: "tomorrowPriorities", label: "Top priorities for tomorrow", type: "textarea", ph: "What will you focus on first tomorrow?" },
-        ]
-      },
-    ,
-      {
-        id: "dir1", title: "Complete Your Board & Team Directory Profile",
-        fields: [
-          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes — confirmed correct", "No — needs updating"] },
-          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes — phone added", "No — I will add it now", "I prefer not to share"] },
-          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes — email added", "No — I will add it now"] },
-          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes — profile is complete", "No — still needs updates"] },
-          { key: "notes", label: "Any updates needed?", type: "textarea", ph: "List anything that needs to be changed in your profile" },
-        ]
-      }
-    ,
-      {
-        id: "ops1", title: "Read & Acknowledge the Operations Binder — House Rules",
-        fields: [
-          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
-          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes — I understand all sections", "No — I have questions about some sections"] },
-          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on — bring these to Avy" },
-          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes — acknowledgment signed", "No — I need to complete it now"] },
-        ]
-      }
-    ,
-      {
-        id: "comp1", title: "Compensation Baseline & Pay Cap Declaration",
-        fields: [
-          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes — declaration submitted and locked", "No — I still need to complete it"] },
-          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes — I have reviewed and understand it", "No — I still need to review it"] },
-          { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
-        ]
-      }
-    ,
-      {
-        id: "ep1", title: "Read & Acknowledge Emergency & Incident Procedures",
-        fields: [
-          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
-          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 — not to wait for approval?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
-          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
-          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on — bring these to Avy" },
-          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes — I acknowledge and agree", "No — I need to discuss this first"] },
-        ]
-      }
-    ]
-  },
-  {
-    id: "aubreyon",
-    name: "AuBreyon (Kisses) Woodley",
-    initials: "KW",
-    color: "#4A1A5C",
-    password: "GTM@Kisses2026",
-    role: "Director of Communication — DBMD Programs",
-    tasks: [
-      {
-        id: "k1", title: "Social Media Check and Engagement",
-        fields: [
-          { key: "platforms", label: "Which platforms were checked today?", type: "text", ph: "Facebook, Instagram, LinkedIn, etc." },
-          { key: "comments", label: "Were there any comments or messages that needed response?", type: "select", options: ["Yes", "No"] },
-          { key: "response", label: "Describe any responses given", type: "textarea", ph: "What was responded to and how" },
-          { key: "posts", label: "Were any posts published today?", type: "select", options: ["Yes", "No"] },
-          { key: "postDetails", label: "Describe posts published", type: "textarea", ph: "Platform, content, and any notes" },
-          { key: "presidentApproved", label: "Was President approval received before posting?", type: "select", options: ["Yes", "No — pending", "Not required"] },
-        ]
-      },
-      {
-        id: "k2", title: "Content Creation",
-        fields: [
-          { key: "contentCreated", label: "What content was created today?", type: "textarea", ph: "Graphics, captions, videos, or other materials" },
-          { key: "platform", label: "Which platform is this content for?", type: "text", ph: "Facebook, Instagram, LinkedIn, print, etc." },
-          { key: "status", label: "Status of content", type: "select", options: ["Draft — pending President approval", "Approved and scheduled", "Published today"] },
-          { key: "calendarUpdated", label: "Was the content calendar updated?", type: "select", options: ["Yes", "No", "Not needed today"] },
-        ]
-      },
-      {
-        id: "k3", title: "DBMD Research and Development",
-        fields: [
-          { key: "researchTopic", label: "What DBMD topic was researched today?", type: "text", ph: "e.g. HHSC licensing requirements, DBMD waiver rates, staffing requirements" },
-          { key: "source", label: "What source or contact was used?", type: "text", ph: "Website, organization, or person contacted" },
-          { key: "findings", label: "Key findings from today's research", type: "textarea", ph: "What was learned that is relevant to Grace Trace DBMD program development" },
-          { key: "hoursSpent", label: "Hours spent on DBMD research today", type: "text", ph: "e.g. 1.5 hours" },
-          { key: "actionItems", label: "Action items from today's research", type: "textarea", ph: "What needs to be followed up on or researched next" },
-          { key: "reportToPresident", label: "Does this need to be reported to President today?", type: "select", options: ["Yes — urgent", "Yes — in weekly report", "No"] },
-        ]
-      },
-      {
-        id: "k4", title: "Staff Assist Tasks",
-        fields: [
-          { key: "tasksAssigned", label: "Were any staff assist tasks assigned to you today?", type: "select", options: ["Yes", "No"] },
-          { key: "requestedBy", label: "Who assigned the task?", type: "text", ph: "Staff member name and their role" },
-          { key: "taskDescription", label: "Describe the task assigned", type: "textarea", ph: "What was the task, what was needed, and any deadline given" },
-          { key: "taskStatus", label: "Status of the assigned task", type: "select", options: ["Completed today", "In progress — will complete by deadline", "Need more information", "Escalated to President"] },
-          { key: "taskOutcome", label: "Outcome and what was delivered", type: "textarea", ph: "What was completed and delivered to the requesting staff member" },
-          { key: "notifiedRequester", label: "Was the requesting staff member notified of completion?", type: "select", options: ["Yes", "No — still in progress", "Not yet"] },
-        ]
-      },
-      {
-        id: "k5", title: "Internal Communications",
-        fields: [
-          { key: "communicationsDrafted", label: "Were any internal communications drafted today?", type: "select", options: ["Yes", "No"] },
-          { key: "details", label: "Describe what was drafted or sent", type: "textarea", ph: "Type of communication, recipient, and purpose" },
-          { key: "presidentApproval", label: "Was President approval obtained before distribution?", type: "select", options: ["Yes", "No — pending approval", "Not required"] },
-        ]
-      },
-      {
-        id: "k6", title: "Brand and Marketing Work",
-        fields: [
-          { key: "materialsCreated", label: "What marketing or brand materials were worked on today?", type: "textarea", ph: "Flyers, brochures, graphics, style guide updates, newsletter" },
-          { key: "status", label: "Status", type: "select", options: ["Draft", "Pending President approval", "Approved", "Distributed"] },
-          { key: "notes", label: "Notes", type: "textarea", ph: "Any additional details about brand or marketing work today" },
-        ]
-      },
-      {
-        id: "dir1", title: "Complete Your Board & Team Directory Profile",
-        fields: [
-          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes — confirmed correct", "No — needs updating"] },
-          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes — phone added", "No — I will add it now", "I prefer not to share"] },
-          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes — email added", "No — I will add it now"] },
-          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes — profile is complete", "No — still needs updates"] },
-          { key: "notes", label: "Any corrections or updates needed?", type: "textarea", ph: "List anything that needs to be changed or added to your profile" },
-        ]
-      },
-      {
-        id: "k7", title: "Daily Activity Report",
-        fields: [
-          { key: "summary", label: "Summary of today's activities", type: "textarea", ph: "Overall what was accomplished today across all responsibilities" },
-          { key: "staffAssistSummary", label: "Summary of any staff assist tasks completed today", type: "textarea", ph: "Who requested it, what was done, and outcome" },
-          { key: "urgentItems", label: "Any urgent items for Avy to know?", type: "textarea", ph: "Flag anything needing immediate attention" },
-          { key: "tomorrowPriorities", label: "Top priorities for tomorrow", type: "textarea", ph: "What will you focus on first tomorrow" },
-        ]
-      },
-    ,
-      {
-        id: "ops1", title: "Read & Acknowledge the Operations Binder — House Rules",
-        fields: [
-          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
-          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes — I understand all sections", "No — I have questions about some sections"] },
-          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on — bring these to Avy" },
-          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes — acknowledgment signed", "No — I need to complete it now"] },
-        ]
-      }
-    ,
-      {
-        id: "comp1", title: "Compensation Baseline & Pay Cap Declaration",
-        fields: [
-          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes — declaration submitted and locked", "No — I still need to complete it"] },
-          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes — I have reviewed and understand it", "No — I still need to review it"] },
-          { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
-        ]
-      }
-    ,
-      {
-        id: "ep1", title: "Read & Acknowledge Emergency & Incident Procedures",
-        fields: [
-          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
-          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 — not to wait for approval?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
-          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
-          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on — bring these to Avy" },
-          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes — I acknowledge and agree", "No — I need to discuss this first"] },
-        ]
-      }
-    ]
-  },
-  {
-    id: "dennis",
-    name: "Dennis",
-    initials: "DO",
-    color: "#1A4D35",
-    password: "GTM@Dennis2026",
-    role: "Director of Operations and Facilities",
-    tasks: [
-      {
-        id: "op1", title: "Facility Inspection and Walkthrough",
-        fields: [
-          { key: "areasInspected", label: "Which areas were inspected today?", type: "textarea", ph: "List areas checked — common areas, entry/exit, hallways, exterior" },
-          { key: "camerasOperational", label: "Are all security cameras operational?", type: "select", options: ["Yes", "No — see notes"] },
-          { key: "safetyEquipmentChecked", label: "Was safety equipment checked?", type: "select", options: ["Yes", "No"] },
-          { key: "issuesFound", label: "What issues were found during inspection?", type: "textarea", ph: "Describe anything that needs attention — damage, cleanliness, safety concerns" },
-          { key: "immediateActionTaken", label: "What immediate action was taken?", type: "textarea", ph: "What did you do on the spot to address any issues?" },
-          { key: "time", label: "Time completed", type: "text", ph: "e.g. 8:00 AM" },
-        ]
-      },
-      {
-        id: "op2", title: "Operational Log Review",
-        fields: [
-          { key: "logsReviewed", label: "Which logs were reviewed today?", type: "textarea", ph: "Curfew log, sign-in/out log, incident reports, drug test log" },
-          { key: "logsCurrentAndComplete", label: "Are all logs current and complete?", type: "select", options: ["Yes", "No — gaps found"] },
-          { key: "logGaps", label: "Document any gaps in the logs", type: "textarea", ph: "Which logs are incomplete and what is missing?" },
-          { key: "reportedToDeann", label: "Were gaps reported to Deann?", type: "select", options: ["Yes", "No", "Not needed"] },
-        ]
-      },
-      {
-        id: "op3", title: "Maintenance and Repair Coordination",
-        fields: [
-          { key: "issueDescription", label: "Describe the maintenance or repair issue", type: "textarea", ph: "What needs to be fixed or repaired and where?" },
-          { key: "urgencyLevel", label: "Urgency level", type: "select", options: ["Immediate — safety risk", "High — fix within 48 hours", "Medium — fix this week", "Low — schedule when possible"] },
-          { key: "vendorContacted", label: "Was a vendor or contractor contacted?", type: "select", options: ["Yes", "No — will contact tomorrow", "Handled in-house"] },
-          { key: "vendorName", label: "Vendor or contractor name", type: "text", ph: "Who was contacted for the repair?" },
-          { key: "scheduledDate", label: "When is the repair scheduled?", type: "text", ph: "Date and time of repair" },
-          { key: "avyNotified", label: "Was Avy notified of the issue?", type: "select", options: ["Yes", "No", "Not required"] },
-        ]
-      },
-      {
-        id: "op4", title: "Supply and Inventory Check",
-        fields: [
-          { key: "suppliesChecked", label: "What supplies were checked today?", type: "textarea", ph: "Cleaning supplies, first aid kit, paper products, kitchen supplies, etc." },
-          { key: "lowOrOutItems", label: "What items are low or out of stock?", type: "textarea", ph: "List items that need to be reordered" },
-          { key: "reorderPlaced", label: "Was a reorder placed?", type: "select", options: ["Yes", "No — will order tomorrow", "Not needed"] },
-          { key: "estimatedCost", label: "Estimated cost of reorder", type: "text", ph: "e.g. $45.00" },
-          { key: "approvedBy", label: "Was the purchase approved by Avy or Travis?", type: "select", options: ["Yes", "No — pending approval", "Under approval threshold"] },
-        ]
-      },
-      {
-        id: "op5", title: "Vendor and Contractor Communications",
-        fields: [
-          { key: "vendorName", label: "Vendor or contractor name", type: "text", ph: "Who was contacted?" },
-          { key: "purposeOfContact", label: "Purpose of contact", type: "textarea", ph: "What was the reason for the call or email?" },
-          { key: "outcome", label: "Outcome", type: "textarea", ph: "What was decided or scheduled?" },
-          { key: "costImplication", label: "Any cost implication?", type: "text", ph: "Amount if applicable" },
-          { key: "approvedBy", label: "Approved by", type: "text", ph: "Who approved this expense or service?" },
-        ]
-      },
-      {
-        id: "op6", title: "Occupancy and Bed Status Review",
-        fields: [
-          { key: "currentOccupancy", label: "Current number of residents", type: "text", ph: "e.g. 4 of 6 beds occupied" },
-          { key: "availableBeds", label: "Number of available beds", type: "text", ph: "How many beds are open?" },
-          { key: "bedCondition", label: "Are all available beds cleaned, made, and ready?", type: "select", options: ["Yes", "No — needs attention"] },
-          { key: "reportedToIalana", label: "Was occupancy status reported to Ialana?", type: "select", options: ["Yes", "No"] },
-          { key: "upcomingNeeds", label: "Any facility needs for upcoming intakes?", type: "textarea", ph: "Anything that needs to be done before a new resident moves in?" },
-        ]
-      },
-      {
-        id: "op7", title: "Zoning, Compliance, and Licensing",
-        fields: [
-          { key: "complianceItemReviewed", label: "What compliance or licensing item was addressed today?", type: "text", ph: "e.g. zoning confirmation, fire marshal, occupancy permit" },
-          { key: "status", label: "Current status", type: "textarea", ph: "Where does this item stand? What has been completed?" },
-          { key: "actionRequired", label: "What action is required?", type: "textarea", ph: "What needs to happen next?" },
-          { key: "deadline", label: "Deadline", type: "text", ph: "When does this need to be completed?" },
-          { key: "avyNotified", label: "Was Avy notified?", type: "select", options: ["Yes", "No", "Not required"] },
-        ]
-      },
-      {
-        id: "op8", title: "Daily Operations Report",
-        fields: [
-          { key: "summary", label: "Summary of facility and operations activity today", type: "textarea", ph: "Overall summary of what was done and the current status of the facility" },
-          { key: "openIssues", label: "Open issues that carry over to tomorrow", type: "textarea", ph: "What is still unresolved and needs to be picked up tomorrow?" },
-          { key: "flagsForLeadership", label: "Anything to flag for Avy and Travis?", type: "textarea", ph: "Urgent facility or operations items needing leadership attention" },
-        ]
-      },
-    ,
-      {
-        id: "dir1", title: "Complete Your Board & Team Directory Profile",
-        fields: [
-          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes — confirmed correct", "No — needs updating"] },
-          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes — phone added", "No — I will add it now", "I prefer not to share"] },
-          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes — email added", "No — I will add it now"] },
-          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes — profile is complete", "No — still needs updates"] },
-          { key: "notes", label: "Any updates needed?", type: "textarea", ph: "List anything that needs to be changed in your profile" },
-        ]
-      }
-    ,
-      {
-        id: "ops1", title: "Read & Acknowledge the Operations Binder — House Rules",
-        fields: [
-          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
-          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes — I understand all sections", "No — I have questions about some sections"] },
-          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on — bring these to Avy" },
-          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes — acknowledgment signed", "No — I need to complete it now"] },
-        ]
-      }
-    ,
-      {
-        id: "comp1", title: "Compensation Baseline & Pay Cap Declaration",
-        fields: [
-          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes — declaration submitted and locked", "No — I still need to complete it"] },
-          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes — I have reviewed and understand it", "No — I still need to review it"] },
-          { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
-        ]
-      }
-    ,
-      {
-        id: "ep1", title: "Read & Acknowledge Emergency & Incident Procedures",
-        fields: [
-          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes — I have read the full document", "No — I still need to read it"] },
-          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 — not to wait for approval?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
-          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes — I understand", "No — I have questions"] },
-          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on — bring these to Avy" },
-          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes — I acknowledge and agree", "No — I need to discuss this first"] },
-        ]
-      }
-    ]
-  },
+const PIPELINE_STAGES = [
+  "Interest Received",
+  "Eligibility Review",
+  "Housing Readiness",
+  "Career Ready Program",
+  "Placed / Active",
 ];
 
-export default function WorkdayPortal() {
-  const [screen, setScreen] = useState("login");
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [passwordInput, setPasswordInput] = useState("");
-  const [loginError, setLoginError] = useState("");
+const CHECKLIST_ITEMS = [
+  { key: "step1", label: "Step 1 registration received", auto: true },
+  { key: "step2", label: "Step 2 program readiness received", auto: true },
+  { key: "eligibility", label: "Eligibility confirmed" },
+  { key: "career_ready", label: "Career Ready Program acknowledged", auto: true },
+  { key: "room", label: "Room assigned" },
+  { key: "transport", label: "Transportation confirmed" },
+  { key: "id_docs", label: "ID / documents plan in place" },
+  { key: "employment", label: "Employment intake scheduled" },
+  { key: "placed", label: "Placed / active" },
+];
+
+const BADGE_COLORS = {
+  "Returning Citizen / Reentry": { bg: "#EEEDFE", color: "#534AB7" },
+  "Veteran": { bg: "#E6F1FB", color: "#185FA5" },
+  "Young Adult (18–25)": { bg: "#EAF3DE", color: "#3B6D11" },
+  "Individual with Disabilities (DBMD)": { bg: "#FAEEDA", color: "#854F0B" },
+};
+
+function daysUntil(dateStr) {
+  if (!dateStr) return null;
+  const release = new Date(dateStr);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  release.setHours(0, 0, 0, 0);
+  return Math.ceil((release - today) / (1000 * 60 * 60 * 24));
+}
+
+function DaysBadge({ days }) {
+  if (days === null) return null;
+  const bg = days <= 14 ? "#FAECE7" : days <= 30 ? "#FAEEDA" : "#EAF3DE";
+  const color = days <= 14 ? "#993C1D" : days <= 30 ? "#854F0B" : "#3B6D11";
+  const label = days < 0 ? "Released" : days === 0 ? "Today" : days + " days";
+  return (
+    <span style={{ background: bg, color, fontSize: 11, fontWeight: 700, padding: "2px 9px", borderRadius: 10 }}>
+      {label}
+    </span>
+  );
+}
+
+function PopBadge({ population }) {
+  const colors = BADGE_COLORS[population] || { bg: "#F1EFE8", color: "#5F5E5A" };
+  const short = population === "Returning Citizen / Reentry" ? "Reentry"
+    : population === "Individual with Disabilities (DBMD)" ? "DBMD"
+    : population === "Young Adult (18–25)" ? "Young Adult"
+    : population || "—";
+  return (
+    <span style={{ background: colors.bg, color: colors.color, fontSize: 11, fontWeight: 700, padding: "2px 9px", borderRadius: 10 }}>
+      {short}
+    </span>
+  );
+}
+
+// Modal with mandatory textarea
+function NoteModal({ title, subtitle, placeholder, confirmLabel, confirmColor, onConfirm, onCancel }) {
+  const [note, setNote] = useState("");
+  const [err, setErr] = useState(false);
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: 24, width: "100%", maxWidth: 460 }}>
+        <div style={{ color: C.text, fontWeight: 800, fontSize: 15, marginBottom: 6 }}>{title}</div>
+        <div style={{ color: C.muted, fontSize: 13, marginBottom: 14, lineHeight: 1.5 }}>{subtitle}</div>
+        <textarea
+          value={note}
+          onChange={e => { setNote(e.target.value); setErr(false); }}
+          placeholder={placeholder}
+          rows={4}
+          autoFocus
+          style={{ width: "100%", background: C.dark, border: "1px solid " + (err ? C.error : C.cardBorder), borderRadius: 8, padding: "10px 14px", color: C.text, fontSize: 13, resize: "vertical", outline: "none", fontFamily: "inherit", lineHeight: 1.6 }}
+        />
+        {err && <div style={{ color: C.error, fontSize: 12, marginTop: 4 }}>A note is required before continuing.</div>}
+        <div style={{ display: "flex", gap: 10, marginTop: 14, justifyContent: "flex-end" }}>
+          {onCancel && (
+            <button onClick={onCancel} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "9px 18px", color: C.muted, fontSize: 13, cursor: "pointer" }}>
+              Cancel
+            </button>
+          )}
+          <button
+            onClick={() => { if (!note.trim()) { setErr(true); return; } onConfirm(note.trim()); }}
+            style={{ background: confirmColor || C.green, border: "none", borderRadius: 8, padding: "9px 20px", color: C.ivory, fontSize: 13, fontWeight: 800, cursor: "pointer" }}>
+            {confirmLabel || "Confirm"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── RECORD VIEW ─────────────────────────────────────────────────────────────
+function RecordView({ registrant: initialRegistrant, currentUser, onBack, onCompleted }) {
+  const [registrant, setRegistrant] = useState(initialRegistrant);
+  const [notes, setNotes] = useState([]);
+  const [checklist, setChecklist] = useState({});
+  const [noteInput, setNoteInput] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [stage, setStage] = useState(initialRegistrant.pipeline_stage || "Interest Received");
+  const [actionTaken, setActionTaken] = useState(false);
+
+  // Modal state
+  const [modal, setModal] = useState(null);
+  // modal types: "checklist", "complete", "exit", "edit"
+  const [pendingChecklistKey, setPendingChecklistKey] = useState(null);
+
+  const notesBottomRef = useRef(null);
+
+  useEffect(() => {
+    loadNotes();
+    loadChecklist();
+  }, [registrant.id]);
+
+  async function loadNotes() {
+    const r = await fetch("/api/housing-registry-notes?registrant_id=" + registrant.id);
+    const d = await r.json();
+    setNotes(d.notes || []);
+  }
+
+  async function loadChecklist() {
+    const r = await fetch("/api/housing-registry-checklist?registrant_id=" + registrant.id);
+    const d = await r.json();
+    const map = {};
+    (d.checklist || []).forEach(item => { map[item.item_key] = item; });
+    // Auto-items: step1, step2, career_ready are always true if record exists
+    setChecklist(map);
+  }
+
+  async function postNote(text, type = "manual") {
+    const r = await fetch("/api/housing-registry-notes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ registrant_id: registrant.id, staff_id: currentUser.id, staff_name: currentUser.name, note_text: text, note_type: type }),
+    });
+    const d = await r.json();
+    setNotes(prev => [...prev, d.note]);
+    setActionTaken(true);
+    setTimeout(() => notesBottomRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+  }
+
+  async function saveChecklistItem(key, label, note) {
+    await fetch("/api/housing-registry-checklist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ registrant_id: registrant.id, item_key: key, item_label: label, completed: true, completed_by_id: currentUser.id, completed_by_name: currentUser.name, completion_note: note }),
+    });
+    await loadChecklist();
+    await postNote("Task completed: " + label + " — " + note, "system");
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    await fetch("/api/housing-registry", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: registrant.id, pipeline_stage: stage }),
+    });
+    setSaving(false);
+    setActionTaken(true);
+  }
+
+  async function handleComplete(note) {
+    await fetch("/api/housing-registry", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: registrant.id, completed: true, pipeline_stage: stage, completion_note: note }),
+    });
+    await postNote("Record marked complete — " + note, "system");
+    setRegistrant(prev => ({ ...prev, completed: true }));
+    setModal(null);
+    setActionTaken(true);
+    if (onCompleted) onCompleted(registrant.id);
+  }
+
+  async function handleReopen(note) {
+    await fetch("/api/housing-registry", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: registrant.id, completed: false }),
+    });
+    await postNote("Record reopened for editing — " + note, "system");
+    setRegistrant(prev => ({ ...prev, completed: false }));
+    setModal(null);
+    setActionTaken(true);
+  }
+
+  function handleBack() {
+    if (!actionTaken) {
+      setModal("exit");
+    } else {
+      onBack();
+    }
+  }
+
+  const days = daysUntil(registrant.expected_release);
+  const isUrgent = days !== null && days <= 14;
+  const isSoon = days !== null && days > 14 && days <= 30;
+  const fullName = registrant.first_name + " " + registrant.last_name;
+  const initials = (registrant.first_name?.[0] || "") + (registrant.last_name?.[0] || "");
+
+  return (
+    <div style={{ minHeight: "100vh", background: C.dark, fontFamily: "'Inter','Segoe UI',sans-serif" }}>
+
+      {/* Modals */}
+      {modal === "checklist" && (
+        <NoteModal
+          title={"Note required — " + (CHECKLIST_ITEMS.find(i => i.key === pendingChecklistKey)?.label || "")}
+          subtitle="Describe what was completed before this task is saved."
+          placeholder="e.g. Called Ialana — room 4 confirmed and ready for arrival..."
+          confirmLabel="Save & confirm"
+          onConfirm={async (note) => {
+            const item = CHECKLIST_ITEMS.find(i => i.key === pendingChecklistKey);
+            await saveChecklistItem(pendingChecklistKey, item.label, note);
+            setModal(null);
+            setPendingChecklistKey(null);
+          }}
+          onCancel={() => { setModal(null); setPendingChecklistKey(null); }}
+        />
+      )}
+
+      {modal === "complete" && (
+        <NoteModal
+          title="Mark record as complete"
+          subtitle={"This will move " + fullName + " to the Completed dashboard. Summarize the outcome before confirming."}
+          placeholder="e.g. Placed in Room 4 on Aug 12. Transportation completed by Ialana. Enrolled in Career Ready Program. All documents obtained..."
+          confirmLabel="Confirm & complete"
+          confirmColor={C.green}
+          onConfirm={handleComplete}
+          onCancel={() => setModal(null)}
+        />
+      )}
+
+      {modal === "exit" && (
+        <NoteModal
+          title="No changes were made"
+          subtitle="You opened this record but did not complete any tasks or add any notes. Leave a note explaining why you accessed it before leaving."
+          placeholder="e.g. Reviewed record to check release date — no action needed at this time..."
+          confirmLabel="Save note & leave"
+          confirmColor={C.burgundy}
+          onConfirm={async (note) => {
+            await postNote("Record accessed with no action taken — " + note, "system");
+            setModal(null);
+            onBack();
+          }}
+        />
+      )}
+
+      {modal === "edit" && (
+        <NoteModal
+          title="Edit completed record"
+          subtitle={"This record is marked complete. Leave a note explaining why you are reopening it."}
+          placeholder="e.g. Updating employment information — Marcus changed his career interest to HVAC after placement..."
+          confirmLabel="Confirm & edit"
+          confirmColor="#854F0B"
+          onConfirm={handleReopen}
+          onCancel={() => setModal(null)}
+        />
+      )}
+
+      {/* Header */}
+      <div style={{ background: C.burgundyDark, borderBottom: "2px solid " + C.gold, padding: "14px 20px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+        <button onClick={handleBack} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "7px 14px", color: C.muted, fontSize: 13, cursor: "pointer" }}>← Back</button>
+        <div style={{ flex: 1 }}>
+          <div style={{ color: C.ivory, fontWeight: 800, fontSize: 15 }}>{fullName}</div>
+          <div style={{ color: C.gold, fontSize: 11, marginTop: 2 }}>Housing Registry — Individual Record</div>
+        </div>
+        {!registrant.completed && (
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button onClick={handleSave} style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "8px 16px", color: C.text, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+              {saving ? "Saving..." : "Save changes"}
+            </button>
+            <button onClick={() => setModal("complete")} style={{ background: C.green, border: "none", borderRadius: 8, padding: "8px 16px", color: C.ivory, fontSize: 13, fontWeight: 800, cursor: "pointer" }}>
+              ✓ Mark complete
+            </button>
+          </div>
+        )}
+        {registrant.completed && (
+          <button onClick={() => setModal("edit")} style={{ background: "#854F0B", border: "none", borderRadius: 8, padding: "8px 16px", color: "#FAEEDA", fontSize: 13, fontWeight: 800, cursor: "pointer" }}>
+            ✏️ Edit record
+          </button>
+        )}
+      </div>
+
+      <div style={{ maxWidth: 800, margin: "0 auto", padding: "20px 16px" }}>
+
+        {/* Release alert or completed banner */}
+        {!registrant.completed && days !== null && days <= 30 && (
+          <div style={{ background: "#FAECE7", border: "1px solid #F0997B", borderRadius: 8, padding: "10px 16px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ color: "#993C1D", fontWeight: 700, fontSize: 13 }}>⚠️ Release date: {registrant.expected_release} — {days <= 0 ? "already released" : days + " days away"}</span>
+            <span style={{ color: "#D85A30", fontSize: 12 }}>{days <= 7 ? "Immediate action required" : "Action required soon"}</span>
+          </div>
+        )}
+
+        {registrant.completed && (
+          <div style={{ background: "#EAF3DE", border: "1px solid #97C459", borderRadius: 8, padding: "12px 16px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div>
+              <div style={{ color: "#27500A", fontWeight: 700, fontSize: 13 }}>✓ This record has been marked complete</div>
+              <div style={{ color: "#3B6D11", fontSize: 12, marginTop: 2 }}>Moved to Completed dashboard</div>
+              {registrant.completion_note && <div style={{ color: "#3B6D11", fontSize: 12, marginTop: 4, fontStyle: "italic" }}>"{registrant.completion_note}"</div>}
+            </div>
+          </div>
+        )}
+
+        {/* Identity + stage */}
+        <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "16px 18px", marginBottom: 14, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <div style={{ width: 48, height: 48, borderRadius: "50%", background: C.burgundy, border: "1px solid " + C.gold, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800, color: C.ivory, flexShrink: 0 }}>{initials}</div>
+            <div>
+              <div style={{ color: C.text, fontWeight: 800, fontSize: 16 }}>{fullName}</div>
+              <div style={{ marginTop: 4, display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+                <PopBadge population={registrant.population} />
+                {days !== null && <DaysBadge days={days} />}
+              </div>
+              <div style={{ color: C.muted, fontSize: 12, marginTop: 4 }}>
+                Registered {registrant.created_at ? new Date(registrant.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—"} · {registrant.system_type || "—"} · {registrant.county || "—"}
+              </div>
+            </div>
+          </div>
+          {!registrant.completed && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
+              <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase" }}>Pipeline stage</div>
+              <select value={stage} onChange={e => { setStage(e.target.value); setActionTaken(true); }}
+                style={{ background: C.dark, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "8px 12px", color: C.text, fontSize: 13, outline: "none", fontFamily: "inherit" }}>
+                {PIPELINE_STAGES.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+          )}
+          {registrant.completed && (
+            <div style={{ background: "#EAF3DE", border: "1px solid #97C459", borderRadius: 8, padding: "6px 14px", color: "#27500A", fontSize: 12, fontWeight: 700 }}>Completed</div>
+          )}
+        </div>
+
+        {/* Info grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
+          <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "14px 16px" }}>
+            <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Personal information</div>
+            {[
+              ["Phone", registrant.phone],
+              ["Email", registrant.email || "—"],
+              ["Date of birth", registrant.date_of_birth || "—"],
+              ["County", registrant.county || "—"],
+              ["Emergency contact", registrant.emergency_contact || "—"],
+              ["Referred by", registrant.referral_source || "—"],
+            ].map(([label, val]) => (
+              <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: "1px solid " + C.cardBorder, fontSize: 13, gap: 8 }}>
+                <span style={{ color: C.muted, flexShrink: 0 }}>{label}</span>
+                <span style={{ color: C.text, fontWeight: 600, textAlign: "right" }}>{val}</span>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "14px 16px" }}>
+            <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Incarceration details</div>
+            {[
+              ["System", registrant.system_type || "—"],
+              ["Facility", registrant.facility || "—"],
+              ["TDCJ / Register #", registrant.tdcj_number || "Not provided"],
+              ["Release date", registrant.expected_release || "—"],
+              ["Housing timeline", registrant.housing_timeline || "—"],
+              ["Other housing", registrant.other_housing || "—"],
+            ].map(([label, val]) => (
+              <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: "1px solid " + C.cardBorder, fontSize: 13, gap: 8 }}>
+                <span style={{ color: C.muted, flexShrink: 0 }}>{label}</span>
+                <span style={{ color: C.text, fontWeight: 600, textAlign: "right" }}>{val}</span>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "14px 16px" }}>
+            <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Employment & education</div>
+            {[
+              ["Employment timeline", registrant.emp_timeline || "—"],
+              ["Work interests", registrant.work_interests || "—"],
+              ["Certifications", registrant.certifications || "—"],
+              ["Worked inside", registrant.worked_inside || "—"],
+              ["Resume help", registrant.resume_help || "—"],
+              ["Education interests", registrant.edu_interests || "—"],
+              ["Field of study", registrant.edu_field || "—"],
+            ].map(([label, val]) => (
+              <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: "1px solid " + C.cardBorder, fontSize: 13, gap: 8 }}>
+                <span style={{ color: C.muted, flexShrink: 0 }}>{label}</span>
+                <span style={{ color: C.text, fontWeight: 600, textAlign: "right", maxWidth: 160 }}>{val}</span>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "14px 16px" }}>
+            <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Services needed</div>
+            {registrant.services_needed ? (
+              registrant.services_needed.split(",").map(s => s.trim()).filter(Boolean).map(s => (
+                <div key={s} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0", borderBottom: "1px solid " + C.cardBorder, fontSize: 13, color: C.text }}>
+                  <span style={{ color: C.green, fontWeight: 800 }}>✓</span> {s}
+                </div>
+              ))
+            ) : (
+              <div style={{ color: C.muted, fontSize: 13 }}>No services selected</div>
+            )}
+          </div>
+        </div>
+
+        {/* Notes + Checklist */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
+
+          {/* Staff notes */}
+          <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "14px 16px" }}>
+            <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Staff notes</div>
+            <div style={{ maxHeight: 280, overflowY: "auto", marginBottom: 10 }}>
+              {notes.length === 0 && <div style={{ color: C.muted, fontSize: 13 }}>No notes yet.</div>}
+              {notes.map(n => (
+                <div key={n.id} style={{ paddingBottom: 10, marginBottom: 10, borderBottom: "1px solid " + C.cardBorder }}>
+                  <div style={{ fontSize: 11, color: C.muted, marginBottom: 3 }}>
+                    <strong style={{ color: C.text }}>{n.staff_name}</strong> · {new Date(n.created_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                    {n.note_type === "system" && <span style={{ color: C.muted, marginLeft: 6, fontStyle: "italic" }}>(system)</span>}
+                  </div>
+                  <div style={{ color: C.text, fontSize: 13, lineHeight: 1.5 }}>{n.note_text}</div>
+                </div>
+              ))}
+              <div ref={notesBottomRef} />
+            </div>
+            <div style={{ borderTop: "1px solid " + C.cardBorder, paddingTop: 10, display: "flex", gap: 8 }}>
+              <input
+                value={noteInput}
+                onChange={e => setNoteInput(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter" && noteInput.trim()) { postNote(noteInput.trim()); setNoteInput(""); } }}
+                placeholder="Add a note..."
+                style={{ flex: 1, background: C.dark, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "8px 12px", color: C.text, fontSize: 13, outline: "none", fontFamily: "inherit" }}
+              />
+              <button
+                onClick={() => { if (noteInput.trim()) { postNote(noteInput.trim()); setNoteInput(""); } }}
+                style={{ background: C.burgundy, border: "none", borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                Add
+              </button>
+            </div>
+          </div>
+
+          {/* Pre-arrival checklist */}
+          <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "14px 16px" }}>
+            <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Pre-arrival checklist</div>
+            {CHECKLIST_ITEMS.map(item => {
+              const done = item.auto ? true : !!(checklist[item.key]?.completed);
+              return (
+                <div key={item.key} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "7px 0", borderBottom: "1px solid " + C.cardBorder }}>
+                  <input
+                    type="checkbox"
+                    checked={done}
+                    disabled={done || registrant.completed}
+                    onChange={() => {
+                      if (!done && !registrant.completed) {
+                        setPendingChecklistKey(item.key);
+                        setModal("checklist");
+                      }
+                    }}
+                    style={{ width: 15, height: 15, flexShrink: 0, marginTop: 2, accentColor: C.green, cursor: done ? "default" : "pointer" }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ color: done ? C.muted : C.text, fontSize: 13, textDecoration: done ? "line-through" : "none" }}>{item.label}</div>
+                    {done && checklist[item.key]?.completed_by_name && (
+                      <div style={{ color: C.muted, fontSize: 11, marginTop: 1 }}>
+                        {checklist[item.key].completed_by_name} · {new Date(checklist[item.key].completed_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                      </div>
+                    )}
+                    {item.auto && <div style={{ color: C.muted, fontSize: 11, marginTop: 1, fontStyle: "italic" }}>Auto-confirmed</div>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── DASHBOARD ────────────────────────────────────────────────────────────────
+export default function HousingRegistryDashboard() {
   const [currentUser, setCurrentUser] = useState(null);
-  const [taskData, setTaskData] = useState({});
-  const [activeTask, setActiveTask] = useState(null);
-  const [reportText, setReportText] = useState("");
-  const [reportVisible, setReportVisible] = useState(false);
-  const [sent, setSent] = useState(false);
-  const [alertTasks, setAlertTasks] = useState([]);
-  const [alertMeetings, setAlertMeetings] = useState([]);
-  const [alertSignatures, setAlertSignatures] = useState({});
-  const [pinnedAnnouncements, setPinnedAnnouncements] = useState([]);
-  const [resourceTemplateAlert, setResourceTemplateAlert] = useState<any[]>([]);
-
-  function loadResourceTemplateAlert(id: string) {
-    Promise.all([
-      fetch("/api/resource-templates?director=" + id).then(r => r.json()).catch(() => ({ templates: [] })),
-      fetch("/api/resource-template-reads").then(r => r.json()).catch(() => ({ reads: [] })),
-    ]).then(([tData, rData]) => {
-      const templates = tData.templates || [];
-      const reads = rData.reads || [];
-      const pending = templates.filter((t: any) => {
-        const r = reads.find((x: any) => x.template_id === t.id && x.staff_id === id);
-        if (!r) return true;
-        return new Date(t.updated_at) > new Date(r.viewed_at);
-      });
-      const byCategorySection: Record<string, number> = {};
-      pending.forEach((t: any) => {
-        const key = t.category + "|||" + t.section;
-        byCategorySection[key] = (byCategorySection[key] || 0) + 1;
-      });
-      const breakdown = Object.keys(byCategorySection).map((key) => {
-        const [categoryTitle, section] = key.split("|||");
-        const match = OUTREACH_CATEGORIES.find((c: any) => c.title.trim().toLowerCase() === categoryTitle.trim().toLowerCase());
-        return { categoryTitle, section, categoryId: match ? match.id : null, icon: match ? match.icon : "📚", count: byCategorySection[key] };
-      });
-      setResourceTemplateAlert(breakdown);
-    }).catch(() => {});
-  }
-
-  const [outreachContactAlert, setOutreachContactAlert] = useState(0);
-  const [hasOutreachContacts, setHasOutreachContacts] = useState(false);
-  const [partnershipAlertCount, setPartnershipAlertCount] = useState(0);
-
-  function loadOutreachContactAlert(id: string) {
-    fetch("/api/outreach-contacts?assignedTo=" + id)
-      .then((r) => r.json())
-      .then((d) => {
-        const contacts = d.contacts || [];
-        const pending = contacts.filter((c: any) => !c.completed).length;
-        setOutreachContactAlert(pending);
-        setHasOutreachContacts(contacts.length > 0);
-      })
-      .catch(() => {});
-  }
-
-  function loadPartnershipAlert(id: string) {
-    if (id !== "avy" && id !== "deann") return;
-    Promise.all([
-      fetch("/api/outreach-partnership-tracker").then((r) => r.json()).catch(() => ({ contacts: [] })),
-      fetch("/api/outreach-partnership-tracker-reads").then((r) => r.json()).catch(() => ({ reads: [] })),
-    ]).then(([cData, rData]) => {
-      const contacts = cData.contacts || [];
-      const reads = rData.reads || [];
-      const unseen = contacts.filter((c: any) => {
-        const r = reads.find((x: any) => x.contact_id === c.id && x.staff_id === id);
-        if (!r) return true;
-        return new Date(c.updated_at) > new Date(r.viewed_at);
-      });
-      setPartnershipAlertCount(unseen.length);
-    }).catch(() => {});
-  }
-  const [showPassword, setShowPassword] = useState(false);
-  const [installPrompt, setInstallPrompt] = useState(null);
-  const [showInstallBanner, setShowInstallBanner] = useState(false);
-
-  useEffect(() => {
-    // Android/Chrome — native install prompt
-    const handler = (e) => {
-      e.preventDefault();
-      setInstallPrompt(e);
-      setShowInstallBanner(true);
-    };
-    window.addEventListener("beforeinstallprompt", handler);
-    // iOS Safari — show manual instructions if not already installed
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-    const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
-    if (isIOS && !isStandalone) {
-      setShowInstallBanner(true);
-    }
-    if (isStandalone) {
-      setShowInstallBanner(false);
-    }
-    return () => window.removeEventListener("beforeinstallprompt", handler);
-  }, []);
-
-  async function handleInstall() {
-    if (installPrompt) {
-      installPrompt.prompt();
-      const result = await installPrompt.userChoice;
-      if (result.outcome === "accepted") {
-        setShowInstallBanner(false);
-        setInstallPrompt(null);
-      }
-    }
-  }
-  const [usernameInput, setUsernameInput] = useState("");
-
-  const USERNAME_MAP: Record<string, string> = {
-    avygtm: "avy", travisgtm: "travis", deanngtm: "deann",
-    ericagtm: "erica", ialanagtm: "ialana", kissesgtm: "aubreyon", dennisgtm: "dennis",
-  };
-
-  function attemptLoginWithUsername() {
-    const userId = USERNAME_MAP[usernameInput.toLowerCase().trim()];
-    if (!userId) { setLoginError("Username not found. Check your username and try again."); return; }
-    const user = USERS.find((u: any) => u.id === userId);
-    if (!user) { setLoginError("Account not found."); return; }
-    if (passwordInput !== user.password) { setLoginError("Incorrect password. Please try again."); return; }
-    try { localStorage.setItem("gtm_current_user", user.id); localStorage.setItem("gtm_session_active", "true"); } catch(e) {}
-    fetch("/api/taskdata").then(r => r.json()).then((allData: any) => {
-      // Build defaults for all current tasks
-      const d: Record<string, any> = {};
-      user.tasks.forEach((t: any) => { const fields: Record<string,string> = {}; t.fields.forEach((f: any) => { fields[f.key] = ""; }); d[t.id] = { completed: false, fields }; });
-      if (allData && allData[user.id]) {
-        // START with saved data (preserves all completions), then ADD any new tasks not yet in saved data
-        const merged: Record<string, any> = { ...allData[user.id] };
-        Object.keys(d).forEach((taskId: string) => { if (!merged[taskId]) merged[taskId] = d[taskId]; });
-        setTaskData((prev: any) => ({ ...prev, [user.id]: merged }));
-      } else {
-        setTaskData((prev: any) => ({ ...prev, [user.id]: d }));
-        fetch("/api/taskdata", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId: user.id, data: d }) }).catch(()=>{});
-      }
-    }).catch(() => {});
-    fetch("/api/mandatory-tasks").then(r=>r.json()).then(t=>setAlertTasks(t)).catch(()=>{});
-    fetch("/api/meetings").then(r=>r.json()).then(m=>setAlertMeetings(m)).catch(()=>{});
-    fetch("/api/signatures").then(r=>r.json()).then(s=>setAlertSignatures(s)).catch(()=>{});
-    fetch("/api/announcements").then(r=>r.json()).then(d=>setPinnedAnnouncements((d.announcements||[]).filter(a=>a.pinned))).catch(()=>{});
-    loadResourceTemplateAlert(user.id);
-    loadOutreachContactAlert(user.id);
-    loadPartnershipAlert(user.id);
-    // Register service worker and push notifications
-    if ("serviceWorker" in navigator && "PushManager" in window) {
-      navigator.serviceWorker.register("/sw.js").then(reg => {
-        Notification.requestPermission().then(permission => {
-          if (permission === "granted") {
-            reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: null }).then(sub => {
-              fetch("/api/push", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId: user.id, subscription: sub }) }).catch(()=>{});
-            }).catch(()=>{});
-          }
-        });
-      }).catch(()=>{});
-    }
-    setCurrentUser(user); setActiveTask(null); setReportText(""); setReportVisible(false); setSent(false); setActiveTab("workday"); setScreen("dashboard");
-  }
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [outreachMenuOpen, setOutreachMenuOpen] = useState(false);
-
-  // Reload alert data every time dashboard is shown, window gets focus, or every 60 seconds
-  useEffect(() => {
-    if (screen === "dashboard" && currentUser) {
-      const reload = () => {
-        fetch("/api/mandatory-tasks").then(r=>r.json()).then(t=>setAlertTasks(t)).catch(()=>{});
-        fetch("/api/meetings").then(r=>r.json()).then(m=>setAlertMeetings(m)).catch(()=>{});
-        fetch("/api/signatures").then(r=>r.json()).then(s=>setAlertSignatures(s)).catch(()=>{});
-        fetch("/api/announcements").then(r=>r.json()).then(d=>setPinnedAnnouncements((d.announcements||[]).filter(a=>a.pinned))).catch(()=>{});
-        loadResourceTemplateAlert(currentUser.id);
-        loadOutreachContactAlert(currentUser.id);
-        loadPartnershipAlert(currentUser.id);
-      };
-      reload();
-      window.addEventListener("focus", reload);
-      const interval = setInterval(reload, 60000);
-      return () => { window.removeEventListener("focus", reload); clearInterval(interval); };
-    }
-  }, [screen, currentUser?.id]);
+  const [registrants, setRegistrants] = useState([]);
+  const [completed, setCompleted] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [view, setView] = useState("dashboard"); // "dashboard" | "record" | "completed"
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [tab, setTab] = useState("active"); // "active" | "completed"
+  const [stageFilter, setStageFilter] = useState("All");
 
   useEffect(() => {
     try {
       const uid = localStorage.getItem("gtm_current_user");
-      const active = localStorage.getItem("gtm_session_active");
-      if (uid && active === "true") {
-        const user = USERS.find((u: any) => u.id === uid);
-        if (user) {
-          fetch("/api/taskdata").then(r => r.json()).then((allData: any) => {
-            const d: Record<string, any> = {};
-            user.tasks.forEach((t: any) => { const fields: Record<string,string> = {}; t.fields.forEach((f: any) => { fields[f.key] = ""; }); d[t.id] = { completed: false, fields }; });
-            if (allData && allData[user.id]) {
-              // START with saved data (never overwrite completions), ADD only missing new tasks
-              const merged: Record<string, any> = { ...allData[user.id] };
-              Object.keys(d).forEach((taskId: string) => { if (!merged[taskId]) merged[taskId] = d[taskId]; });
-              setTaskData((prev: any) => ({ ...prev, [user.id]: merged }));
-            } else {
-              setTaskData((prev: any) => ({ ...prev, [user.id]: d }));
-              fetch("/api/taskdata", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId: user.id, data: d }) }).catch(()=>{});
-            }
-          }).catch(() => {});
-          fetch("/api/mandatory-tasks").then(r=>r.json()).then(t=>setAlertTasks(t)).catch(()=>{});
-          fetch("/api/meetings").then(r=>r.json()).then(m=>setAlertMeetings(m)).catch(()=>{});
-          fetch("/api/signatures").then(r=>r.json()).then(s=>setAlertSignatures(s)).catch(()=>{});
-    fetch("/api/announcements").then(r=>r.json()).then(d=>setPinnedAnnouncements((d.announcements||[]).filter(a=>a.pinned))).catch(()=>{});
-          loadResourceTemplateAlert(uid);
-          loadOutreachContactAlert(uid);
-          loadPartnershipAlert(uid);
-          setCurrentUser(user);
-          setScreen("dashboard");
-        }
+      if (uid === "avy" || uid === "ialana" || uid === "travis") {
+        // Allowed users
+        const names = { avy: "Avrial Evans (Avy)", ialana: "Ialana Tippins", travis: "Travis Ramar" };
+        setCurrentUser({ id: uid, name: names[uid] });
+      } else if (uid) {
+        // Other staff — redirect
+        window.location.href = "/";
+        return;
+      } else {
+        window.location.href = "/";
+        return;
       }
-    } catch(e) {}
+    } catch (e) { window.location.href = "/"; return; }
+    loadData();
   }, []);
-  const [activeTab, setActiveTab] = useState("workday");
 
-  function selectUser(user) { setSelectedUser(user); setPasswordInput(""); setLoginError(""); setScreen("password"); }
-
-  function attemptLogin() {
-    if (passwordInput === selectedUser.password) {
-      try {
-        const saved = localStorage.getItem("gtm_taskdata");
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          setTaskData(parsed);
-          if (!parsed[selectedUser.id]) {
-            const d = {};
-            selectedUser.tasks.forEach(t => { const fields: Record<string, string> = {}; t.fields.forEach(f => { fields[f.key] = ""; }); d[t.id] = { completed: false, fields }; });
-            const updated = { ...parsed, [selectedUser.id]: d };
-            setTaskData(updated);
-            localStorage.setItem("gtm_taskdata", JSON.stringify(updated));
-          }
-        } else {
-          if (!taskData[selectedUser.id]) {
-            const d = {};
-            selectedUser.tasks.forEach(t => { const fields: Record<string, string> = {}; t.fields.forEach(f => { fields[f.key] = ""; }); d[t.id] = { completed: false, fields }; });
-            setTaskData(prev => ({ ...prev, [selectedUser.id]: d }));
-          }
-        }
-      } catch(e) {
-        if (!taskData[selectedUser.id]) {
-          const d = {};
-          selectedUser.tasks.forEach(t => { const fields: Record<string, string> = {}; t.fields.forEach(f => { fields[f.key] = ""; }); d[t.id] = { completed: false, fields }; });
-          setTaskData(prev => ({ ...prev, [selectedUser.id]: d }));
-        }
-      }
-      try { localStorage.setItem("gtm_current_user", selectedUser.id); localStorage.setItem("gtm_session_active", "true"); } catch(e) {}
-      setCurrentUser(selectedUser); setActiveTask(null); setReportText(""); setReportVisible(false); setSent(false); setActiveTab("workday"); setScreen("dashboard");
-    } else { setLoginError("Incorrect password. Please try again."); }
+  async function loadData() {
+    setLoading(true);
+    const [activeRes, completedRes] = await Promise.all([
+      fetch("/api/housing-registry?completed=false"),
+      fetch("/api/housing-registry?completed=true"),
+    ]);
+    const activeData = await activeRes.json();
+    const completedData = await completedRes.json();
+    setRegistrants(activeData.registrants || []);
+    setCompleted(completedData.registrants || []);
+    setLoading(false);
   }
 
-  function logout() { try { localStorage.removeItem("gtm_current_user"); localStorage.removeItem("gtm_session_active"); } catch(e) {} setCurrentUser(null); setSelectedUser(null); setPasswordInput(""); setLoginError(""); setActiveTask(null); setScreen("login"); }
-
-  function updateField(taskId, key, val) {
-    setTaskData(prev => ({ ...prev, [currentUser.id]: { ...prev[currentUser.id], [taskId]: { ...prev[currentUser.id][taskId], fields: { ...prev[currentUser.id][taskId].fields, [key]: val } } } }));
+  function openRecord(r) {
+    setSelectedRecord(r);
+    setView("record");
   }
 
-  function submitTask(taskId) {
-    setTaskData(prev => {
-      const updated = { ...prev, [currentUser.id]: { ...prev[currentUser.id], [taskId]: { ...prev[currentUser.id][taskId], completed: true } } };
-      fetch("/api/taskdata", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ userId: currentUser.id, data: updated[currentUser.id] }) }).catch(()=>{});
-      return updated;
-    });
-    setActiveTask(null);
-  }
-
-  function getSendLabel() {
-    return "Submit Report";
-  }
-
-  function getSentConfirmation() {
-    return "Report submitted successfully";
-  }
-
-  function generateReport() {
-    const d = taskData[currentUser.id];
-    const date = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
-    const completed = Object.values(d).filter(x => x.completed).length;
-    let txt = "GRACE TRACE MINISTRIES — WORKDAY REPORT\n" + "=".repeat(56) + "\n";
-    txt += "Staff Member: " + currentUser.name + "\nRole: " + currentUser.role + "\nDate: " + date + "\nTasks Completed: " + completed + " of " + currentUser.tasks.length + "\n" + "=".repeat(56) + "\n\n";
-    currentUser.tasks.forEach((task, i) => {
-      const td = d[task.id];
-      txt += "TASK " + (i + 1) + ": " + task.title.toUpperCase() + "\nStatus: " + (td.completed ? "COMPLETE" : "INCOMPLETE") + "\n";
-      task.fields.forEach(f => { const val = td.fields[f.key]; if (val) txt += f.label + ":\n  " + val + "\n"; });
-      txt += "\n";
-    });
-    txt += "=".repeat(56) + "\nGenerated: " + new Date().toLocaleString() + "\n";
-    setReportText(txt); setReportVisible(true); setSent(false);
-  }
-
-  function downloadReport() {
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([reportText], { type: "text/plain" }));
-    a.download = "GraceTrace_" + currentUser.id + "_" + new Date().toISOString().slice(0, 10) + ".txt";
-    a.click();
-  }
-
-  if (screen === "login") return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: "'Inter','Segoe UI',sans-serif", position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(160deg, #0D0608 0%, #1A0812 40%, #2A0E1A 70%, #1A0F12 100%)" }} />
-      <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(ellipse at 20% 50%, #6B1A2A22 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, #C9A84C11 0%, transparent 50%)" }} />
-      <div style={{ position: "relative", flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 20px" }}>
-        <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <div style={{ width: 72, height: 72, borderRadius: "50%", background: "linear-gradient(135deg," + C.burgundy + " 0%," + C.burgundyDark + " 100%)", border: "2px solid " + C.gold, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px", boxShadow: "0 0 32px #C9A84C22" }}>
-            <span style={{ color: C.gold, fontSize: 28 }}>✦</span>
-          </div>
-          <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 6, textTransform: "uppercase", marginBottom: 4 }}>Grace Trace</div>
-          <h1 style={{ color: C.ivory, fontSize: 26, fontWeight: 900, margin: "0 0 6px", letterSpacing: -0.5 }}>Ministries</h1>
-          <div style={{ width: 40, height: 1, background: C.gold, margin: "8px auto", opacity: 0.5 }} />
-          <div style={{ color: C.ivory, fontSize: 15, fontWeight: 700, marginBottom: 3 }}>Staff Workday Portal</div>
-          <div style={{ color: C.gold, fontSize: 10, fontWeight: 700, letterSpacing: 4, textTransform: "uppercase" }}>Authorized Personnel Only</div>
-        </div>
-        <div style={{ width: "100%", maxWidth: 420, background: "rgba(26,15,18,0.9)", border: "1px solid " + C.cardBorder, borderRadius: 20, padding: "32px 28px", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
-          <div style={{ textAlign: "center", marginBottom: 24 }}>
-            <div style={{ width: 50, height: 50, borderRadius: "50%", background: C.cardBorder, border: "1px solid " + C.gold + "44", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", fontSize: 20 }}>👤</div>
-            <div style={{ color: C.ivory, fontWeight: 800, fontSize: 17 }}>Welcome Back</div>
-            <div style={{ color: C.muted, fontSize: 13, marginTop: 3 }}>Sign in to access your account</div>
-          </div>
-          <div style={{ marginBottom: 14 }}>
-            <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", marginBottom: 7 }}>Username or Employee ID</div>
-            <div style={{ position: "relative" }}>
-              <span style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: C.muted, fontSize: 15 }}>👤</span>
-              <input type="text" value={usernameInput} onChange={e => { setUsernameInput(e.target.value); setLoginError(""); }} onKeyDown={e => e.key === "Enter" && attemptLoginWithUsername()} placeholder="Enter your username or ID"
-                style={{ width: "100%", background: C.dark, border: "1px solid " + (loginError ? C.error : C.cardBorder), borderRadius: 10, padding: "12px 14px 12px 40px", color: C.text, fontSize: 14, outline: "none", fontFamily: "inherit" }} autoFocus />
-            </div>
-          </div>
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", marginBottom: 7 }}>Password</div>
-            <div style={{ position: "relative" }}>
-              <span style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: C.muted, fontSize: 15 }}>🔒</span>
-              <input type={showPassword ? "text" : "password"} value={passwordInput} onChange={e => { setPasswordInput(e.target.value); setLoginError(""); }} onKeyDown={e => e.key === "Enter" && attemptLoginWithUsername()} placeholder="Enter your password"
-                style={{ width: "100%", background: C.dark, border: "1px solid " + (loginError ? C.error : C.cardBorder), borderRadius: 10, padding: "12px 44px 12px 40px", color: C.text, fontSize: 14, outline: "none", fontFamily: "inherit" }} />
-              <button onClick={() => setShowPassword(!showPassword)} style={{ position: "absolute", right: 13, top: "50%", transform: "translateY(-50%)", background: "transparent", border: "none", color: C.muted, cursor: "pointer", fontSize: 16, padding: 0, lineHeight: 1 }}>
-                {showPassword ? "🙈" : "👁️"}
-              </button>
-            </div>
-          </div>
-          {loginError && <div style={{ color: C.error, fontSize: 13, marginBottom: 14, textAlign: "center" }}>{loginError}</div>}
-          <button onClick={attemptLoginWithUsername}
-            style={{ width: "100%", background: "linear-gradient(135deg," + C.burgundy + " 0%,#8B1A2E 100%)", border: "none", borderRadius: 10, padding: "14px", color: C.ivory, fontSize: 14, fontWeight: 800, cursor: "pointer", letterSpacing: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
-            SIGN IN <span style={{ fontSize: 16 }}>→</span>
-          </button>
-        </div>
-      </div>
-      <div style={{ position: "relative", textAlign: "center", padding: "14px 20px", borderTop: "1px solid " + C.cardBorder + "44" }}>
-        <div style={{ color: C.muted, fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-          <span>🔒</span>
-          <span style={{ fontWeight: 700, color: C.gold }}>AUTHORIZED USE ONLY.</span>
-          <span>All access is monitored and recorded.</span>
-        </div>
-      </div>
-
-      {showInstallBanner && installPrompt && (
-        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: C.burgundyDark, borderTop: "2px solid " + C.gold, padding: "14px 20px", display: "flex", alignItems: "center", gap: 14, zIndex: 999, flexWrap: "wrap" }}>
-          <img src="/icons/icon-72x72.png" alt="GTM" style={{ width: 44, height: 44, borderRadius: 10, flexShrink: 0 }} />
-          <div style={{ flex: 1 }}>
-            <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>Install the Staff Portal App</div>
-            <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>Add Grace Trace Ministries to your home screen for quick access</div>
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={() => setShowInstallBanner(false)} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "8px 14px", color: C.muted, fontSize: 13, cursor: "pointer" }}>Not now</button>
-            <button onClick={handleInstall} style={{ background: C.gold, border: "none", borderRadius: 8, padding: "8px 18px", color: C.dark, fontSize: 13, fontWeight: 800, cursor: "pointer" }}>Install App</button>
-          </div>
-        </div>
-      )}
-
-      {showInstallBanner && !installPrompt && (
-        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: C.burgundyDark, borderTop: "2px solid " + C.gold, padding: "14px 20px", display: "flex", alignItems: "center", gap: 14, zIndex: 999, flexWrap: "wrap" }}>
-          <img src="/icons/icon-72x72.png" alt="GTM" style={{ width: 44, height: 44, borderRadius: 10, flexShrink: 0 }} />
-          <div style={{ flex: 1 }}>
-            <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>Install on iPhone</div>
-            <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>Tap the Share button ⎋ at the bottom then tap <span style={{ color: C.gold, fontWeight: 700 }}>Add to Home Screen</span></div>
-          </div>
-          <button onClick={() => setShowInstallBanner(false)} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "8px 14px", color: C.muted, fontSize: 13, cursor: "pointer" }}>✕</button>
-        </div>
-      )}
-    </div>
-  );
-
-
-
-  const d = taskData[currentUser.id] || {};
-  const total = currentUser.tasks.length;
-  const completedCount = Object.values(d).filter(x => x.completed).length;
-  const pct = total ? Math.round((completedCount / total) * 100) : 0;
-
-  const sharedTasksVisible = [];
-  USERS.forEach(u => {
-    if (u.id === currentUser.id) return;
-    u.tasks.forEach(t => {
-      if (t.sharedWith && t.sharedWith.includes(currentUser.id)) {
-        const td = taskData[u.id] && taskData[u.id][t.id];
-        if (td) sharedTasksVisible.push({ user: u, task: t, td });
-      }
-    });
-  });
-
-  if (activeTask) {
-    const task = currentUser.tasks.find(t => t.id === activeTask);
-    const td = d[task.id];
-    const allFilled = task.fields.every(f => td.fields[f.key] && td.fields[f.key].trim() !== "");
+  if (view === "record" && selectedRecord) {
     return (
-      <div style={{ minHeight: "100vh", background: C.dark, fontFamily: "'Inter','Segoe UI',sans-serif" }}>
-        <div style={{ background: C.burgundyDark, borderBottom: "2px solid " + C.gold, padding: "14px 20px", display: "flex", alignItems: "center", gap: 14 }}>
-          <button onClick={() => setActiveTask(null)} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "7px 14px", color: C.muted, fontSize: 13, cursor: "pointer" }}>← Back</button>
-          <div><div style={{ color: C.ivory, fontWeight: 800, fontSize: 15 }}>{task.title}</div><div style={{ color: C.gold, fontSize: 11 }}>{currentUser.name} — {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}</div></div>
-        </div>
-        <div style={{ maxWidth: 680, margin: "0 auto", padding: "24px 20px" }}>
-          <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "6px 18px 18px", marginBottom: 20 }}>
-            <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", margin: "16px 0" }}>Workbook — complete all fields</div>
-            {task.fields.map((f, i) => (
-              <div key={f.key} style={{ marginBottom: 18 }}>
-                <div style={{ color: C.text, fontSize: 14, fontWeight: 600, marginBottom: 6 }}>{i + 1}. {f.label}</div>
-                {f.type === "textarea" ? (
-                  <textarea value={td.fields[f.key] || ""} onChange={e => updateField(task.id, f.key, e.target.value)} placeholder={f.ph} rows={4}
-                    style={{ width: "100%", background: C.dark, border: "1px solid " + (td.fields[f.key] ? C.green : C.cardBorder), borderRadius: 8, padding: "10px 14px", color: C.text, fontSize: 14, resize: "vertical", outline: "none", fontFamily: "inherit", lineHeight: 1.6 }} />
-                ) : f.type === "select" ? (
-                  <select value={td.fields[f.key] || ""} onChange={e => updateField(task.id, f.key, e.target.value)}
-                    style={{ width: "100%", background: C.dark, border: "1px solid " + (td.fields[f.key] ? C.green : C.cardBorder), borderRadius: 8, padding: "10px 14px", color: td.fields[f.key] ? C.text : C.muted, fontSize: 14, outline: "none", fontFamily: "inherit" }}>
-                    <option value="">Select an option...</option>
-                    {f.options.map(o => <option key={o} value={o}>{o}</option>)}
-                  </select>
-                ) : (
-                  <input type="text" value={td.fields[f.key] || ""} onChange={e => updateField(task.id, f.key, e.target.value)} placeholder={f.ph}
-                    style={{ width: "100%", background: C.dark, border: "1px solid " + (td.fields[f.key] ? C.green : C.cardBorder), borderRadius: 8, padding: "10px 14px", color: C.text, fontSize: 14, outline: "none", fontFamily: "inherit" }} />
-                )}
-              </div>
-            ))}
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-            <div style={{ flex: 1, background: C.cardBorder, borderRadius: 20, height: 6 }}>
-              <div style={{ background: allFilled ? "#4CAF50" : C.gold, height: 6, borderRadius: 20, width: (task.fields.filter(f => td.fields[f.key] && td.fields[f.key].trim()).length / task.fields.length * 100) + "%", transition: "width 0.3s" }} />
-            </div>
-            <span style={{ color: C.muted, fontSize: 12 }}>{task.fields.filter(f => td.fields[f.key] && td.fields[f.key].trim()).length} of {task.fields.length} fields completed</span>
-          </div>
-          <button onClick={() => submitTask(task.id)} disabled={!allFilled}
-            style={{ width: "100%", background: allFilled ? C.green : C.cardBorder, border: "none", borderRadius: 10, padding: "14px", color: allFilled ? C.ivory : C.muted, fontSize: 15, fontWeight: 800, cursor: allFilled ? "pointer" : "not-allowed", marginTop: 12 }}>
-            {allFilled ? "✓ Submit and mark complete" : "Complete all fields to submit"}
-          </button>
-          <div style={{ height: 40 }} />
-        </div>
-      </div>
+      <RecordView
+        registrant={selectedRecord}
+        currentUser={currentUser}
+        onBack={() => { setView("dashboard"); setSelectedRecord(null); loadData(); }}
+        onCompleted={() => { loadData(); }}
+      />
     );
   }
 
+  // ── Stats ──
+  const all = [...registrants, ...completed];
+  const releasing30 = registrants.filter(r => { const d = daysUntil(r.expected_release); return d !== null && d >= 0 && d <= 30; });
+  const needTransport = all.filter(r => r.services_needed && r.services_needed.includes("Transportation")).length;
+  const needEmployment = all.filter(r => r.emp_timeline && r.emp_timeline !== "I already have employment arranged" && r.emp_timeline !== "Not sure yet").length;
+
+  const popCounts = {};
+  all.forEach(r => { if (r.population) popCounts[r.population] = (popCounts[r.population] || 0) + 1; });
+
+  const workInterestCounts = {};
+  all.forEach(r => {
+    if (r.work_interests) r.work_interests.split(",").forEach(w => {
+      const t = w.trim(); if (t && t !== "Not sure yet") workInterestCounts[t] = (workInterestCounts[t] || 0) + 1;
+    });
+  });
+  const topWorkInterests = Object.entries(workInterestCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  const servicesCounts = {};
+  all.forEach(r => {
+    if (r.services_needed) r.services_needed.split(",").forEach(s => {
+      const t = s.trim(); if (t) servicesCounts[t] = (servicesCounts[t] || 0) + 1;
+    });
+  });
+  const topServices = Object.entries(servicesCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const maxServices = topServices[0]?.[1] || 1;
+  const maxWork = topWorkInterests[0]?.[1] || 1;
+
+  // Release windows
+  const w7 = registrants.filter(r => { const d = daysUntil(r.expected_release); return d !== null && d >= 0 && d <= 7; }).length;
+  const w30 = releasing30.length;
+  const w90 = registrants.filter(r => { const d = daysUntil(r.expected_release); return d !== null && d > 30 && d <= 90; }).length;
+  const w90plus = registrants.filter(r => { const d = daysUntil(r.expected_release); return d === null || d > 90; }).length;
+
+  const displayRegistrants = tab === "active" ? registrants : completed;
+  const filtered = stageFilter === "All" ? displayRegistrants : displayRegistrants.filter(r => r.pipeline_stage === stageFilter);
+  const sortedFiltered = [...filtered].sort((a, b) => {
+    if (tab === "active") {
+      const da = daysUntil(a.expected_release) ?? 9999;
+      const db = daysUntil(b.expected_release) ?? 9999;
+      return da - db;
+    }
+    return new Date(b.completed_at) - new Date(a.completed_at);
+  });
+
   return (
     <div style={{ minHeight: "100vh", background: C.dark, fontFamily: "'Inter','Segoe UI',sans-serif" }}>
-      <div style={{ background: "linear-gradient(135deg, " + C.burgundyDark + " 0%, " + C.dark + " 70%)", borderBottom: "2px solid " + C.gold, padding: "16px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <div style={{ width: 42, height: 42, borderRadius: "50%", background: currentUser.color, border: "1px solid " + C.gold, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: C.ivory }}>{currentUser.initials}</div>
-          <div><div style={{ color: C.ivory, fontWeight: 800, fontSize: 15 }}>{currentUser.name}</div><div style={{ color: C.gold, fontSize: 11, marginTop: 1 }}>{currentUser.role}</div></div>
+
+      {/* Header */}
+      <div style={{ background: C.burgundyDark, borderBottom: "2px solid " + C.gold, padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+        <div>
+          <a href="/" style={{ color: C.muted, fontSize: 13, textDecoration: "none" }}>← Portal home</a>
+          <div style={{ color: C.ivory, fontWeight: 800, fontSize: 16, marginTop: 2 }}>Housing Registry Dashboard</div>
+          <div style={{ color: C.gold, fontSize: 11 }}>Grace Trace Ministries · {currentUser?.name}</div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ color: C.muted, fontSize: 12 }}>{new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</div>
-          <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "7px 12px", color: C.ivory, fontSize: 18, cursor: "pointer", lineHeight: 1 }}>☰</button>
-        </div>
+        <button onClick={loadData} style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "8px 14px", color: C.text, fontSize: 13, cursor: "pointer" }}>↻ Refresh</button>
       </div>
 
-
-
-      {menuOpen && (
-        <div style={{ position: "fixed", top: 0, right: 0, width: 280, height: "100vh", background: C.card, borderLeft: "1px solid " + C.cardBorder, zIndex: 100, display: "flex", flexDirection: "column", boxShadow: "-4px 0 20px rgba(0,0,0,0.5)" }}>
-          <div style={{ padding: "20px", borderBottom: "1px solid " + C.cardBorder, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase" }}>Menu</div>
-              <div style={{ color: C.text, fontWeight: 700, fontSize: 14, marginTop: 2 }}>{currentUser.name}</div>
+      <div style={{ maxWidth: 900, margin: "0 auto", padding: "20px 16px" }}>
+        {loading ? (
+          <div style={{ color: C.muted, textAlign: "center", padding: 60 }}>Loading registry...</div>
+        ) : (
+          <>
+            {/* Stat cards */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 16 }}>
+              {[
+                { num: all.length, label: "Total registrants", color: "#534AB7" },
+                { num: releasing30.length, label: "Releasing in 30 days", color: C.error },
+                { num: needTransport, label: "Need transportation", color: C.green },
+                { num: needEmployment, label: "Need employment", color: "#854F0B" },
+              ].map(s => (
+                <div key={s.label} style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "12px 14px" }}>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: s.color }}>{s.num}</div>
+                  <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{s.label}</div>
+                </div>
+              ))}
             </div>
-            <button onClick={() => setMenuOpen(false)} style={{ background: "transparent", border: "none", color: C.muted, fontSize: 22, cursor: "pointer", lineHeight: 1 }}>✕</button>
-          </div>
-          <div style={{ flex: 1, padding: "16px 0", overflowY: "auto" }}>
-            {[
-              { label: "My Workday", href: "/", icon: "📋" },
-              { label: "Meeting Board", href: "/meetings", icon: "📅" },
-              { label: "Expense Tracker", href: "/expenses", icon: "💰" },
-              { label: "Mandatory Tasks", href: "/mandatory-tasks", icon: "📌" },
-              { label: "Creative Tab", href: "/creative", icon: "💡" },
-              { label: "Orientation Package", href: "/orientation", icon: "📄" },
-              { label: "Navigation Guide", href: "/navigation", icon: "🗺" },
-              { label: "Vendor List", href: "/vendors", icon: "🏪" },
-              { label: "Property Opportunities", href: "/properties", icon: "🏢" },
-              { label: "Board & Team Directory", href: "/directory", icon: "👥" },
-              { label: "Operations Binder — House Rules", href: "/operations-binder", icon: "📋" },
-              { label: "Emergency & Incident Procedures", href: "/emergency-procedures", icon: "🚨" },
-              { label: "Announcements", href: "/announcements", icon: "📣" },
-              ...(hasOutreachContacts ? [{ label: "My Outreach Contacts", href: "/my-outreach-contacts", icon: "📇" }] : []),
-              ...(currentUser.id === "avy" || currentUser.id === "deann" ? [{ label: "Partnership Contact Tracker", href: "/outreach-partnership-tracker", icon: "🤝" }] : []),
-              { label: "Compensation Declaration", href: "/compensation", icon: "💼" },
-              { label: "Task Requests — Kisses", href: "/task-requests", icon: "✉️" },
-              ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Staff Reports", href: "/staff-reports", icon: "👥" }] : []),
-              ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Manage Resource Templates", href: "/admin/resource-templates", icon: "🛠️" }] : []),
-              ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Assign Outreach Contacts", href: "/admin/outreach-contacts", icon: "📇" }] : []),
-              ...(currentUser.id === "ialana" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Ialana's Binder", href: "/ialana-binder", icon: "📘" }] : []),
-              ...(currentUser.id === "erica" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Erica's Binder", href: "/erica-binder", icon: "📗" }] : []),
-              ...(currentUser.id === "deann" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Deann's Binder", href: "/deann-binder", icon: "📙" }] : []),
-              ...(currentUser.id === "dennis" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Dennis's Binder", href: "/dennis-binder", icon: "📒" }] : []),
-              ...(currentUser.id === "aubreyon" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Kisses' Binder", href: "/aubreyon-binder", icon: "📙" }] : []),
-              ...(currentUser.id === "travis" || currentUser.id === "avy" ? [{ label: "Travis's Binder", href: "/travis-binder", icon: "📓" }] : []),
-              ...(currentUser.id === "avy" ? [{ label: "My Binder", href: "/avy-binder", icon: "📔" }] : []),
-            ].map((item) => (
-              <a key={item.label} href={item.href} onClick={() => setMenuOpen(false)}
-                style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 20px", color: C.text, textDecoration: "none", borderBottom: "1px solid " + C.cardBorder, fontSize: 14, fontWeight: 600 }}
-                onMouseEnter={e => e.currentTarget.style.background = C.dark}
-                onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                <span style={{ fontSize: 18 }}>{item.icon}</span>
-                {item.label}
-              </a>
-            ))}
 
-            {(currentUser.id === "deann" || currentUser.id === "avy" || currentUser.id === "travis") && (
-              <div style={{ borderBottom: "1px solid " + C.cardBorder }}>
-                <button
-                  onClick={() => setOutreachMenuOpen(!outreachMenuOpen)}
-                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, padding: "14px 20px", color: C.text, background: "transparent", border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer", textAlign: "left" }}
-                  onMouseEnter={e => e.currentTarget.style.background = C.dark}
-                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                >
-                  <span style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                    <span style={{ fontSize: 18 }}>📚</span>
-                    Outreach Resource Center
-                  </span>
-                  <span style={{ color: C.gold, fontSize: 14 }}>{outreachMenuOpen ? "▲" : "▼"}</span>
-                </button>
-                {outreachMenuOpen && (
-                  <div style={{ background: C.dark }}>
-                    <a href="/outreach-resource-center" onClick={() => setMenuOpen(false)}
-                      style={{ display: "block", padding: "10px 20px 10px 52px", color: C.gold, textDecoration: "none", fontSize: 13, fontWeight: 700 }}>
-                      Overview
-                    </a>
-                    {OUTREACH_CATEGORIES.map((cat) => (
-                      <a key={cat.id} href={"/outreach-resource-center?cat=" + cat.id} onClick={() => setMenuOpen(false)}
-                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px 10px 52px", color: C.muted, textDecoration: "none", fontSize: 13 }}
-                        onMouseEnter={e => e.currentTarget.style.color = C.text}
-                        onMouseLeave={e => e.currentTarget.style.color = C.muted}>
-                        <span>{cat.icon}</span> {cat.title}
-                      </a>
-                    ))}
-                    <a href="/outreach-resource-center?cat=training" onClick={() => setMenuOpen(false)}
-                      style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px 14px 52px", color: C.muted, textDecoration: "none", fontSize: 13 }}
-                      onMouseEnter={e => e.currentTarget.style.color = C.text}
-                      onMouseLeave={e => e.currentTarget.style.color = C.muted}>
-                      <span>🎓</span> Director Training
-                    </a>
-                  </div>
-                )}
+            {/* 30-day alert */}
+            {releasing30.length > 0 && (
+              <div style={{ background: "#FAECE7", border: "1px solid #F0997B", borderRadius: 10, padding: "14px 16px", marginBottom: 16 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                  <span style={{ fontSize: 20 }}>⚠️</span>
+                  <div style={{ color: "#993C1D", fontWeight: 800, fontSize: 14 }}>{releasing30.length} registrant{releasing30.length !== 1 ? "s" : ""} releasing within the next 30 days</div>
+                </div>
+                <div style={{ color: "#D85A30", fontSize: 12, marginBottom: 8 }}>Review each record and confirm housing readiness, transportation, and Career Ready Program status before release date.</div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {Object.entries(
+                    releasing30.reduce((acc, r) => { acc[r.population] = (acc[r.population] || 0) + 1; return acc; }, {})
+                  ).map(([pop, count]) => (
+                    <span key={pop} style={{ background: "#F0997B", color: "#4A1B0C", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 10 }}>
+                      {count} — {pop === "Returning Citizen / Reentry" ? "Returning citizens" : pop === "Individual with Disabilities (DBMD)" ? "DBMD" : pop}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
-          </div>
-          <div style={{ padding: "16px 20px", borderTop: "1px solid " + C.cardBorder }}>
-            <button onClick={logout} style={{ width: "100%", background: C.burgundy, border: "none", borderRadius: 8, padding: "11px", color: C.ivory, fontSize: 13, fontWeight: 800, cursor: "pointer" }}>Log out</button>
-          </div>
-        </div>
-      )}
-      {menuOpen && <div onClick={() => setMenuOpen(false)} style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "rgba(0,0,0,0.5)", zIndex: 99 }} />}
 
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 20px" }}>
-        {(() => {
-          const mandatoryTasks = alertTasks;
-          const meetings = alertMeetings;
-          const pendingTasks = mandatoryTasks.filter((t: any) => t.assignedTo.includes(currentUser.id) && t.status === "active" && !t.submissions?.[currentUser.id]);
-          const pendingMeetings = meetings.filter((m: any) => m.attendees.includes(currentUser.id) && m.status === "scheduled" && !m.responses?.[currentUser.id]);
-          const orientationSigned = alertSignatures["orientation_" + currentUser.id]?.signed || alertSignatures[currentUser.id]?.signed || false;
-          const binderSigned = alertSignatures["binder_" + currentUser.id]?.signed || alertSignatures[currentUser.id]?.signed || false;
-          const binderUrl = "/" + currentUser.id + "-binder";
-          const total = pendingTasks.length + pendingMeetings.length + (!orientationSigned ? 1 : 0) + (!binderSigned ? 1 : 0);
-          if (total === 0) return null;
-          return (
-            <div style={{ background: "#7B2D00", border: "1px solid " + C.error, borderRadius: 12, padding: "14px 18px", marginBottom: 20, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 24, flexShrink: 0 }}>🔔</span>
-              <div style={{ flex: 1 }}>
-                <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>You have {total} item{total !== 1 ? "s" : ""} that require your immediate attention</div>
-                <div style={{ color: C.muted, fontSize: 13, marginTop: 3 }}>
-                  {!orientationSigned && <span>Orientation not signed · </span>}
-                  {!binderSigned && <span>Department binder not signed · </span>}
-                  {pendingTasks.length > 0 && <span>{pendingTasks.length} mandatory task{pendingTasks.length !== 1 ? "s" : ""} pending · </span>}
-                  {pendingMeetings.length > 0 && <span>{pendingMeetings.length} meeting{pendingMeetings.length !== 1 ? "s" : ""} need your response</span>}
+            {/* Release queue + Population */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+
+              <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "14px 16px" }}>
+                <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>📅 Release date queue — earliest first</div>
+                {registrants.filter(r => r.expected_release).sort((a, b) => new Date(a.expected_release) - new Date(b.expected_release)).slice(0, 8).map(r => {
+                  const days = daysUntil(r.expected_release);
+                  return (
+                    <div key={r.id} onClick={() => openRecord(r)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid " + C.cardBorder, cursor: "pointer" }}
+                      onMouseEnter={e => e.currentTarget.style.background = C.dark}
+                      onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                      <div>
+                        <div style={{ color: C.text, fontSize: 13, fontWeight: 600 }}>{r.first_name} {r.last_name} <PopBadge population={r.population} /></div>
+                        <div style={{ color: C.muted, fontSize: 11, marginTop: 2 }}>{r.system_type} · {r.county}</div>
+                      </div>
+                      <div style={{ textAlign: "right", flexShrink: 0 }}>
+                        <div style={{ color: C.text, fontSize: 12, fontWeight: 600 }}>{new Date(r.expected_release + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</div>
+                        <div style={{ marginTop: 3 }}><DaysBadge days={days} /></div>
+                      </div>
+                    </div>
+                  );
+                })}
+                {registrants.filter(r => r.expected_release).length === 0 && (
+                  <div style={{ color: C.muted, fontSize: 13 }}>No release dates on file.</div>
+                )}
+              </div>
+
+              <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "14px 16px" }}>
+                <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>👥 Population breakdown</div>
+                {Object.entries(BADGE_COLORS).map(([pop, colors]) => {
+                  const count = popCounts[pop] || 0;
+                  const pct = all.length ? Math.round((count / all.length) * 100) : 0;
+                  const short = pop === "Returning Citizen / Reentry" ? "Returning citizens" : pop === "Individual with Disabilities (DBMD)" ? "DBMD" : pop === "Young Adult (18–25)" ? "Young adults" : pop;
+                  return (
+                    <div key={pop} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                      <span style={{ background: colors.bg, color: colors.color, fontSize: 10, fontWeight: 700, padding: "2px 9px", borderRadius: 10, minWidth: 90, textAlign: "center", flexShrink: 0 }}>{short}</span>
+                      <span style={{ color: C.text, fontWeight: 700, fontSize: 13 }}>{count}</span>
+                      <span style={{ color: C.muted, fontSize: 12 }}>— {pct}%</span>
+                    </div>
+                  );
+                })}
+                <div style={{ borderTop: "1px solid " + C.cardBorder, paddingTop: 12, marginTop: 4 }}>
+                  <div style={{ color: C.muted, fontSize: 11, fontWeight: 700, marginBottom: 8 }}>Release window</div>
+                  {[["Within 7 days", w7, "#A32D2D"], ["Within 30 days", w30, "#D85A30"], ["Within 90 days", w90, "#854F0B"], ["90+ days / unknown", w90plus, "#3B6D11"]].map(([label, count, color]) => (
+                    <div key={label} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                      <div style={{ width: 80, fontSize: 11, color: C.muted, flexShrink: 0 }}>{label}</div>
+                      <div style={{ flex: 1, background: C.dark, borderRadius: 4, height: 7, overflow: "hidden" }}>
+                        <div style={{ background: color, height: 7, borderRadius: 4, width: (w30 ? (count / Math.max(w30, w90plus, 1)) * 100 : 0) + "%" }} />
+                      </div>
+                      <span style={{ color: C.text, fontSize: 12, fontWeight: 700, minWidth: 20 }}>{count}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {!orientationSigned && <a href="/orientation" style={{ background: C.burgundy, border: "1px solid " + C.error, borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>Sign Orientation 📄</a>}
-                {!binderSigned && <a href={binderUrl} style={{ background: C.burgundy, border: "1px solid " + C.error, borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>Sign Binder 📘</a>}
-                {pendingTasks.length > 0 && <a href="/mandatory-tasks" style={{ background: C.error, border: "none", borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>View Tasks 📌</a>}
-                {pendingMeetings.length > 0 && <a href="/meetings" style={{ background: C.burgundy, border: "1px solid " + C.error, borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>View Meetings 📅</a>}
+            </div>
+
+            {/* Pipeline columns */}
+            <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "14px 16px", marginBottom: 16 }}>
+              <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>Pipeline</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8 }}>
+                {PIPELINE_STAGES.map(stage => {
+                  const stageRegs = registrants.filter(r => r.pipeline_stage === stage);
+                  return (
+                    <div key={stage} style={{ background: C.dark, borderRadius: 8, padding: 10 }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>{stage}</div>
+                      {stageRegs.length === 0 && <div style={{ color: C.muted, fontSize: 11, fontStyle: "italic" }}>Empty</div>}
+                      {stageRegs.map(r => (
+                        <div key={r.id} onClick={() => openRecord(r)} style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 6, padding: "8px 10px", marginBottom: 6, cursor: "pointer" }}
+                          onMouseEnter={e => e.currentTarget.style.borderColor = C.gold + "77"}
+                          onMouseLeave={e => e.currentTarget.style.borderColor = C.cardBorder}>
+                          <div style={{ color: C.text, fontSize: 12, fontWeight: 600 }}>{r.first_name} {r.last_name}</div>
+                          <div style={{ color: C.muted, fontSize: 11, marginTop: 2 }}>{r.county}</div>
+                          <div style={{ marginTop: 4 }}><PopBadge population={r.population} /></div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })}
               </div>
             </div>
-          );
-        })()}
 
-        {pinnedAnnouncements.length > 0 && (
-          <div style={{ background: C.burgundyDark, border: "1px solid " + C.gold + "77", borderRadius: 12, padding: "14px 18px", marginBottom: 20 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: pinnedAnnouncements.length > 0 ? 10 : 0 }}>
-              <span style={{ fontSize: 20 }}>📣</span>
-              <span style={{ color: C.gold, fontSize: 12, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase" }}>
-                Pinned Announcement{pinnedAnnouncements.length !== 1 ? "s" : ""}
-              </span>
-            </div>
-            {pinnedAnnouncements.map((a) => (
-              <div key={a.id} style={{ marginBottom: 8 }}>
-                <div style={{ color: C.ivory, fontWeight: 700, fontSize: 14 }}>{a.title}</div>
-                <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>
-                  {a.body.length > 140 ? a.body.slice(0, 140) + "…" : a.body}
-                </div>
-              </div>
-            ))}
-            <a href="/announcements" style={{ display: "inline-block", marginTop: 6, background: C.gold, border: "none", borderRadius: 8, padding: "7px 14px", color: C.dark, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>
-              View Announcements 📣
-            </a>
-          </div>
-        )}
-
-        {resourceTemplateAlert.length > 0 && (
-          <div style={{ background: C.card, border: "1px solid " + C.gold + "77", borderRadius: 12, padding: "14px 18px", marginBottom: 20 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-              <span style={{ fontSize: 20 }}>📚</span>
-              <span style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>
-                New or updated in your Resource Center
-              </span>
-            </div>
-            {resourceTemplateAlert.map((cat: any) => (
-              <a key={cat.categoryTitle + cat.section}
-                href={cat.categoryId ? "/outreach-resource-center?cat=" + cat.categoryId + "&section=" + encodeURIComponent(cat.section) : "/outreach-resource-center"}
-                style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", background: C.dark, borderRadius: 8, marginBottom: 6, textDecoration: "none" }}>
-                <span style={{ color: C.text, fontSize: 13 }}>{cat.icon} {cat.categoryTitle} — {cat.section}</span>
-                <span style={{ background: C.gold, color: C.dark, fontSize: 11, fontWeight: 800, padding: "2px 9px", borderRadius: 10 }}>{cat.count} new →</span>
-              </a>
-            ))}
-          </div>
-        )}
-
-                {(currentUser.id === "avy" || currentUser.id === "deann") && partnershipAlertCount > 0 && (
-          <div style={{ background: C.card, border: "1px solid " + C.gold + "77", borderRadius: 12, padding: "14px 18px", marginBottom: 20, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>
-                {partnershipAlertCount} update{partnershipAlertCount !== 1 ? "s" : ""} in the Partnership Contact Tracker
-              </div>
-              <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>New or changed contacts since you last checked</div>
-            </div>
-            <a href="/outreach-partnership-tracker" style={{ background: C.gold, border: "none", borderRadius: 8, padding: "8px 14px", color: C.dark, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>
-              View Tracker
-            </a>
-          </div>
-        )}{outreachContactAlert > 0 && (
-          <div style={{ background: C.card, border: "1px solid " + C.gold + "77", borderRadius: 12, padding: "14px 18px", marginBottom: 20, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 22, flexShrink: 0 }}>📇</span>
-            <div style={{ flex: 1 }}>
-              <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>
-                {outreachContactAlert} outreach contact{outreachContactAlert !== 1 ? "s" : ""} to reach out to
-              </div>
-              <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>Assigned by leadership — check them off as you complete them</div>
-            </div>
-            <a href="/my-outreach-contacts" style={{ background: C.gold, border: "none", borderRadius: 8, padding: "8px 14px", color: C.dark, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>
-              View Contacts 📇
-            </a>
-          </div>
-        )}
-        <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "16px 20px", marginBottom: 24 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-            <span style={{ color: C.text, fontSize: 14, fontWeight: 700 }}>Today's workday progress</span>
-            <span style={{ color: pct === 100 ? "#4CAF50" : C.gold, fontWeight: 800, fontSize: 14 }}>{completedCount} of {total} tasks complete</span>
-          </div>
-          <div style={{ background: C.dark, borderRadius: 20, height: 8, overflow: "hidden" }}>
-            <div style={{ background: pct === 100 ? "#4CAF50" : C.gold, height: 8, borderRadius: 20, width: pct + "%", transition: "width 0.4s" }} />
-          </div>
-          {pct === 100 && <div style={{ color: "#4CAF50", fontSize: 13, marginTop: 10, fontWeight: 700, textAlign: "center" }}>All tasks complete — generate your report below</div>}
-        </div>
-
-        {sharedTasksVisible.length > 0 && (
-          <div style={{ marginBottom: 24 }}>
-            <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Staff Updates — Shared Task Completions</div>
-            {sharedTasksVisible.map(({ user, task, td }) => (
-              <div key={user.id + task.id} style={{ background: td.completed ? C.green + "22" : C.card, border: "1px solid " + (td.completed ? "#4CAF5044" : C.cardBorder), borderRadius: 12, padding: "14px 18px", marginBottom: 8 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: user.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: C.ivory, flexShrink: 0 }}>{user.initials}</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ color: C.muted, fontSize: 11, fontWeight: 700, textTransform: "uppercase" }}>{user.name}</div>
-                    <div style={{ color: td.completed ? "#4CAF50" : C.text, fontWeight: 700, fontSize: 14, marginTop: 2 }}>{task.title}</div>
-                    <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>{td.completed ? "Completed and submitted" : "In progress"}</div>
+            {/* Employment + Services charts */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+              <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "14px 16px" }}>
+                <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Employment interests</div>
+                {topWorkInterests.length === 0 && <div style={{ color: C.muted, fontSize: 13 }}>No data yet.</div>}
+                {topWorkInterests.map(([label, count]) => (
+                  <div key={label} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                    <div style={{ width: 90, fontSize: 12, color: C.muted, flexShrink: 0 }}>{label}</div>
+                    <div style={{ flex: 1, background: C.dark, borderRadius: 4, height: 7, overflow: "hidden" }}>
+                      <div style={{ background: "#534AB7", height: 7, borderRadius: 4, width: (count / maxWork * 100) + "%" }} />
+                    </div>
+                    <span style={{ color: C.text, fontSize: 12, fontWeight: 700, minWidth: 20 }}>{count}</span>
                   </div>
-                  <div style={{ background: td.completed ? "#4CAF5022" : C.cardBorder, border: "1px solid " + (td.completed ? "#4CAF5055" : C.cardBorder), borderRadius: 20, padding: "3px 12px", color: td.completed ? "#4CAF50" : C.muted, fontSize: 11, fontWeight: 700 }}>{td.completed ? "Complete" : "Pending"}</div>
-                </div>
-                {td.completed && task.fields.slice(0, 4).map(f => td.fields[f.key] ? (
-                  <div key={f.key} style={{ marginTop: 8, paddingLeft: 44 }}>
-                    <span style={{ color: C.muted, fontSize: 12 }}>{f.label}: </span>
-                    <span style={{ color: C.text, fontSize: 12 }}>{td.fields[f.key]}</span>
+                ))}
+              </div>
+              <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "14px 16px" }}>
+                <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Services needed</div>
+                {topServices.length === 0 && <div style={{ color: C.muted, fontSize: 13 }}>No data yet.</div>}
+                {topServices.map(([label, count]) => (
+                  <div key={label} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                    <div style={{ width: 90, fontSize: 12, color: C.muted, flexShrink: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</div>
+                    <div style={{ flex: 1, background: C.dark, borderRadius: 4, height: 7, overflow: "hidden" }}>
+                      <div style={{ background: "#3B6D11", height: 7, borderRadius: 4, width: (count / maxServices * 100) + "%" }} />
+                    </div>
+                    <span style={{ color: C.text, fontSize: 12, fontWeight: 700, minWidth: 20 }}>{count}</span>
                   </div>
-                ) : null)}
+                ))}
               </div>
-            ))}
-          </div>
-        )}
-
-        <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>Workday tasks — click to open</div>
-        {currentUser.tasks.map((task, i) => {
-          const td = d[task.id];
-          const isComplete = td && td.completed;
-          const filledCount = td ? task.fields.filter(f => td.fields[f.key] && td.fields[f.key].trim()).length : 0;
-          return (
-            <button key={task.id} onClick={() => !isComplete && setActiveTask(task.id)}
-              style={{ width: "100%", textAlign: "left", background: isComplete ? C.green + "22" : C.card, border: "1px solid " + (isComplete ? "#4CAF5044" : C.cardBorder), borderRadius: 12, padding: "16px 18px", marginBottom: 8, cursor: isComplete ? "default" : "pointer", display: "flex", alignItems: "center", gap: 14 }}
-              onMouseEnter={e => { if (!isComplete) e.currentTarget.style.borderColor = C.gold + "66"; }}
-              onMouseLeave={e => { if (!isComplete) e.currentTarget.style.borderColor = C.cardBorder; }}>
-              <div style={{ width: 36, height: 36, borderRadius: "50%", background: isComplete ? "#4CAF5033" : C.cardBorder, border: "2px solid " + (isComplete ? "#4CAF50" : C.cardBorder), display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                {isComplete ? <span style={{ color: "#4CAF50", fontSize: 16, fontWeight: 900 }}>✓</span> : <span style={{ color: C.muted, fontSize: 13, fontWeight: 700 }}>{i + 1}</span>}
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ color: isComplete ? "#4CAF50" : C.text, fontWeight: 700, fontSize: 14, textDecoration: isComplete ? "line-through" : "none" }}>{task.title}</div>
-                <div style={{ color: C.muted, fontSize: 12, marginTop: 3 }}>
-                  {isComplete ? "Completed" : filledCount > 0 ? filledCount + " of " + task.fields.length + " fields filled — click to continue" : task.fields.length + " fields to complete — click to open workbook"}
-                </div>
-              </div>
-              {!isComplete && <span style={{ color: C.gold, fontSize: 20, flexShrink: 0 }}>›</span>}
-            </button>
-          );
-        })}
-
-        <button onClick={generateReport} style={{ width: "100%", background: C.burgundy, border: "1px solid " + C.gold + "66", borderRadius: 10, padding: "13px", color: C.ivory, fontSize: 14, fontWeight: 800, cursor: "pointer", marginTop: 20 }}>
-          Generate workday report
-        </button>
-
-        {reportVisible && (
-          <>
-            <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: 18, marginTop: 12, fontSize: 12, color: C.text, lineHeight: 1.8, whiteSpace: "pre-wrap", fontFamily: "monospace", maxHeight: 400, overflowY: "auto" }}>{reportText}</div>
-            <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
-              <button onClick={() => setSent(true)} style={{ flex: 1, background: C.green, border: "none", borderRadius: 8, padding: "12px", color: C.ivory, fontSize: 13, fontWeight: 800, cursor: "pointer" }}>
-                {getSendLabel()}
-              </button>
-              <button onClick={downloadReport} style={{ flex: 1, background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "12px", color: C.muted, fontSize: 13, cursor: "pointer" }}>Download</button>
             </div>
-            {sent && <div style={{ color: "#4CAF50", fontSize: 13, fontWeight: 700, textAlign: "center", padding: "10px 0" }}>
-              ✓ {getSentConfirmation()} — {new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
-            </div>}
+
+            {/* Registrant list tabs */}
+            <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "14px 16px" }}>
+              <div style={{ display: "flex", gap: 0, marginBottom: 14, borderBottom: "1px solid " + C.cardBorder }}>
+                {["active", "completed"].map(t => (
+                  <button key={t} onClick={() => setTab(t)} style={{ padding: "8px 20px", background: "transparent", border: "none", borderBottom: "2px solid " + (tab === t ? C.gold : "transparent"), color: tab === t ? C.gold : C.muted, fontSize: 13, fontWeight: 700, cursor: "pointer", textTransform: "capitalize" }}>
+                    {t === "active" ? "Active (" + registrants.length + ")" : "Completed (" + completed.length + ")"}
+                  </button>
+                ))}
+                {tab === "active" && (
+                  <select value={stageFilter} onChange={e => setStageFilter(e.target.value)}
+                    style={{ marginLeft: "auto", background: C.dark, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "6px 10px", color: C.text, fontSize: 12, outline: "none", fontFamily: "inherit" }}>
+                    <option value="All">All stages</option>
+                    {PIPELINE_STAGES.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                )}
+              </div>
+
+              {sortedFiltered.length === 0 && (
+                <div style={{ color: C.muted, fontSize: 14, textAlign: "center", padding: 24 }}>
+                  {tab === "active" ? "No active registrants." : "No completed records yet."}
+                </div>
+              )}
+
+              {sortedFiltered.map(r => {
+                const days = daysUntil(r.expected_release);
+                return (
+                  <div key={r.id} onClick={() => openRecord(r)}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid " + C.cardBorder, cursor: "pointer", gap: 12, flexWrap: "wrap" }}
+                    onMouseEnter={e => e.currentTarget.style.background = C.dark}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: "50%", background: C.burgundy, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: C.ivory, flexShrink: 0 }}>
+                        {(r.first_name?.[0] || "") + (r.last_name?.[0] || "")}
+                      </div>
+                      <div>
+                        <div style={{ color: C.text, fontWeight: 700, fontSize: 14 }}>{r.first_name} {r.last_name}</div>
+                        <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>{r.system_type} · {r.facility} · {r.county}</div>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <PopBadge population={r.population} />
+                      {tab === "active" && <span style={{ background: C.dark, border: "1px solid " + C.cardBorder, color: C.muted, fontSize: 11, fontWeight: 600, padding: "2px 9px", borderRadius: 10 }}>{r.pipeline_stage}</span>}
+                      {days !== null && <DaysBadge days={days} />}
+                      <span style={{ color: C.gold, fontSize: 18 }}>›</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </>
         )}
-        <div style={{ height: 48 }} />
       </div>
     </div>
   );
