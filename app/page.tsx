@@ -1,4 +1,4 @@
-Ôªø// @ts-nocheck
+// @ts-nocheck
 "use client";
 import { useState, useEffect } from "react";
 import { CATEGORIES as OUTREACH_CATEGORIES } from "@/lib/outreachResourceContent";
@@ -92,12 +92,12 @@ const USERS = [
       {
         id: "a9", title: "Complete Your Board & Team Directory Profile",
         fields: [
-          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes ‚Äî confirmed correct", "No ‚Äî needs updating"] },
-          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes ‚Äî phone added", "No ‚Äî I will add it now", "I prefer not to share"] },
-          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes ‚Äî email added", "No ‚Äî I will add it now"] },
-          { key: "cityAdded", label: "Have you added your city and state?", type: "select", options: ["Yes ‚Äî city added", "No ‚Äî I will add it now"] },
-          { key: "contactPref", label: "Have you set your preferred contact method?", type: "select", options: ["Yes ‚Äî preference set", "No ‚Äî I will set it now"] },
-          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes ‚Äî profile is complete", "No ‚Äî still needs updates"] },
+          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes ó confirmed correct", "No ó needs updating"] },
+          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes ó phone added", "No ó I will add it now", "I prefer not to share"] },
+          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes ó email added", "No ó I will add it now"] },
+          { key: "cityAdded", label: "Have you added your city and state?", type: "select", options: ["Yes ó city added", "No ó I will add it now"] },
+          { key: "contactPref", label: "Have you set your preferred contact method?", type: "select", options: ["Yes ó preference set", "No ó I will set it now"] },
+          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes ó profile is complete", "No ó still needs updates"] },
           { key: "notes", label: "Any corrections or updates needed?", type: "textarea", ph: "List anything that needs to be changed or added to your profile" },
         ]
       },
@@ -109,33 +109,33 @@ const USERS = [
           { key: "grantLink", label: "Link to grant or opportunity", type: "text", ph: "Paste URL to the grant page, SAM.gov listing, or Grants.gov opportunity" },
           { key: "contactName", label: "Contact name", type: "text", ph: "Program officer or agency contact" },
           { key: "contactInfo", label: "Contact phone or email", type: "text", ph: "Direct phone or email for this opportunity" },
-          { key: "applicationStatus", label: "Application status", type: "select", options: ["Researching ‚Äî not applied", "Preparing application", "Application submitted", "Under review", "Awarded", "Denied", "On hold"] },
+          { key: "applicationStatus", label: "Application status", type: "select", options: ["Researching ó not applied", "Preparing application", "Application submitted", "Under review", "Awarded", "Denied", "On hold"] },
           { key: "applicationDate", label: "Date applied or submitted", type: "text", ph: "e.g. July 10, 2026" },
           { key: "amountRequested", label: "Amount requested or award amount", type: "text", ph: "e.g. $50,000" },
           { key: "deadline", label: "Application deadline or next deadline", type: "text", ph: "e.g. August 1, 2026" },
-          { key: "requirementsNotes", label: "Requirements and eligibility notes", type: "textarea", ph: "What does this grant require ‚Äî 501c3, SAM.gov, minimum capacity, match?" },
+          { key: "requirementsNotes", label: "Requirements and eligibility notes", type: "textarea", ph: "What does this grant require ó 501c3, SAM.gov, minimum capacity, match?" },
           { key: "followUpDate", label: "Follow-up date", type: "text", ph: "When do you need to check back on this?" },
           { key: "followUpAction", label: "Follow-up action needed", type: "textarea", ph: "What needs to happen next for this opportunity?" },
-          { key: "statusUpdate", label: "Latest status update", type: "textarea", ph: "Most recent update ‚Äî what happened, what was said, what changed" },
+          { key: "statusUpdate", label: "Latest status update", type: "textarea", ph: "Most recent update ó what happened, what was said, what changed" },
           { key: "notes", label: "Additional notes", type: "textarea", ph: "Any other important information about this opportunity" },
         ]
       },
     ,
       {
-        id: "ops1", title: "Read & Acknowledge the Operations Binder ‚Äî House Rules",
+        id: "ops1", title: "Read & Acknowledge the Operations Binder ó House Rules",
         fields: [
-          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes ‚Äî I have read the full document", "No ‚Äî I still need to read it"] },
-          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes ‚Äî I understand all sections", "No ‚Äî I have questions about some sections"] },
-          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on ‚Äî bring these to Avy" },
-          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes ‚Äî acknowledgment signed", "No ‚Äî I need to complete it now"] },
+          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes ó I have read the full document", "No ó I still need to read it"] },
+          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes ó I understand all sections", "No ó I have questions about some sections"] },
+          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on ó bring these to Avy" },
+          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes ó acknowledgment signed", "No ó I need to complete it now"] },
         ]
       }
     ,
       {
         id: "comp1", title: "Compensation Baseline & Pay Cap Declaration",
         fields: [
-          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes ‚Äî declaration submitted and locked", "No ‚Äî I still need to complete it"] },
-          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes ‚Äî I have reviewed and understand it", "No ‚Äî I still need to review it"] },
+          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes ó declaration submitted and locked", "No ó I still need to complete it"] },
+          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes ó I have reviewed and understand it", "No ó I still need to review it"] },
           { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
         ]
       }
@@ -143,11 +143,11 @@ const USERS = [
       {
         id: "ep1", title: "Read & Acknowledge Emergency & Incident Procedures",
         fields: [
-          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes ‚Äî I have read the full document", "No ‚Äî I still need to read it"] },
-          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 ‚Äî not to wait for approval?", type: "select", options: ["Yes ‚Äî I understand", "No ‚Äî I have questions"] },
-          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes ‚Äî I understand", "No ‚Äî I have questions"] },
-          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on ‚Äî bring these to Avy" },
-          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes ‚Äî I acknowledge and agree", "No ‚Äî I need to discuss this first"] },
+          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes ó I have read the full document", "No ó I still need to read it"] },
+          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 ó not to wait for approval?", type: "select", options: ["Yes ó I understand", "No ó I have questions"] },
+          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes ó I understand", "No ó I have questions"] },
+          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on ó bring these to Avy" },
+          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes ó I acknowledge and agree", "No ó I need to discuss this first"] },
         ]
       }
     ]
@@ -217,29 +217,29 @@ const USERS = [
       {
         id: "dir1", title: "Complete Your Board & Team Directory Profile",
         fields: [
-          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes ‚Äî confirmed correct", "No ‚Äî needs updating"] },
-          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes ‚Äî phone added", "No ‚Äî I will add it now", "I prefer not to share"] },
-          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes ‚Äî email added", "No ‚Äî I will add it now"] },
-          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes ‚Äî profile is complete", "No ‚Äî still needs updates"] },
+          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes ó confirmed correct", "No ó needs updating"] },
+          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes ó phone added", "No ó I will add it now", "I prefer not to share"] },
+          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes ó email added", "No ó I will add it now"] },
+          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes ó profile is complete", "No ó still needs updates"] },
           { key: "notes", label: "Any updates needed?", type: "textarea", ph: "List anything that needs to be changed in your profile" },
         ]
       }
     ,
       {
-        id: "ops1", title: "Read & Acknowledge the Operations Binder ‚Äî House Rules",
+        id: "ops1", title: "Read & Acknowledge the Operations Binder ó House Rules",
         fields: [
-          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes ‚Äî I have read the full document", "No ‚Äî I still need to read it"] },
-          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes ‚Äî I understand all sections", "No ‚Äî I have questions about some sections"] },
-          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on ‚Äî bring these to Avy" },
-          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes ‚Äî acknowledgment signed", "No ‚Äî I need to complete it now"] },
+          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes ó I have read the full document", "No ó I still need to read it"] },
+          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes ó I understand all sections", "No ó I have questions about some sections"] },
+          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on ó bring these to Avy" },
+          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes ó acknowledgment signed", "No ó I need to complete it now"] },
         ]
       }
     ,
       {
         id: "comp1", title: "Compensation Baseline & Pay Cap Declaration",
         fields: [
-          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes ‚Äî declaration submitted and locked", "No ‚Äî I still need to complete it"] },
-          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes ‚Äî I have reviewed and understand it", "No ‚Äî I still need to review it"] },
+          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes ó declaration submitted and locked", "No ó I still need to complete it"] },
+          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes ó I have reviewed and understand it", "No ó I still need to review it"] },
           { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
         ]
       }
@@ -247,11 +247,11 @@ const USERS = [
       {
         id: "ep1", title: "Read & Acknowledge Emergency & Incident Procedures",
         fields: [
-          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes ‚Äî I have read the full document", "No ‚Äî I still need to read it"] },
-          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 ‚Äî not to wait for approval?", type: "select", options: ["Yes ‚Äî I understand", "No ‚Äî I have questions"] },
-          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes ‚Äî I understand", "No ‚Äî I have questions"] },
-          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on ‚Äî bring these to Avy" },
-          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes ‚Äî I acknowledge and agree", "No ‚Äî I need to discuss this first"] },
+          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes ó I have read the full document", "No ó I still need to read it"] },
+          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 ó not to wait for approval?", type: "select", options: ["Yes ó I understand", "No ó I have questions"] },
+          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes ó I understand", "No ó I have questions"] },
+          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on ó bring these to Avy" },
+          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes ó I acknowledge and agree", "No ó I need to discuss this first"] },
         ]
       }
     ]
@@ -265,7 +265,7 @@ const USERS = [
     role: "Program and Outreach Director / House Manager Oversight / Registered Agent",
     tasks: [
       {
-        id: "d1", title: "Registered Agent ‚Äî Mail and Legal Notices",
+        id: "d1", title: "Registered Agent ó Mail and Legal Notices",
         fields: [
           { key: "mailReceived", label: "Was any legal mail or registered agent correspondence received?", type: "select", options: ["Yes", "No"] },
           { key: "description", label: "If yes, describe the correspondence", type: "textarea", ph: "Sender, subject, and content of the notice" },
@@ -277,36 +277,36 @@ const USERS = [
         id: "d2", title: "Outreach Contact Log",
         fields: [
           { key: "contactName", label: "Full name of person contacted", type: "text", ph: "First and last name" },
-          { key: "contactTitle", label: "Title and organization", type: "text", ph: "e.g. Parole Officer, TDCJ District 4 ‚Äî Houston" },
+          { key: "contactTitle", label: "Title and organization", type: "text", ph: "e.g. Parole Officer, TDCJ District 4 ó Houston" },
           { key: "contactType", label: "Type of contact", type: "select", options: ["Phone call", "Email", "In-person visit", "Virtual meeting", "Text message", "Voicemail left"] },
           { key: "contactPhone", label: "Phone number", type: "text", ph: "Direct phone number" },
           { key: "contactEmail", label: "Email address collected", type: "text", ph: "Email address" },
           { key: "agencyType", label: "Agency or facility type", type: "select", options: ["Parole office", "Probation office", "TDCJ facility", "Federal BOP facility", "VA Medical Center", "Veterans service organization", "Reentry coalition", "Faith-based organization", "Workforce agency", "Legal aid", "Community nonprofit", "Employer", "Other"] },
-          { key: "purpose", label: "What was the purpose of this contact?", type: "textarea", ph: "What was the goal ‚Äî introduce Grace Trace, follow up on referral, build relationship, request to be added to vendor list?" },
+          { key: "purpose", label: "What was the purpose of this contact?", type: "textarea", ph: "What was the goal ó introduce Grace Trace, follow up on referral, build relationship, request to be added to vendor list?" },
           { key: "whatWasNeeded", label: "What did they say is needed from Grace Trace Ministries?", type: "textarea", ph: "Any qualifications, certifications, paperwork, or requirements they mentioned" },
-          { key: "vendorApproval", label: "Is vendor or provider approval required to receive referrals from this contact?", type: "select", options: ["Yes ‚Äî already approved", "Yes ‚Äî application in progress", "Yes ‚Äî need to apply", "No ‚Äî referrals can start now", "Unknown ‚Äî need to follow up"] },
-          { key: "vendorRequirements", label: "What is required to get on their vendor or referral list?", type: "textarea", ph: "List every requirement they mentioned ‚Äî licensing, insurance, capacity, documentation, background checks, site visits, etc." },
+          { key: "vendorApproval", label: "Is vendor or provider approval required to receive referrals from this contact?", type: "select", options: ["Yes ó already approved", "Yes ó application in progress", "Yes ó need to apply", "No ó referrals can start now", "Unknown ó need to follow up"] },
+          { key: "vendorRequirements", label: "What is required to get on their vendor or referral list?", type: "textarea", ph: "List every requirement they mentioned ó licensing, insurance, capacity, documentation, background checks, site visits, etc." },
           { key: "outcome", label: "What was the outcome of this contact?", type: "textarea", ph: "What was accomplished, agreed upon, or committed to?" },
-          { key: "referralExpected", label: "Is a referral expected from this contact?", type: "select", options: ["Yes ‚Äî referral incoming", "Maybe ‚Äî follow up needed", "No ‚Äî not at this time", "They are adding us to their list"] },
+          { key: "referralExpected", label: "Is a referral expected from this contact?", type: "select", options: ["Yes ó referral incoming", "Maybe ó follow up needed", "No ó not at this time", "They are adding us to their list"] },
           { key: "followUpDate", label: "Follow-up date and time", type: "text", ph: "e.g. July 15, 2026 at 10:00 AM" },
-          { key: "followUpAction", label: "What is the follow-up action?", type: "textarea", ph: "What needs to happen next ‚Äî call back, send documents, schedule a visit, submit application?" },
+          { key: "followUpAction", label: "What is the follow-up action?", type: "textarea", ph: "What needs to happen next ó call back, send documents, schedule a visit, submit application?" },
         ]
       },
       {
         id: "d3", title: "Parole & Probation Officer Outreach",
         fields: [
           { key: "officerName", label: "Officer name", type: "text", ph: "Full name of parole or probation officer" },
-          { key: "officerTitle", label: "Title and office", type: "text", ph: "e.g. Parole Officer ‚Äî TDCJ Houston District 3" },
+          { key: "officerTitle", label: "Title and office", type: "text", ph: "e.g. Parole Officer ó TDCJ Houston District 3" },
           { key: "officerPhone", label: "Direct phone number", type: "text", ph: "Direct line" },
           { key: "officerEmail", label: "Email address", type: "text", ph: "Email address" },
           { key: "districtOrRegion", label: "District or region they cover", type: "text", ph: "e.g. Houston South, Harris County" },
-          { key: "howContacted", label: "How was contact made?", type: "select", options: ["Phone call ‚Äî spoke directly", "Phone call ‚Äî voicemail left", "Email sent", "In-person visit", "Referred by another officer"] },
+          { key: "howContacted", label: "How was contact made?", type: "select", options: ["Phone call ó spoke directly", "Phone call ó voicemail left", "Email sent", "In-person visit", "Referred by another officer"] },
           { key: "clientsSupervising", label: "How many clients are they currently supervising who may need housing?", type: "text", ph: "Approximate number" },
-          { key: "referralProcess", label: "What is their referral process?", type: "textarea", ph: "How do they refer clients ‚Äî phone, email, form, through TDCJ system?" },
+          { key: "referralProcess", label: "What is their referral process?", type: "textarea", ph: "How do they refer clients ó phone, email, form, through TDCJ system?" },
           { key: "requirementsForReferral", label: "What does Grace Trace need to provide to receive referrals from them?", type: "textarea", ph: "Any documentation, capacity info, certifications, or program details they need" },
-          { key: "currentNeed", label: "Do they have anyone in immediate need of housing right now?", type: "select", options: ["Yes ‚Äî details in notes", "Not right now ‚Äî but soon", "No current need", "Unknown"] },
-          { key: "immediateNeedDetails", label: "If yes ‚Äî describe the immediate housing need", type: "textarea", ph: "Name or initials, release date, special requirements, supervision conditions" },
-          { key: "relationshipStatus", label: "What is the relationship status with this officer?", type: "select", options: ["New contact ‚Äî first time speaking", "Warm ‚Äî they are interested", "Active ‚Äî referrals expected", "Established ‚Äî sending referrals regularly"] },
+          { key: "currentNeed", label: "Do they have anyone in immediate need of housing right now?", type: "select", options: ["Yes ó details in notes", "Not right now ó but soon", "No current need", "Unknown"] },
+          { key: "immediateNeedDetails", label: "If yes ó describe the immediate housing need", type: "textarea", ph: "Name or initials, release date, special requirements, supervision conditions" },
+          { key: "relationshipStatus", label: "What is the relationship status with this officer?", type: "select", options: ["New contact ó first time speaking", "Warm ó they are interested", "Active ó referrals expected", "Established ó sending referrals regularly"] },
           { key: "followUpDate", label: "Follow-up date", type: "text", ph: "e.g. July 14, 2026" },
           { key: "notes", label: "Additional notes", type: "textarea", ph: "Anything else important to document about this officer or conversation" },
         ]
@@ -321,12 +321,12 @@ const USERS = [
           { key: "contactTitle", label: "Contact title", type: "text", ph: "e.g. Reentry Coordinator, Homeless Veterans Coordinator" },
           { key: "contactPhone", label: "Phone number", type: "text", ph: "Direct line" },
           { key: "contactEmail", label: "Email address", type: "text", ph: "Email address" },
-          { key: "vendorApprovedStatus", label: "Is Grace Trace Ministries currently vendor approved with this facility?", type: "select", options: ["Yes ‚Äî already approved", "Application submitted ‚Äî pending", "Not yet ‚Äî need to apply", "Not applicable"] },
-          { key: "vendorApprovalRequirements", label: "What is required to get on their approved vendor or provider list?", type: "textarea", ph: "List every requirement ‚Äî 501c3 status, SAM.gov registration, TDCJ provider application, site inspection, capacity minimums, staffing ratios, insurance, background checks, program documentation" },
-          { key: "applicationProcess", label: "What is the application or approval process?", type: "textarea", ph: "Step by step ‚Äî who to contact, what forms to submit, timeline, point of contact for application" },
+          { key: "vendorApprovedStatus", label: "Is Grace Trace Ministries currently vendor approved with this facility?", type: "select", options: ["Yes ó already approved", "Application submitted ó pending", "Not yet ó need to apply", "Not applicable"] },
+          { key: "vendorApprovalRequirements", label: "What is required to get on their approved vendor or provider list?", type: "textarea", ph: "List every requirement ó 501c3 status, SAM.gov registration, TDCJ provider application, site inspection, capacity minimums, staffing ratios, insurance, background checks, program documentation" },
+          { key: "applicationProcess", label: "What is the application or approval process?", type: "textarea", ph: "Step by step ó who to contact, what forms to submit, timeline, point of contact for application" },
           { key: "referralVolume", label: "How many residents could they potentially refer per month?", type: "text", ph: "Approximate monthly referral volume" },
-          { key: "releaseDates", label: "Are there residents with upcoming release dates who need housing now?", type: "select", options: ["Yes ‚Äî details below", "Not currently", "Unknown"] },
-          { key: "upcomingReleases", label: "Upcoming release details", type: "textarea", ph: "Any residents with imminent release dates and housing needs ‚Äî initials, release date, program type needed" },
+          { key: "releaseDates", label: "Are there residents with upcoming release dates who need housing now?", type: "select", options: ["Yes ó details below", "Not currently", "Unknown"] },
+          { key: "upcomingReleases", label: "Upcoming release details", type: "textarea", ph: "Any residents with imminent release dates and housing needs ó initials, release date, program type needed" },
           { key: "outcome", label: "Outcome of this contact", type: "textarea", ph: "What was accomplished or agreed upon?" },
           { key: "nextStep", label: "Next step and date", type: "textarea", ph: "What needs to happen next to advance this relationship or get approved?" },
         ]
@@ -337,13 +337,13 @@ const USERS = [
           { key: "referralName", label: "Prospective resident name or initials", type: "text", ph: "First name or initials" },
           { key: "referralSource", label: "Referral source", type: "text", ph: "Who referred them and from where?" },
           { key: "referralSourceContact", label: "Referral source contact info", type: "text", ph: "Phone or email of referring officer or case manager" },
-          { key: "programType", label: "Program type needed", type: "select", options: ["Male reentry", "Female reentry", "Veterans housing", "Disability program", "Unknown ‚Äî pending screening"] },
+          { key: "programType", label: "Program type needed", type: "select", options: ["Male reentry", "Female reentry", "Veterans housing", "Disability program", "Unknown ó pending screening"] },
           { key: "releaseDate", label: "Release date or availability date", type: "text", ph: "When are they available to move in?" },
-          { key: "supervisionStatus", label: "Supervision status", type: "select", options: ["TDCJ parole", "TDCJ probation", "Federal supervised release", "BOP halfway house discharge", "VA referral", "Court ordered", "Self-referral ‚Äî no supervision", "Other"] },
+          { key: "supervisionStatus", label: "Supervision status", type: "select", options: ["TDCJ parole", "TDCJ probation", "Federal supervised release", "BOP halfway house discharge", "VA referral", "Court ordered", "Self-referral ó no supervision", "Other"] },
           { key: "specialRequirements", label: "Any special requirements or conditions?", type: "textarea", ph: "Medical needs, supervision conditions, distance restrictions, employment requirements" },
-          { key: "qualificationsMet", label: "Does this person meet Grace Trace program qualifications?", type: "select", options: ["Yes ‚Äî qualified", "Partially ‚Äî review needed", "No ‚Äî does not qualify", "Pending ‚Äî more information needed"] },
-          { key: "status", label: "Current status of this referral", type: "textarea", ph: "Where are they in the process ‚Äî screened, approved, waitlisted, scheduled for intake?" },
-          { key: "handedToIalana", label: "Has this been handed to Ialana for intake screening?", type: "select", options: ["Yes", "No ‚Äî not yet ready", "Ialana is already working with them"] },
+          { key: "qualificationsMet", label: "Does this person meet Grace Trace program qualifications?", type: "select", options: ["Yes ó qualified", "Partially ó review needed", "No ó does not qualify", "Pending ó more information needed"] },
+          { key: "status", label: "Current status of this referral", type: "textarea", ph: "Where are they in the process ó screened, approved, waitlisted, scheduled for intake?" },
+          { key: "handedToIalana", label: "Has this been handed to Ialana for intake screening?", type: "select", options: ["Yes", "No ó not yet ready", "Ialana is already working with them"] },
           { key: "followUpDate", label: "Follow-up date", type: "text", ph: "e.g. July 12, 2026" },
           { key: "nextStep", label: "Next step", type: "textarea", ph: "What needs to happen next for this referral?" },
         ]
@@ -352,13 +352,13 @@ const USERS = [
         id: "d6", title: "Partner & Community Organization Outreach",
         fields: [
           { key: "orgName", label: "Organization name", type: "text", ph: "Full name of the organization" },
-          { key: "orgType", label: "Organization type", type: "select", options: ["Faith-based organization", "Workforce development agency", "Legal aid organization", "Behavioral health provider", "Substance abuse treatment", "Food bank or pantry", "Clothing closet", "Community nonprofit", "Employer ‚Äî willing to hire", "Educational institution", "Other"] },
+          { key: "orgType", label: "Organization type", type: "select", options: ["Faith-based organization", "Workforce development agency", "Legal aid organization", "Behavioral health provider", "Substance abuse treatment", "Food bank or pantry", "Clothing closet", "Community nonprofit", "Employer ó willing to hire", "Educational institution", "Other"] },
           { key: "contactName", label: "Contact name and title", type: "text", ph: "Who did you speak with?" },
           { key: "contactPhone", label: "Phone number", type: "text", ph: "Direct line" },
           { key: "contactEmail", label: "Email address", type: "text", ph: "Email address" },
-          { key: "purpose", label: "Purpose of this contact", type: "textarea", ph: "Why did you reach out ‚Äî partnership, referral agreement, resource for residents?" },
+          { key: "purpose", label: "Purpose of this contact", type: "textarea", ph: "Why did you reach out ó partnership, referral agreement, resource for residents?" },
           { key: "whatTheyOffer", label: "What services or resources do they offer?", type: "textarea", ph: "Describe what they can provide to Grace Trace residents" },
-          { key: "partnershipOpportunity", label: "Is there a formal partnership opportunity?", type: "select", options: ["Yes ‚Äî MOU or referral agreement needed", "Yes ‚Äî informal partnership agreed", "Possibly ‚Äî follow up needed", "No ‚Äî resource only"] },
+          { key: "partnershipOpportunity", label: "Is there a formal partnership opportunity?", type: "select", options: ["Yes ó MOU or referral agreement needed", "Yes ó informal partnership agreed", "Possibly ó follow up needed", "No ó resource only"] },
           { key: "outcome", label: "Outcome", type: "textarea", ph: "What was accomplished or agreed upon?" },
           { key: "followUpDate", label: "Follow-up date", type: "text", ph: "e.g. July 16, 2026" },
           { key: "followUpAction", label: "Follow-up action needed", type: "textarea", ph: "What needs to happen next?" },
@@ -369,7 +369,7 @@ const USERS = [
         fields: [
           { key: "residentsPresent", label: "How many residents are currently in the house?", type: "text", ph: "Number of residents present" },
           { key: "roomsInspected", label: "Were rooms inspected this morning?", type: "select", options: ["Yes", "No"] },
-          { key: "inspectionNotes", label: "Room inspection notes", type: "textarea", ph: "Describe the condition of rooms ‚Äî any violations or concerns" },
+          { key: "inspectionNotes", label: "Room inspection notes", type: "textarea", ph: "Describe the condition of rooms ó any violations or concerns" },
           { key: "choresAssigned", label: "Were chores assigned?", type: "select", options: ["Yes", "No"] },
           { key: "signInStarted", label: "Was the sign-in log started for today?", type: "select", options: ["Yes", "No"] },
           { key: "time", label: "Time completed", type: "text", ph: "e.g. 7:30 AM" },
@@ -378,10 +378,10 @@ const USERS = [
       {
         id: "d8", title: "Nightly Curfew Close-Out",
         fields: [
-          { key: "allResidentsIn", label: "Are all residents in for the night?", type: "select", options: ["Yes", "No ‚Äî see notes"] },
+          { key: "allResidentsIn", label: "Are all residents in for the night?", type: "select", options: ["Yes", "No ó see notes"] },
           { key: "curfewNotes", label: "Document any curfew issues", type: "textarea", ph: "Name of resident and circumstances if not in by curfew" },
           { key: "logCompleted", label: "Was the nightly sign-in log completed?", type: "select", options: ["Yes", "No"] },
-          { key: "houseStatus", label: "Overall house status for tonight", type: "textarea", ph: "Describe the general state of the house ‚Äî quiet, any tension, concerns" },
+          { key: "houseStatus", label: "Overall house status for tonight", type: "textarea", ph: "Describe the general state of the house ó quiet, any tension, concerns" },
           { key: "time", label: "Time completed", type: "text", ph: "e.g. 10:30 PM" },
         ]
       },
@@ -390,7 +390,7 @@ const USERS = [
         fields: [
           { key: "totalContacts", label: "Total number of contacts made today", type: "text", ph: "Total calls, emails, and visits combined" },
           { key: "newContactsAdded", label: "New contacts added to the database today", type: "text", ph: "Number of new contacts" },
-          { key: "referralsReceived", label: "Any referrals received today?", type: "select", options: ["Yes ‚Äî details below", "No"] },
+          { key: "referralsReceived", label: "Any referrals received today?", type: "select", options: ["Yes ó details below", "No"] },
           { key: "referralDetails", label: "Referral details", type: "textarea", ph: "Name or initials, source, program type, and next step" },
           { key: "vendorProgressMade", label: "Any progress made on vendor or provider approvals today?", type: "textarea", ph: "Which facility, what step was completed, what is next?" },
           { key: "summary", label: "Overall summary of today's outreach activity", type: "textarea", ph: "What was accomplished today across all outreach activities?" },
@@ -402,29 +402,29 @@ const USERS = [
       {
         id: "dir1", title: "Complete Your Board & Team Directory Profile",
         fields: [
-          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes ‚Äî confirmed correct", "No ‚Äî needs updating"] },
-          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes ‚Äî phone added", "No ‚Äî I will add it now", "I prefer not to share"] },
-          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes ‚Äî email added", "No ‚Äî I will add it now"] },
-          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes ‚Äî profile is complete", "No ‚Äî still needs updates"] },
+          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes ó confirmed correct", "No ó needs updating"] },
+          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes ó phone added", "No ó I will add it now", "I prefer not to share"] },
+          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes ó email added", "No ó I will add it now"] },
+          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes ó profile is complete", "No ó still needs updates"] },
           { key: "notes", label: "Any updates needed?", type: "textarea", ph: "List anything that needs to be changed in your profile" },
         ]
       }
     ,
       {
-        id: "ops1", title: "Read & Acknowledge the Operations Binder ‚Äî House Rules",
+        id: "ops1", title: "Read & Acknowledge the Operations Binder ó House Rules",
         fields: [
-          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes ‚Äî I have read the full document", "No ‚Äî I still need to read it"] },
-          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes ‚Äî I understand all sections", "No ‚Äî I have questions about some sections"] },
-          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on ‚Äî bring these to Avy" },
-          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes ‚Äî acknowledgment signed", "No ‚Äî I need to complete it now"] },
+          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes ó I have read the full document", "No ó I still need to read it"] },
+          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes ó I understand all sections", "No ó I have questions about some sections"] },
+          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on ó bring these to Avy" },
+          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes ó acknowledgment signed", "No ó I need to complete it now"] },
         ]
       }
     ,
       {
         id: "comp1", title: "Compensation Baseline & Pay Cap Declaration",
         fields: [
-          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes ‚Äî declaration submitted and locked", "No ‚Äî I still need to complete it"] },
-          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes ‚Äî I have reviewed and understand it", "No ‚Äî I still need to review it"] },
+          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes ó declaration submitted and locked", "No ó I still need to complete it"] },
+          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes ó I have reviewed and understand it", "No ó I still need to review it"] },
           { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
         ]
       }
@@ -432,11 +432,11 @@ const USERS = [
       {
         id: "ep1", title: "Read & Acknowledge Emergency & Incident Procedures",
         fields: [
-          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes ‚Äî I have read the full document", "No ‚Äî I still need to read it"] },
-          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 ‚Äî not to wait for approval?", type: "select", options: ["Yes ‚Äî I understand", "No ‚Äî I have questions"] },
-          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes ‚Äî I understand", "No ‚Äî I have questions"] },
-          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on ‚Äî bring these to Avy" },
-          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes ‚Äî I acknowledge and agree", "No ‚Äî I need to discuss this first"] },
+          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes ó I have read the full document", "No ó I still need to read it"] },
+          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 ó not to wait for approval?", type: "select", options: ["Yes ó I understand", "No ó I have questions"] },
+          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes ó I understand", "No ó I have questions"] },
+          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on ó bring these to Avy" },
+          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes ó I acknowledge and agree", "No ó I need to discuss this first"] },
         ]
       }
     ]
@@ -483,7 +483,7 @@ const USERS = [
         id: "e4", title: "Residential Documentation Review",
         fields: [
           { key: "filesReviewed", label: "Whose resident files were reviewed today?", type: "textarea", ph: "Names or initials of residents whose files were checked" },
-          { key: "ispCurrent", label: "Are ISP progress notes current and complete?", type: "select", options: ["Yes", "No ‚Äî gaps found"] },
+          { key: "ispCurrent", label: "Are ISP progress notes current and complete?", type: "select", options: ["Yes", "No ó gaps found"] },
           { key: "drugTestLogCurrent", label: "Is the drug test log current?", type: "select", options: ["Yes", "No"] },
           { key: "incidentReportsCurrent", label: "Are incident reports documented and filed?", type: "select", options: ["Yes", "No"] },
           { key: "documentationGaps", label: "What documentation gaps were found?", type: "textarea", ph: "List specific gaps and whose files are incomplete" },
@@ -511,9 +511,9 @@ const USERS = [
         id: "e7", title: "Resident Phase Progression Tracker",
         fields: [
           { key: "residentName", label: "Resident name or initials", type: "text", ph: "Who is being reviewed for phase advancement?" },
-          { key: "currentPhase", label: "Current phase", type: "select", options: ["Phase 1 ‚Äî Orientation", "Phase 2 ‚Äî Stabilization", "Phase 3 ‚Äî Development", "Phase 4 ‚Äî Transition"] },
-          { key: "meetsRequirements", label: "Does this resident meet all requirements for advancement?", type: "select", options: ["Yes ‚Äî ready to advance", "No ‚Äî still in progress", "Needs review"] },
-          { key: "advancementNotes", label: "Advancement notes", type: "textarea", ph: "Document progress toward requirements ‚Äî employment, savings, compliance, housing plan" },
+          { key: "currentPhase", label: "Current phase", type: "select", options: ["Phase 1 ó Orientation", "Phase 2 ó Stabilization", "Phase 3 ó Development", "Phase 4 ó Transition"] },
+          { key: "meetsRequirements", label: "Does this resident meet all requirements for advancement?", type: "select", options: ["Yes ó ready to advance", "No ó still in progress", "Needs review"] },
+          { key: "advancementNotes", label: "Advancement notes", type: "textarea", ph: "Document progress toward requirements ó employment, savings, compliance, housing plan" },
           { key: "recommendedAction", label: "Recommended action", type: "textarea", ph: "Advance to next phase, extend current phase, or flag for review?" },
         ]
       },
@@ -530,21 +530,21 @@ const USERS = [
         sharedWith: ["avy", "travis"],
         fields: [
           { key: "scheduleDate", label: "Schedule date or week", type: "text", ph: "e.g. Week of July 7, 2026" },
-          { key: "room1Name", label: "Room 1 ‚Äî Resident name", type: "text", ph: "Resident name" },
-          { key: "room1Time", label: "Room 1 ‚Äî Assigned laundry time", type: "text", ph: "e.g. Monday 8:00 AM to 9:00 AM" },
-          { key: "room2Name", label: "Room 2 ‚Äî Resident name", type: "text", ph: "Resident name" },
-          { key: "room2Time", label: "Room 2 ‚Äî Assigned laundry time", type: "text", ph: "e.g. Monday 9:00 AM to 10:00 AM" },
-          { key: "room3Name", label: "Room 3 ‚Äî Resident name", type: "text", ph: "Resident name" },
-          { key: "room3Time", label: "Room 3 ‚Äî Assigned laundry time", type: "text", ph: "e.g. Tuesday 8:00 AM to 9:00 AM" },
-          { key: "room4Name", label: "Room 4 ‚Äî Resident name", type: "text", ph: "Resident name" },
-          { key: "room4Time", label: "Room 4 ‚Äî Assigned laundry time", type: "text", ph: "e.g. Tuesday 9:00 AM to 10:00 AM" },
-          { key: "room5Name", label: "Room 5 ‚Äî Resident name", type: "text", ph: "Resident name" },
-          { key: "room5Time", label: "Room 5 ‚Äî Assigned laundry time", type: "text", ph: "e.g. Wednesday 8:00 AM to 9:00 AM" },
-          { key: "room6Name", label: "Room 6 ‚Äî Resident name", type: "text", ph: "Resident name" },
-          { key: "room6Time", label: "Room 6 ‚Äî Assigned laundry time", type: "text", ph: "e.g. Wednesday 9:00 AM to 10:00 AM" },
+          { key: "room1Name", label: "Room 1 ó Resident name", type: "text", ph: "Resident name" },
+          { key: "room1Time", label: "Room 1 ó Assigned laundry time", type: "text", ph: "e.g. Monday 8:00 AM to 9:00 AM" },
+          { key: "room2Name", label: "Room 2 ó Resident name", type: "text", ph: "Resident name" },
+          { key: "room2Time", label: "Room 2 ó Assigned laundry time", type: "text", ph: "e.g. Monday 9:00 AM to 10:00 AM" },
+          { key: "room3Name", label: "Room 3 ó Resident name", type: "text", ph: "Resident name" },
+          { key: "room3Time", label: "Room 3 ó Assigned laundry time", type: "text", ph: "e.g. Tuesday 8:00 AM to 9:00 AM" },
+          { key: "room4Name", label: "Room 4 ó Resident name", type: "text", ph: "Resident name" },
+          { key: "room4Time", label: "Room 4 ó Assigned laundry time", type: "text", ph: "e.g. Tuesday 9:00 AM to 10:00 AM" },
+          { key: "room5Name", label: "Room 5 ó Resident name", type: "text", ph: "Resident name" },
+          { key: "room5Time", label: "Room 5 ó Assigned laundry time", type: "text", ph: "e.g. Wednesday 8:00 AM to 9:00 AM" },
+          { key: "room6Name", label: "Room 6 ó Resident name", type: "text", ph: "Resident name" },
+          { key: "room6Time", label: "Room 6 ó Assigned laundry time", type: "text", ph: "e.g. Wednesday 9:00 AM to 10:00 AM" },
           { key: "laundryRules", label: "Laundry room rules or notes to communicate", type: "textarea", ph: "e.g. Clean lint trap after each use, remove clothes promptly, no bleach without approval" },
-          { key: "schedulePosted", label: "Was the schedule posted in the laundry room?", type: "select", options: ["Yes", "No ‚Äî will post today"] },
-          { key: "residentsNotified", label: "Were all residents notified of their assigned time?", type: "select", options: ["Yes", "No ‚Äî in progress"] },
+          { key: "schedulePosted", label: "Was the schedule posted in the laundry room?", type: "select", options: ["Yes", "No ó will post today"] },
+          { key: "residentsNotified", label: "Were all residents notified of their assigned time?", type: "select", options: ["Yes", "No ó in progress"] },
         ]
       },
       {
@@ -555,24 +555,24 @@ const USERS = [
           { key: "residentName", label: "Name of resident who vacated", type: "text", ph: "Resident name or initials" },
           { key: "vacateDate", label: "Date resident vacated", type: "text", ph: "e.g. July 7, 2026" },
           { key: "nextResidentDate", label: "Expected move-in date for next resident", type: "text", ph: "e.g. July 10, 2026" },
-          { key: "personalItemsRemoved", label: "All personal belongings removed?", type: "select", options: ["Yes ‚Äî room cleared", "No ‚Äî items left behind (see notes)"] },
-          { key: "leftBehindItems", label: "Items left behind ‚Äî describe", type: "textarea", ph: "What was left and what was done with it?" },
+          { key: "personalItemsRemoved", label: "All personal belongings removed?", type: "select", options: ["Yes ó room cleared", "No ó items left behind (see notes)"] },
+          { key: "leftBehindItems", label: "Items left behind ó describe", type: "textarea", ph: "What was left and what was done with it?" },
           { key: "bedLinensWashed", label: "Bed linens washed and replaced?", type: "select", options: ["Yes", "No"] },
-          { key: "mattressInspected", label: "Mattress inspected for damage?", type: "select", options: ["Yes ‚Äî no damage", "Yes ‚Äî damage found (see notes)"] },
+          { key: "mattressInspected", label: "Mattress inspected for damage?", type: "select", options: ["Yes ó no damage", "Yes ó damage found (see notes)"] },
           { key: "mattressNotes", label: "Mattress damage notes", type: "textarea", ph: "Describe any damage found" },
           { key: "floorsCleaned", label: "Floors swept, mopped, or vacuumed?", type: "select", options: ["Yes", "No"] },
           { key: "surfacesWiped", label: "All surfaces wiped down?", type: "select", options: ["Yes", "No"] },
           { key: "closetCleared", label: "Closet cleared and cleaned?", type: "select", options: ["Yes", "No"] },
           { key: "windowsCleaned", label: "Windows cleaned and blinds dusted?", type: "select", options: ["Yes", "No"] },
-          { key: "doorLocksTested", label: "Door and locks tested and functioning?", type: "select", options: ["Yes", "No ‚Äî needs repair"] },
-          { key: "lightsBulbsWorking", label: "All lights and bulbs working?", type: "select", options: ["Yes", "No ‚Äî replaced"] },
-          { key: "outletsTested", label: "Outlets and switches tested?", type: "select", options: ["Yes", "No ‚Äî issue found"] },
-          { key: "smokeDetectorTested", label: "Smoke detector tested?", type: "select", options: ["Yes ‚Äî working", "No ‚Äî needs battery or replacement"] },
+          { key: "doorLocksTested", label: "Door and locks tested and functioning?", type: "select", options: ["Yes", "No ó needs repair"] },
+          { key: "lightsBulbsWorking", label: "All lights and bulbs working?", type: "select", options: ["Yes", "No ó replaced"] },
+          { key: "outletsTested", label: "Outlets and switches tested?", type: "select", options: ["Yes", "No ó issue found"] },
+          { key: "smokeDetectorTested", label: "Smoke detector tested?", type: "select", options: ["Yes ó working", "No ó needs battery or replacement"] },
           { key: "trashRemoved", label: "All trash removed from room?", type: "select", options: ["Yes", "No"] },
-          { key: "odorCheck", label: "Room odor check passed?", type: "select", options: ["Yes ‚Äî room is fresh", "No ‚Äî treated with cleaning product"] },
+          { key: "odorCheck", label: "Room odor check passed?", type: "select", options: ["Yes ó room is fresh", "No ó treated with cleaning product"] },
           { key: "freshLinensPlaced", label: "Fresh linens and towels placed?", type: "select", options: ["Yes", "No"] },
           { key: "welcomePacketPlaced", label: "Welcome packet and house rules placed in room?", type: "select", options: ["Yes", "No"] },
-          { key: "roomReadyStatus", label: "Is this room ready for the next resident?", type: "select", options: ["Yes ‚Äî room ready", "No ‚Äî items still outstanding"] },
+          { key: "roomReadyStatus", label: "Is this room ready for the next resident?", type: "select", options: ["Yes ó room ready", "No ó items still outstanding"] },
           { key: "outstandingItems", label: "Outstanding items before room is fully ready", type: "textarea", ph: "What still needs to be done and by when?" },
           { key: "inspectedBy", label: "Checklist completed by", type: "text", ph: "Erica Evans" },
           { key: "inspectionTime", label: "Date and time of inspection", type: "text", ph: "e.g. July 8, 2026 at 2:00 PM" },
@@ -582,29 +582,29 @@ const USERS = [
       {
         id: "dir1", title: "Complete Your Board & Team Directory Profile",
         fields: [
-          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes ‚Äî confirmed correct", "No ‚Äî needs updating"] },
-          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes ‚Äî phone added", "No ‚Äî I will add it now", "I prefer not to share"] },
-          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes ‚Äî email added", "No ‚Äî I will add it now"] },
-          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes ‚Äî profile is complete", "No ‚Äî still needs updates"] },
+          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes ó confirmed correct", "No ó needs updating"] },
+          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes ó phone added", "No ó I will add it now", "I prefer not to share"] },
+          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes ó email added", "No ó I will add it now"] },
+          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes ó profile is complete", "No ó still needs updates"] },
           { key: "notes", label: "Any updates needed?", type: "textarea", ph: "List anything that needs to be changed in your profile" },
         ]
       }
     ,
       {
-        id: "ops1", title: "Read & Acknowledge the Operations Binder ‚Äî House Rules",
+        id: "ops1", title: "Read & Acknowledge the Operations Binder ó House Rules",
         fields: [
-          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes ‚Äî I have read the full document", "No ‚Äî I still need to read it"] },
-          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes ‚Äî I understand all sections", "No ‚Äî I have questions about some sections"] },
-          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on ‚Äî bring these to Avy" },
-          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes ‚Äî acknowledgment signed", "No ‚Äî I need to complete it now"] },
+          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes ó I have read the full document", "No ó I still need to read it"] },
+          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes ó I understand all sections", "No ó I have questions about some sections"] },
+          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on ó bring these to Avy" },
+          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes ó acknowledgment signed", "No ó I need to complete it now"] },
         ]
       }
     ,
       {
         id: "comp1", title: "Compensation Baseline & Pay Cap Declaration",
         fields: [
-          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes ‚Äî declaration submitted and locked", "No ‚Äî I still need to complete it"] },
-          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes ‚Äî I have reviewed and understand it", "No ‚Äî I still need to review it"] },
+          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes ó declaration submitted and locked", "No ó I still need to complete it"] },
+          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes ó I have reviewed and understand it", "No ó I still need to review it"] },
           { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
         ]
       }
@@ -612,11 +612,11 @@ const USERS = [
       {
         id: "ep1", title: "Read & Acknowledge Emergency & Incident Procedures",
         fields: [
-          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes ‚Äî I have read the full document", "No ‚Äî I still need to read it"] },
-          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 ‚Äî not to wait for approval?", type: "select", options: ["Yes ‚Äî I understand", "No ‚Äî I have questions"] },
-          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes ‚Äî I understand", "No ‚Äî I have questions"] },
-          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on ‚Äî bring these to Avy" },
-          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes ‚Äî I acknowledge and agree", "No ‚Äî I need to discuss this first"] },
+          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes ó I have read the full document", "No ó I still need to read it"] },
+          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 ó not to wait for approval?", type: "select", options: ["Yes ó I understand", "No ó I have questions"] },
+          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes ó I understand", "No ó I have questions"] },
+          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on ó bring these to Avy" },
+          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes ó I acknowledge and agree", "No ó I need to discuss this first"] },
         ]
       }
     ]
@@ -634,7 +634,7 @@ const USERS = [
         fields: [
           { key: "referralName", label: "Referral name or initials", type: "text", ph: "Name or initials of prospective resident" },
           { key: "referralSource", label: "Who referred them?", type: "text", ph: "Probation officer, parole officer, court, self-referral, etc." },
-          { key: "eligibilityDetermination", label: "Eligibility determination", type: "select", options: ["Eligible ‚Äî proceed with intake", "Not eligible ‚Äî does not meet criteria", "More information needed", "Waitlisted"] },
+          { key: "eligibilityDetermination", label: "Eligibility determination", type: "select", options: ["Eligible ó proceed with intake", "Not eligible ó does not meet criteria", "More information needed", "Waitlisted"] },
           { key: "screeningNotes", label: "Screening notes", type: "textarea", ph: "Document key details from the screening call or review" },
           { key: "nextStep", label: "Next step", type: "textarea", ph: "What happens next and when?" },
         ]
@@ -643,26 +643,26 @@ const USERS = [
         id: "i2", title: "Intake Screening Conducted",
         fields: [
           { key: "residentName", label: "Resident full legal name", type: "text", ph: "Full legal name as it appears on their ID" },
-          { key: "fileNumber", label: "Grace Trace File Number", type: "text", ph: "Auto-format: GTM-2026-001 ‚Äî assign next available number" },
+          { key: "fileNumber", label: "Grace Trace File Number", type: "text", ph: "Auto-format: GTM-2026-001 ó assign next available number" },
           { key: "dateOfBirth", label: "Date of birth", type: "text", ph: "MM/DD/YYYY" },
           { key: "screeningType", label: "Type of screening", type: "select", options: ["Phone screening", "In-person screening", "Virtual screening"] },
-          { key: "eligibilityStatus", label: "Eligibility status", type: "select", options: ["Approved for intake", "Denied", "On hold ‚Äî more info needed"] },
-          { key: "idCollected", label: "Was a valid government-issued photo ID collected?", type: "select", options: ["Yes ‚Äî original presented and copied", "Yes ‚Äî copy only received", "No ‚Äî pending", "No ‚Äî resident does not have ID"] },
-          { key: "idType", label: "Type of ID collected", type: "select", options: ["Texas Driver's License", "Texas State ID", "Out of state Driver's License", "Out of state ID", "US Passport", "Military ID", "Tribal ID", "No ID ‚Äî see notes"] },
-          { key: "idNumber", label: "ID number (last 4 digits only)", type: "text", ph: "Last 4 digits only ‚Äî e.g. XXXX1234" },
+          { key: "eligibilityStatus", label: "Eligibility status", type: "select", options: ["Approved for intake", "Denied", "On hold ó more info needed"] },
+          { key: "idCollected", label: "Was a valid government-issued photo ID collected?", type: "select", options: ["Yes ó original presented and copied", "Yes ó copy only received", "No ó pending", "No ó resident does not have ID"] },
+          { key: "idType", label: "Type of ID collected", type: "select", options: ["Texas Driver's License", "Texas State ID", "Out of state Driver's License", "Out of state ID", "US Passport", "Military ID", "Tribal ID", "No ID ó see notes"] },
+          { key: "idNumber", label: "ID number (last 4 digits only)", type: "text", ph: "Last 4 digits only ó e.g. XXXX1234" },
           { key: "idExpiration", label: "ID expiration date", type: "text", ph: "MM/YYYY" },
-          { key: "idExpired", label: "Is the ID expired?", type: "select", options: ["No ‚Äî valid", "Yes ‚Äî expired ‚Äî resident needs renewal", "No ID at all ‚Äî needs to obtain"] },
-          { key: "idActionNeeded", label: "If ID is missing or expired ‚Äî what action is being taken?", type: "textarea", ph: "e.g. Scheduled appointment at DPS, assisting with birth certificate request, referred to legal aid for ID recovery" },
-          { key: "ssnCollected", label: "Was Social Security card or SSN documentation collected?", type: "select", options: ["Yes ‚Äî card presented and copied", "Yes ‚Äî SSN provided verbally", "No ‚Äî pending", "No ‚Äî lost or unknown"] },
-          { key: "supervisionDocsCollected", label: "Was supervision paperwork collected?", type: "select", options: ["Yes ‚Äî parole certificate", "Yes ‚Äî probation conditions", "Yes ‚Äî federal supervised release", "Yes ‚Äî court order", "No ‚Äî pending"] },
-          { key: "drugTestCompleted", label: "Was intake drug test administered?", type: "select", options: ["Yes ‚Äî passed", "Yes ‚Äî failed ‚Äî see notes", "No ‚Äî scheduled", "Refused"] },
+          { key: "idExpired", label: "Is the ID expired?", type: "select", options: ["No ó valid", "Yes ó expired ó resident needs renewal", "No ID at all ó needs to obtain"] },
+          { key: "idActionNeeded", label: "If ID is missing or expired ó what action is being taken?", type: "textarea", ph: "e.g. Scheduled appointment at DPS, assisting with birth certificate request, referred to legal aid for ID recovery" },
+          { key: "ssnCollected", label: "Was Social Security card or SSN documentation collected?", type: "select", options: ["Yes ó card presented and copied", "Yes ó SSN provided verbally", "No ó pending", "No ó lost or unknown"] },
+          { key: "supervisionDocsCollected", label: "Was supervision paperwork collected?", type: "select", options: ["Yes ó parole certificate", "Yes ó probation conditions", "Yes ó federal supervised release", "Yes ó court order", "No ó pending"] },
+          { key: "drugTestCompleted", label: "Was intake drug test administered?", type: "select", options: ["Yes ó passed", "Yes ó failed ó see notes", "No ó scheduled", "Refused"] },
           { key: "drugTestNotes", label: "Drug test notes", type: "textarea", ph: "Results, substances found if failed, action taken" },
-          { key: "agreementSigned", label: "Was the Resident Agreement signed?", type: "select", options: ["Yes", "No ‚Äî pending", "Refused"] },
-          { key: "programsRequired", label: "What programs are REQUIRED by their supervising institution?", type: "textarea", ph: "List every program mandated by parole, probation, court, BOP, or VA ‚Äî e.g. drug testing, substance abuse treatment, anger management, sex offender treatment, employment program, mental health counseling" },
-          { key: "programsEnrolled", label: "What programs has the resident already enrolled in or completed?", type: "textarea", ph: "List programs they are currently in or have already completed ‚Äî include provider name and dates if known" },
+          { key: "agreementSigned", label: "Was the Resident Agreement signed?", type: "select", options: ["Yes", "No ó pending", "Refused"] },
+          { key: "programsRequired", label: "What programs are REQUIRED by their supervising institution?", type: "textarea", ph: "List every program mandated by parole, probation, court, BOP, or VA ó e.g. drug testing, substance abuse treatment, anger management, sex offender treatment, employment program, mental health counseling" },
+          { key: "programsEnrolled", label: "What programs has the resident already enrolled in or completed?", type: "textarea", ph: "List programs they are currently in or have already completed ó include provider name and dates if known" },
           { key: "programsNeeded", label: "What additional programs does Grace Trace recommend or need to connect them to?", type: "textarea", ph: "Life skills, employment assistance, financial literacy, peer support, GED, vocational training, benefits enrollment, housing search assistance" },
           { key: "institutionRequirements", label: "Are there any specific institution requirements Grace Trace must meet for this resident?", type: "textarea", ph: "e.g. Facility must be within X miles of parole office, resident must check in weekly, specific curfew time required by parole, employment requirement within 30 days" },
-          { key: "referringInstitution", label: "Referring institution and contact", type: "text", ph: "e.g. TDCJ Parole Officer Jane Smith ‚Äî 713-555-0100" },
+          { key: "referringInstitution", label: "Referring institution and contact", type: "text", ph: "e.g. TDCJ Parole Officer Jane Smith ó 713-555-0100" },
           { key: "intakeNotes", label: "Additional intake notes", type: "textarea", ph: "Anything else important to document about this resident or their intake" },
         ]
       },
@@ -681,10 +681,10 @@ const USERS = [
         id: "i4", title: "Resident Case Management Check-In",
         fields: [
           { key: "residentName", label: "Resident name or initials", type: "text", ph: "Who was checked in with today?" },
-          { key: "employmentStatus", label: "Employment status", type: "select", options: ["Employed ‚Äî full time", "Employed ‚Äî part time", "Actively job searching", "In job training", "Not employed ‚Äî concern"] },
+          { key: "employmentStatus", label: "Employment status", type: "select", options: ["Employed ó full time", "Employed ó part time", "Actively job searching", "In job training", "Not employed ó concern"] },
           { key: "savingsUpdate", label: "Savings update", type: "textarea", ph: "How much are they saving? Are they meeting the savings goal for their phase?" },
           { key: "housingPlanUpdate", label: "Housing plan update", type: "textarea", ph: "Where are they in the housing search? Applications submitted? Landlord contacts?" },
-          { key: "personalGoalUpdate", label: "Personal goals update", type: "textarea", ph: "Any other goals ‚Äî ID, benefits, legal, education, family" },
+          { key: "personalGoalUpdate", label: "Personal goals update", type: "textarea", ph: "Any other goals ó ID, benefits, legal, education, family" },
           { key: "resourcesProvided", label: "What resources or referrals were provided?", type: "textarea", ph: "Services connected, referrals made, resources shared" },
           { key: "concerns", label: "Any concerns about this resident?", type: "textarea", ph: "Anything that needs escalation to Erica, Deann, Avy, or Travis?" },
         ]
@@ -692,7 +692,7 @@ const USERS = [
       {
         id: "i5", title: "Peer Support Group Session",
         fields: [
-          { key: "sessionHeld", label: "Was peer support group held today?", type: "select", options: ["Yes", "No ‚Äî rescheduled", "No ‚Äî cancelled"] },
+          { key: "sessionHeld", label: "Was peer support group held today?", type: "select", options: ["Yes", "No ó rescheduled", "No ó cancelled"] },
           { key: "attendance", label: "How many residents attended?", type: "text", ph: "Number of attendees" },
           { key: "topicDiscussed", label: "What topic was discussed?", type: "textarea", ph: "Describe the theme or focus of today's group session" },
           { key: "keyTakeaways", label: "Key takeaways or moments from the session", type: "textarea", ph: "What stood out? Any breakthroughs or concerns that emerged?" },
@@ -700,13 +700,13 @@ const USERS = [
         ]
       },
       {
-        id: "i6", title: "Resident Relations ‚Äî Concerns and Needs",
+        id: "i6", title: "Resident Relations ó Concerns and Needs",
         fields: [
           { key: "residentName", label: "Resident name or initials", type: "text", ph: "Who came to you with a concern or need?" },
           { key: "concern", label: "What was the concern or need?", type: "textarea", ph: "Describe what the resident shared" },
           { key: "actionTaken", label: "What action was taken?", type: "textarea", ph: "How did you respond? What was done to address it?" },
-          { key: "escalated", label: "Was this escalated to another staff member?", type: "select", options: ["Yes ‚Äî to Deann", "Yes ‚Äî to Erica", "Yes ‚Äî to Avy", "No ‚Äî resolved at my level"] },
-          { key: "resolution", label: "Was the concern resolved?", type: "select", options: ["Yes ‚Äî fully resolved", "Partially resolved", "Still in progress"] },
+          { key: "escalated", label: "Was this escalated to another staff member?", type: "select", options: ["Yes ó to Deann", "Yes ó to Erica", "Yes ó to Avy", "No ó resolved at my level"] },
+          { key: "resolution", label: "Was the concern resolved?", type: "select", options: ["Yes ó fully resolved", "Partially resolved", "Still in progress"] },
         ]
       },
       {
@@ -724,9 +724,9 @@ const USERS = [
         fields: [
           { key: "residentName", label: "Resident name or initials", type: "text", ph: "Who is being prepared for discharge?" },
           { key: "targetDischargeDate", label: "Target discharge date", type: "text", ph: "e.g. August 1, 2026" },
-          { key: "housingSecured", label: "Is permanent housing secured?", type: "select", options: ["Yes ‚Äî move-in date confirmed", "In progress ‚Äî applications submitted", "Not yet started"] },
-          { key: "aftercarePlan", label: "What aftercare services are in place?", type: "textarea", ph: "Services connected after discharge ‚Äî mental health, employment, benefits, support groups" },
-          { key: "exitPlanWritten", label: "Has the written exit plan been completed?", type: "select", options: ["Yes", "No ‚Äî in progress"] },
+          { key: "housingSecured", label: "Is permanent housing secured?", type: "select", options: ["Yes ó move-in date confirmed", "In progress ó applications submitted", "Not yet started"] },
+          { key: "aftercarePlan", label: "What aftercare services are in place?", type: "textarea", ph: "Services connected after discharge ó mental health, employment, benefits, support groups" },
+          { key: "exitPlanWritten", label: "Has the written exit plan been completed?", type: "select", options: ["Yes", "No ó in progress"] },
           { key: "certificateReady", label: "Is the certificate of completion ready?", type: "select", options: ["Yes", "No"] },
         ]
       },
@@ -751,29 +751,29 @@ const USERS = [
       {
         id: "dir1", title: "Complete Your Board & Team Directory Profile",
         fields: [
-          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes ‚Äî confirmed correct", "No ‚Äî needs updating"] },
-          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes ‚Äî phone added", "No ‚Äî I will add it now", "I prefer not to share"] },
-          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes ‚Äî email added", "No ‚Äî I will add it now"] },
-          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes ‚Äî profile is complete", "No ‚Äî still needs updates"] },
+          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes ó confirmed correct", "No ó needs updating"] },
+          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes ó phone added", "No ó I will add it now", "I prefer not to share"] },
+          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes ó email added", "No ó I will add it now"] },
+          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes ó profile is complete", "No ó still needs updates"] },
           { key: "notes", label: "Any updates needed?", type: "textarea", ph: "List anything that needs to be changed in your profile" },
         ]
       }
     ,
       {
-        id: "ops1", title: "Read & Acknowledge the Operations Binder ‚Äî House Rules",
+        id: "ops1", title: "Read & Acknowledge the Operations Binder ó House Rules",
         fields: [
-          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes ‚Äî I have read the full document", "No ‚Äî I still need to read it"] },
-          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes ‚Äî I understand all sections", "No ‚Äî I have questions about some sections"] },
-          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on ‚Äî bring these to Avy" },
-          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes ‚Äî acknowledgment signed", "No ‚Äî I need to complete it now"] },
+          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes ó I have read the full document", "No ó I still need to read it"] },
+          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes ó I understand all sections", "No ó I have questions about some sections"] },
+          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on ó bring these to Avy" },
+          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes ó acknowledgment signed", "No ó I need to complete it now"] },
         ]
       }
     ,
       {
         id: "comp1", title: "Compensation Baseline & Pay Cap Declaration",
         fields: [
-          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes ‚Äî declaration submitted and locked", "No ‚Äî I still need to complete it"] },
-          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes ‚Äî I have reviewed and understand it", "No ‚Äî I still need to review it"] },
+          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes ó declaration submitted and locked", "No ó I still need to complete it"] },
+          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes ó I have reviewed and understand it", "No ó I still need to review it"] },
           { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
         ]
       }
@@ -781,11 +781,11 @@ const USERS = [
       {
         id: "ep1", title: "Read & Acknowledge Emergency & Incident Procedures",
         fields: [
-          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes ‚Äî I have read the full document", "No ‚Äî I still need to read it"] },
-          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 ‚Äî not to wait for approval?", type: "select", options: ["Yes ‚Äî I understand", "No ‚Äî I have questions"] },
-          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes ‚Äî I understand", "No ‚Äî I have questions"] },
-          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on ‚Äî bring these to Avy" },
-          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes ‚Äî I acknowledge and agree", "No ‚Äî I need to discuss this first"] },
+          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes ó I have read the full document", "No ó I still need to read it"] },
+          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 ó not to wait for approval?", type: "select", options: ["Yes ó I understand", "No ó I have questions"] },
+          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes ó I understand", "No ó I have questions"] },
+          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on ó bring these to Avy" },
+          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes ó I acknowledge and agree", "No ó I need to discuss this first"] },
         ]
       }
     ]
@@ -796,7 +796,7 @@ const USERS = [
     initials: "KW",
     color: "#4A1A5C",
     password: "GTM@Kisses2026",
-    role: "Director of Communication ‚Äî DBMD Programs",
+    role: "Director of Communication ó DBMD Programs",
     tasks: [
       {
         id: "k1", title: "Social Media Check and Engagement",
@@ -806,7 +806,7 @@ const USERS = [
           { key: "response", label: "Describe any responses given", type: "textarea", ph: "What was responded to and how" },
           { key: "posts", label: "Were any posts published today?", type: "select", options: ["Yes", "No"] },
           { key: "postDetails", label: "Describe posts published", type: "textarea", ph: "Platform, content, and any notes" },
-          { key: "presidentApproved", label: "Was President approval received before posting?", type: "select", options: ["Yes", "No ‚Äî pending", "Not required"] },
+          { key: "presidentApproved", label: "Was President approval received before posting?", type: "select", options: ["Yes", "No ó pending", "Not required"] },
         ]
       },
       {
@@ -814,7 +814,7 @@ const USERS = [
         fields: [
           { key: "contentCreated", label: "What content was created today?", type: "textarea", ph: "Graphics, captions, videos, or other materials" },
           { key: "platform", label: "Which platform is this content for?", type: "text", ph: "Facebook, Instagram, LinkedIn, print, etc." },
-          { key: "status", label: "Status of content", type: "select", options: ["Draft ‚Äî pending President approval", "Approved and scheduled", "Published today"] },
+          { key: "status", label: "Status of content", type: "select", options: ["Draft ó pending President approval", "Approved and scheduled", "Published today"] },
           { key: "calendarUpdated", label: "Was the content calendar updated?", type: "select", options: ["Yes", "No", "Not needed today"] },
         ]
       },
@@ -826,7 +826,7 @@ const USERS = [
           { key: "findings", label: "Key findings from today's research", type: "textarea", ph: "What was learned that is relevant to Grace Trace DBMD program development" },
           { key: "hoursSpent", label: "Hours spent on DBMD research today", type: "text", ph: "e.g. 1.5 hours" },
           { key: "actionItems", label: "Action items from today's research", type: "textarea", ph: "What needs to be followed up on or researched next" },
-          { key: "reportToPresident", label: "Does this need to be reported to President today?", type: "select", options: ["Yes ‚Äî urgent", "Yes ‚Äî in weekly report", "No"] },
+          { key: "reportToPresident", label: "Does this need to be reported to President today?", type: "select", options: ["Yes ó urgent", "Yes ó in weekly report", "No"] },
         ]
       },
       {
@@ -835,9 +835,9 @@ const USERS = [
           { key: "tasksAssigned", label: "Were any staff assist tasks assigned to you today?", type: "select", options: ["Yes", "No"] },
           { key: "requestedBy", label: "Who assigned the task?", type: "text", ph: "Staff member name and their role" },
           { key: "taskDescription", label: "Describe the task assigned", type: "textarea", ph: "What was the task, what was needed, and any deadline given" },
-          { key: "taskStatus", label: "Status of the assigned task", type: "select", options: ["Completed today", "In progress ‚Äî will complete by deadline", "Need more information", "Escalated to President"] },
+          { key: "taskStatus", label: "Status of the assigned task", type: "select", options: ["Completed today", "In progress ó will complete by deadline", "Need more information", "Escalated to President"] },
           { key: "taskOutcome", label: "Outcome and what was delivered", type: "textarea", ph: "What was completed and delivered to the requesting staff member" },
-          { key: "notifiedRequester", label: "Was the requesting staff member notified of completion?", type: "select", options: ["Yes", "No ‚Äî still in progress", "Not yet"] },
+          { key: "notifiedRequester", label: "Was the requesting staff member notified of completion?", type: "select", options: ["Yes", "No ó still in progress", "Not yet"] },
         ]
       },
       {
@@ -845,7 +845,7 @@ const USERS = [
         fields: [
           { key: "communicationsDrafted", label: "Were any internal communications drafted today?", type: "select", options: ["Yes", "No"] },
           { key: "details", label: "Describe what was drafted or sent", type: "textarea", ph: "Type of communication, recipient, and purpose" },
-          { key: "presidentApproval", label: "Was President approval obtained before distribution?", type: "select", options: ["Yes", "No ‚Äî pending approval", "Not required"] },
+          { key: "presidentApproval", label: "Was President approval obtained before distribution?", type: "select", options: ["Yes", "No ó pending approval", "Not required"] },
         ]
       },
       {
@@ -859,10 +859,10 @@ const USERS = [
       {
         id: "dir1", title: "Complete Your Board & Team Directory Profile",
         fields: [
-          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes ‚Äî confirmed correct", "No ‚Äî needs updating"] },
-          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes ‚Äî phone added", "No ‚Äî I will add it now", "I prefer not to share"] },
-          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes ‚Äî email added", "No ‚Äî I will add it now"] },
-          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes ‚Äî profile is complete", "No ‚Äî still needs updates"] },
+          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes ó confirmed correct", "No ó needs updating"] },
+          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes ó phone added", "No ó I will add it now", "I prefer not to share"] },
+          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes ó email added", "No ó I will add it now"] },
+          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes ó profile is complete", "No ó still needs updates"] },
           { key: "notes", label: "Any corrections or updates needed?", type: "textarea", ph: "List anything that needs to be changed or added to your profile" },
         ]
       },
@@ -877,20 +877,20 @@ const USERS = [
       },
     ,
       {
-        id: "ops1", title: "Read & Acknowledge the Operations Binder ‚Äî House Rules",
+        id: "ops1", title: "Read & Acknowledge the Operations Binder ó House Rules",
         fields: [
-          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes ‚Äî I have read the full document", "No ‚Äî I still need to read it"] },
-          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes ‚Äî I understand all sections", "No ‚Äî I have questions about some sections"] },
-          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on ‚Äî bring these to Avy" },
-          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes ‚Äî acknowledgment signed", "No ‚Äî I need to complete it now"] },
+          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes ó I have read the full document", "No ó I still need to read it"] },
+          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes ó I understand all sections", "No ó I have questions about some sections"] },
+          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on ó bring these to Avy" },
+          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes ó acknowledgment signed", "No ó I need to complete it now"] },
         ]
       }
     ,
       {
         id: "comp1", title: "Compensation Baseline & Pay Cap Declaration",
         fields: [
-          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes ‚Äî declaration submitted and locked", "No ‚Äî I still need to complete it"] },
-          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes ‚Äî I have reviewed and understand it", "No ‚Äî I still need to review it"] },
+          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes ó declaration submitted and locked", "No ó I still need to complete it"] },
+          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes ó I have reviewed and understand it", "No ó I still need to review it"] },
           { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
         ]
       }
@@ -898,11 +898,11 @@ const USERS = [
       {
         id: "ep1", title: "Read & Acknowledge Emergency & Incident Procedures",
         fields: [
-          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes ‚Äî I have read the full document", "No ‚Äî I still need to read it"] },
-          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 ‚Äî not to wait for approval?", type: "select", options: ["Yes ‚Äî I understand", "No ‚Äî I have questions"] },
-          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes ‚Äî I understand", "No ‚Äî I have questions"] },
-          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on ‚Äî bring these to Avy" },
-          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes ‚Äî I acknowledge and agree", "No ‚Äî I need to discuss this first"] },
+          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes ó I have read the full document", "No ó I still need to read it"] },
+          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 ó not to wait for approval?", type: "select", options: ["Yes ó I understand", "No ó I have questions"] },
+          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes ó I understand", "No ó I have questions"] },
+          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on ó bring these to Avy" },
+          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes ó I acknowledge and agree", "No ó I need to discuss this first"] },
         ]
       }
     ]
@@ -918,10 +918,10 @@ const USERS = [
       {
         id: "op1", title: "Facility Inspection and Walkthrough",
         fields: [
-          { key: "areasInspected", label: "Which areas were inspected today?", type: "textarea", ph: "List areas checked ‚Äî common areas, entry/exit, hallways, exterior" },
-          { key: "camerasOperational", label: "Are all security cameras operational?", type: "select", options: ["Yes", "No ‚Äî see notes"] },
+          { key: "areasInspected", label: "Which areas were inspected today?", type: "textarea", ph: "List areas checked ó common areas, entry/exit, hallways, exterior" },
+          { key: "camerasOperational", label: "Are all security cameras operational?", type: "select", options: ["Yes", "No ó see notes"] },
           { key: "safetyEquipmentChecked", label: "Was safety equipment checked?", type: "select", options: ["Yes", "No"] },
-          { key: "issuesFound", label: "What issues were found during inspection?", type: "textarea", ph: "Describe anything that needs attention ‚Äî damage, cleanliness, safety concerns" },
+          { key: "issuesFound", label: "What issues were found during inspection?", type: "textarea", ph: "Describe anything that needs attention ó damage, cleanliness, safety concerns" },
           { key: "immediateActionTaken", label: "What immediate action was taken?", type: "textarea", ph: "What did you do on the spot to address any issues?" },
           { key: "time", label: "Time completed", type: "text", ph: "e.g. 8:00 AM" },
         ]
@@ -930,7 +930,7 @@ const USERS = [
         id: "op2", title: "Operational Log Review",
         fields: [
           { key: "logsReviewed", label: "Which logs were reviewed today?", type: "textarea", ph: "Curfew log, sign-in/out log, incident reports, drug test log" },
-          { key: "logsCurrentAndComplete", label: "Are all logs current and complete?", type: "select", options: ["Yes", "No ‚Äî gaps found"] },
+          { key: "logsCurrentAndComplete", label: "Are all logs current and complete?", type: "select", options: ["Yes", "No ó gaps found"] },
           { key: "logGaps", label: "Document any gaps in the logs", type: "textarea", ph: "Which logs are incomplete and what is missing?" },
           { key: "reportedToDeann", label: "Were gaps reported to Deann?", type: "select", options: ["Yes", "No", "Not needed"] },
         ]
@@ -939,8 +939,8 @@ const USERS = [
         id: "op3", title: "Maintenance and Repair Coordination",
         fields: [
           { key: "issueDescription", label: "Describe the maintenance or repair issue", type: "textarea", ph: "What needs to be fixed or repaired and where?" },
-          { key: "urgencyLevel", label: "Urgency level", type: "select", options: ["Immediate ‚Äî safety risk", "High ‚Äî fix within 48 hours", "Medium ‚Äî fix this week", "Low ‚Äî schedule when possible"] },
-          { key: "vendorContacted", label: "Was a vendor or contractor contacted?", type: "select", options: ["Yes", "No ‚Äî will contact tomorrow", "Handled in-house"] },
+          { key: "urgencyLevel", label: "Urgency level", type: "select", options: ["Immediate ó safety risk", "High ó fix within 48 hours", "Medium ó fix this week", "Low ó schedule when possible"] },
+          { key: "vendorContacted", label: "Was a vendor or contractor contacted?", type: "select", options: ["Yes", "No ó will contact tomorrow", "Handled in-house"] },
           { key: "vendorName", label: "Vendor or contractor name", type: "text", ph: "Who was contacted for the repair?" },
           { key: "scheduledDate", label: "When is the repair scheduled?", type: "text", ph: "Date and time of repair" },
           { key: "avyNotified", label: "Was Avy notified of the issue?", type: "select", options: ["Yes", "No", "Not required"] },
@@ -951,9 +951,9 @@ const USERS = [
         fields: [
           { key: "suppliesChecked", label: "What supplies were checked today?", type: "textarea", ph: "Cleaning supplies, first aid kit, paper products, kitchen supplies, etc." },
           { key: "lowOrOutItems", label: "What items are low or out of stock?", type: "textarea", ph: "List items that need to be reordered" },
-          { key: "reorderPlaced", label: "Was a reorder placed?", type: "select", options: ["Yes", "No ‚Äî will order tomorrow", "Not needed"] },
+          { key: "reorderPlaced", label: "Was a reorder placed?", type: "select", options: ["Yes", "No ó will order tomorrow", "Not needed"] },
           { key: "estimatedCost", label: "Estimated cost of reorder", type: "text", ph: "e.g. $45.00" },
-          { key: "approvedBy", label: "Was the purchase approved by Avy or Travis?", type: "select", options: ["Yes", "No ‚Äî pending approval", "Under approval threshold"] },
+          { key: "approvedBy", label: "Was the purchase approved by Avy or Travis?", type: "select", options: ["Yes", "No ó pending approval", "Under approval threshold"] },
         ]
       },
       {
@@ -971,7 +971,7 @@ const USERS = [
         fields: [
           { key: "currentOccupancy", label: "Current number of residents", type: "text", ph: "e.g. 4 of 6 beds occupied" },
           { key: "availableBeds", label: "Number of available beds", type: "text", ph: "How many beds are open?" },
-          { key: "bedCondition", label: "Are all available beds cleaned, made, and ready?", type: "select", options: ["Yes", "No ‚Äî needs attention"] },
+          { key: "bedCondition", label: "Are all available beds cleaned, made, and ready?", type: "select", options: ["Yes", "No ó needs attention"] },
           { key: "reportedToIalana", label: "Was occupancy status reported to Ialana?", type: "select", options: ["Yes", "No"] },
           { key: "upcomingNeeds", label: "Any facility needs for upcoming intakes?", type: "textarea", ph: "Anything that needs to be done before a new resident moves in?" },
         ]
@@ -998,29 +998,29 @@ const USERS = [
       {
         id: "dir1", title: "Complete Your Board & Team Directory Profile",
         fields: [
-          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes ‚Äî confirmed correct", "No ‚Äî needs updating"] },
-          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes ‚Äî phone added", "No ‚Äî I will add it now", "I prefer not to share"] },
-          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes ‚Äî email added", "No ‚Äî I will add it now"] },
-          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes ‚Äî profile is complete", "No ‚Äî still needs updates"] },
+          { key: "nameConfirmed", label: "Is your name and title correct in the directory?", type: "select", options: ["Yes ó confirmed correct", "No ó needs updating"] },
+          { key: "phoneAdded", label: "Have you added your phone number?", type: "select", options: ["Yes ó phone added", "No ó I will add it now", "I prefer not to share"] },
+          { key: "emailAdded", label: "Have you added your personal email?", type: "select", options: ["Yes ó email added", "No ó I will add it now"] },
+          { key: "profileComplete", label: "Is your directory profile complete and up to date?", type: "select", options: ["Yes ó profile is complete", "No ó still needs updates"] },
           { key: "notes", label: "Any updates needed?", type: "textarea", ph: "List anything that needs to be changed in your profile" },
         ]
       }
     ,
       {
-        id: "ops1", title: "Read & Acknowledge the Operations Binder ‚Äî House Rules",
+        id: "ops1", title: "Read & Acknowledge the Operations Binder ó House Rules",
         fields: [
-          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes ‚Äî I have read the full document", "No ‚Äî I still need to read it"] },
-          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes ‚Äî I understand all sections", "No ‚Äî I have questions about some sections"] },
-          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on ‚Äî bring these to Avy" },
-          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes ‚Äî acknowledgment signed", "No ‚Äî I need to complete it now"] },
+          { key: "read", label: "Have you read the complete House Rules and Resident Agreement?", type: "select", options: ["Yes ó I have read the full document", "No ó I still need to read it"] },
+          { key: "understood", label: "Do you understand all 11 sections of the House Rules?", type: "select", options: ["Yes ó I understand all sections", "No ó I have questions about some sections"] },
+          { key: "questions", label: "Do you have any questions about the rules?", type: "textarea", ph: "List any rules you need clarification on ó bring these to Avy" },
+          { key: "acknowledged", label: "Have you signed the acknowledgment in the Operations Binder?", type: "select", options: ["Yes ó acknowledgment signed", "No ó I need to complete it now"] },
         ]
       }
     ,
       {
         id: "comp1", title: "Compensation Baseline & Pay Cap Declaration",
         fields: [
-          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes ‚Äî declaration submitted and locked", "No ‚Äî I still need to complete it"] },
-          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes ‚Äî I have reviewed and understand it", "No ‚Äî I still need to review it"] },
+          { key: "submitted", label: "Have you submitted your Compensation Declaration?", type: "select", options: ["Yes ó declaration submitted and locked", "No ó I still need to complete it"] },
+          { key: "reviewed", label: "Have you reviewed the $25,000 monthly compensation cap policy?", type: "select", options: ["Yes ó I have reviewed and understand it", "No ó I still need to review it"] },
           { key: "notes", label: "Any questions or notes for leadership?", type: "textarea", ph: "List any questions about the compensation policy or your declaration" },
         ]
       }
@@ -1028,11 +1028,11 @@ const USERS = [
       {
         id: "ep1", title: "Read & Acknowledge Emergency & Incident Procedures",
         fields: [
-          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes ‚Äî I have read the full document", "No ‚Äî I still need to read it"] },
-          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 ‚Äî not to wait for approval?", type: "select", options: ["Yes ‚Äî I understand", "No ‚Äî I have questions"] },
-          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes ‚Äî I understand", "No ‚Äî I have questions"] },
-          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on ‚Äî bring these to Avy" },
-          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes ‚Äî I acknowledge and agree", "No ‚Äî I need to discuss this first"] },
+          { key: "read", label: "Have you read the complete Emergency & Incident Procedures document?", type: "select", options: ["Yes ó I have read the full document", "No ó I still need to read it"] },
+          { key: "understood911", label: "Do you understand that in a medical emergency, your first action is to call 911 ó not to wait for approval?", type: "select", options: ["Yes ó I understand", "No ó I have questions"] },
+          { key: "understoodReporting", label: "Do you understand your obligations as a mandatory reporter under Texas law?", type: "select", options: ["Yes ó I understand", "No ó I have questions"] },
+          { key: "questions", label: "Do you have any questions about the Emergency & Incident Procedures?", type: "textarea", ph: "List any procedures you need clarification on ó bring these to Avy" },
+          { key: "acknowledged", label: "Do you acknowledge and agree to follow these procedures?", type: "select", options: ["Yes ó I acknowledge and agree", "No ó I need to discuss this first"] },
         ]
       }
     ]
@@ -1076,7 +1076,7 @@ export default function WorkdayPortal() {
       const breakdown = Object.keys(byCategorySection).map((key) => {
         const [categoryTitle, section] = key.split("|||");
         const match = OUTREACH_CATEGORIES.find((c: any) => c.title.trim().toLowerCase() === categoryTitle.trim().toLowerCase());
-        return { categoryTitle, section, categoryId: match ? match.id : null, icon: match ? match.icon : "üìö", count: byCategorySection[key] };
+        return { categoryTitle, section, categoryId: match ? match.id : null, icon: match ? match.icon : "??", count: byCategorySection[key] };
       });
       setResourceTemplateAlert(breakdown);
     }).catch(() => {});
@@ -1119,14 +1119,14 @@ export default function WorkdayPortal() {
   const [showInstallBanner, setShowInstallBanner] = useState(false);
 
   useEffect(() => {
-    // Android/Chrome ‚Äî native install prompt
+    // Android/Chrome ó native install prompt
     const handler = (e) => {
       e.preventDefault();
       setInstallPrompt(e);
       setShowInstallBanner(true);
     };
     window.addEventListener("beforeinstallprompt", handler);
-    // iOS Safari ‚Äî show manual instructions if not already installed
+    // iOS Safari ó show manual instructions if not already installed
     const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
     const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
     if (isIOS && !isStandalone) {
@@ -1316,7 +1316,7 @@ export default function WorkdayPortal() {
     const d = taskData[currentUser.id];
     const date = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
     const completed = Object.values(d).filter(x => x.completed).length;
-    let txt = "GRACE TRACE MINISTRIES ‚Äî WORKDAY REPORT\n" + "=".repeat(56) + "\n";
+    let txt = "GRACE TRACE MINISTRIES ó WORKDAY REPORT\n" + "=".repeat(56) + "\n";
     txt += "Staff Member: " + currentUser.name + "\nRole: " + currentUser.role + "\nDate: " + date + "\nTasks Completed: " + completed + " of " + currentUser.tasks.length + "\n" + "=".repeat(56) + "\n\n";
     currentUser.tasks.forEach((task, i) => {
       const td = d[task.id];
@@ -1342,7 +1342,7 @@ export default function WorkdayPortal() {
       <div style={{ position: "relative", flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 20px" }}>
         <div style={{ textAlign: "center", marginBottom: 32 }}>
           <div style={{ width: 72, height: 72, borderRadius: "50%", background: "linear-gradient(135deg," + C.burgundy + " 0%," + C.burgundyDark + " 100%)", border: "2px solid " + C.gold, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px", boxShadow: "0 0 32px #C9A84C22" }}>
-            <span style={{ color: C.gold, fontSize: 28 }}>‚ú¶</span>
+            <span style={{ color: C.gold, fontSize: 28 }}>?</span>
           </div>
           <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 6, textTransform: "uppercase", marginBottom: 4 }}>Grace Trace</div>
           <h1 style={{ color: C.ivory, fontSize: 26, fontWeight: 900, margin: "0 0 6px", letterSpacing: -0.5 }}>Ministries</h1>
@@ -1352,14 +1352,14 @@ export default function WorkdayPortal() {
         </div>
         <div style={{ width: "100%", maxWidth: 420, background: "rgba(26,15,18,0.9)", border: "1px solid " + C.cardBorder, borderRadius: 20, padding: "32px 28px", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
           <div style={{ textAlign: "center", marginBottom: 24 }}>
-            <div style={{ width: 50, height: 50, borderRadius: "50%", background: C.cardBorder, border: "1px solid " + C.gold + "44", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", fontSize: 20 }}>üë§</div>
+            <div style={{ width: 50, height: 50, borderRadius: "50%", background: C.cardBorder, border: "1px solid " + C.gold + "44", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", fontSize: 20 }}>??</div>
             <div style={{ color: C.ivory, fontWeight: 800, fontSize: 17 }}>Welcome Back</div>
             <div style={{ color: C.muted, fontSize: 13, marginTop: 3 }}>Sign in to access your account</div>
           </div>
           <div style={{ marginBottom: 14 }}>
             <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", marginBottom: 7 }}>Username or Employee ID</div>
             <div style={{ position: "relative" }}>
-              <span style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: C.muted, fontSize: 15 }}>üë§</span>
+              <span style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: C.muted, fontSize: 15 }}>??</span>
               <input type="text" value={usernameInput} onChange={e => { setUsernameInput(e.target.value); setLoginError(""); }} onKeyDown={e => e.key === "Enter" && attemptLoginWithUsername()} placeholder="Enter your username or ID"
                 style={{ width: "100%", background: C.dark, border: "1px solid " + (loginError ? C.error : C.cardBorder), borderRadius: 10, padding: "12px 14px 12px 40px", color: C.text, fontSize: 14, outline: "none", fontFamily: "inherit" }} autoFocus />
             </div>
@@ -1367,24 +1367,24 @@ export default function WorkdayPortal() {
           <div style={{ marginBottom: 20 }}>
             <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", marginBottom: 7 }}>Password</div>
             <div style={{ position: "relative" }}>
-              <span style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: C.muted, fontSize: 15 }}>üîí</span>
+              <span style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: C.muted, fontSize: 15 }}>??</span>
               <input type={showPassword ? "text" : "password"} value={passwordInput} onChange={e => { setPasswordInput(e.target.value); setLoginError(""); }} onKeyDown={e => e.key === "Enter" && attemptLoginWithUsername()} placeholder="Enter your password"
                 style={{ width: "100%", background: C.dark, border: "1px solid " + (loginError ? C.error : C.cardBorder), borderRadius: 10, padding: "12px 44px 12px 40px", color: C.text, fontSize: 14, outline: "none", fontFamily: "inherit" }} />
               <button onClick={() => setShowPassword(!showPassword)} style={{ position: "absolute", right: 13, top: "50%", transform: "translateY(-50%)", background: "transparent", border: "none", color: C.muted, cursor: "pointer", fontSize: 16, padding: 0, lineHeight: 1 }}>
-                {showPassword ? "üôà" : "üëÅÔ∏è"}
+                {showPassword ? "??" : "???"}
               </button>
             </div>
           </div>
           {loginError && <div style={{ color: C.error, fontSize: 13, marginBottom: 14, textAlign: "center" }}>{loginError}</div>}
           <button onClick={attemptLoginWithUsername}
             style={{ width: "100%", background: "linear-gradient(135deg," + C.burgundy + " 0%,#8B1A2E 100%)", border: "none", borderRadius: 10, padding: "14px", color: C.ivory, fontSize: 14, fontWeight: 800, cursor: "pointer", letterSpacing: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
-            SIGN IN <span style={{ fontSize: 16 }}>‚Üí</span>
+            SIGN IN <span style={{ fontSize: 16 }}>?</span>
           </button>
         </div>
       </div>
       <div style={{ position: "relative", textAlign: "center", padding: "14px 20px", borderTop: "1px solid " + C.cardBorder + "44" }}>
         <div style={{ color: C.muted, fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-          <span>üîí</span>
+          <span>??</span>
           <span style={{ fontWeight: 700, color: C.gold }}>AUTHORIZED USE ONLY.</span>
           <span>All access is monitored and recorded.</span>
         </div>
@@ -1409,9 +1409,9 @@ export default function WorkdayPortal() {
           <img src="/icons/icon-72x72.png" alt="GTM" style={{ width: 44, height: 44, borderRadius: 10, flexShrink: 0 }} />
           <div style={{ flex: 1 }}>
             <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>Install on iPhone</div>
-            <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>Tap the Share button ‚éã at the bottom then tap <span style={{ color: C.gold, fontWeight: 700 }}>Add to Home Screen</span></div>
+            <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>Tap the Share button ? at the bottom then tap <span style={{ color: C.gold, fontWeight: 700 }}>Add to Home Screen</span></div>
           </div>
-          <button onClick={() => setShowInstallBanner(false)} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "8px 14px", color: C.muted, fontSize: 13, cursor: "pointer" }}>‚úï</button>
+          <button onClick={() => setShowInstallBanner(false)} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "8px 14px", color: C.muted, fontSize: 13, cursor: "pointer" }}>?</button>
         </div>
       )}
     </div>
@@ -1442,12 +1442,12 @@ export default function WorkdayPortal() {
     return (
       <div style={{ minHeight: "100vh", background: C.dark, fontFamily: "'Inter','Segoe UI',sans-serif" }}>
         <div style={{ background: C.burgundyDark, borderBottom: "2px solid " + C.gold, padding: "14px 20px", display: "flex", alignItems: "center", gap: 14 }}>
-          <button onClick={() => setActiveTask(null)} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "7px 14px", color: C.muted, fontSize: 13, cursor: "pointer" }}>‚Üê Back</button>
-          <div><div style={{ color: C.ivory, fontWeight: 800, fontSize: 15 }}>{task.title}</div><div style={{ color: C.gold, fontSize: 11 }}>{currentUser.name} ‚Äî {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}</div></div>
+          <button onClick={() => setActiveTask(null)} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "7px 14px", color: C.muted, fontSize: 13, cursor: "pointer" }}>? Back</button>
+          <div><div style={{ color: C.ivory, fontWeight: 800, fontSize: 15 }}>{task.title}</div><div style={{ color: C.gold, fontSize: 11 }}>{currentUser.name} ó {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}</div></div>
         </div>
         <div style={{ maxWidth: 680, margin: "0 auto", padding: "24px 20px" }}>
           <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "6px 18px 18px", marginBottom: 20 }}>
-            <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", margin: "16px 0" }}>Workbook ‚Äî complete all fields</div>
+            <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", margin: "16px 0" }}>Workbook ó complete all fields</div>
             {task.fields.map((f, i) => (
               <div key={f.key} style={{ marginBottom: 18 }}>
                 <div style={{ color: C.text, fontSize: 14, fontWeight: 600, marginBottom: 6 }}>{i + 1}. {f.label}</div>
@@ -1475,7 +1475,7 @@ export default function WorkdayPortal() {
           </div>
           <button onClick={() => submitTask(task.id)} disabled={!allFilled}
             style={{ width: "100%", background: allFilled ? C.green : C.cardBorder, border: "none", borderRadius: 10, padding: "14px", color: allFilled ? C.ivory : C.muted, fontSize: 15, fontWeight: 800, cursor: allFilled ? "pointer" : "not-allowed", marginTop: 12 }}>
-            {allFilled ? "‚úì Submit and mark complete" : "Complete all fields to submit"}
+            {allFilled ? "? Submit and mark complete" : "Complete all fields to submit"}
           </button>
           <div style={{ height: 40 }} />
         </div>
@@ -1492,7 +1492,7 @@ export default function WorkdayPortal() {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ color: C.muted, fontSize: 12 }}>{new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</div>
-          <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "7px 12px", color: C.ivory, fontSize: 18, cursor: "pointer", lineHeight: 1 }}>‚ò∞</button>
+          <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "7px 12px", color: C.ivory, fontSize: 18, cursor: "pointer", lineHeight: 1 }}>?</button>
         </div>
       </div>
 
@@ -1505,37 +1505,38 @@ export default function WorkdayPortal() {
               <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase" }}>Menu</div>
               <div style={{ color: C.text, fontWeight: 700, fontSize: 14, marginTop: 2 }}>{currentUser.name}</div>
             </div>
-            <button onClick={() => setMenuOpen(false)} style={{ background: "transparent", border: "none", color: C.muted, fontSize: 22, cursor: "pointer", lineHeight: 1 }}>‚úï</button>
+            <button onClick={() => setMenuOpen(false)} style={{ background: "transparent", border: "none", color: C.muted, fontSize: 22, cursor: "pointer", lineHeight: 1 }}>?</button>
           </div>
           <div style={{ flex: 1, padding: "16px 0", overflowY: "auto" }}>
             {[
-              { label: "My Workday", href: "/", icon: "üìã" },
-              { label: "Meeting Board", href: "/meetings", icon: "üìÖ" },
-              { label: "Expense Tracker", href: "/expenses", icon: "üí∞" },
-              { label: "Mandatory Tasks", href: "/mandatory-tasks", icon: "üìå" },
-              { label: "Creative Tab", href: "/creative", icon: "üí°" },
-              { label: "Orientation Package", href: "/orientation", icon: "üìÑ" },
-              { label: "Navigation Guide", href: "/navigation", icon: "üó∫" },
-              { label: "Vendor List", href: "/vendors", icon: "üè™" },
-              { label: "Property Opportunities", href: "/properties", icon: "üè¢" },
-              { label: "Board & Team Directory", href: "/directory", icon: "üë•" },
-              { label: "Operations Binder ‚Äî House Rules", href: "/operations-binder", icon: "üìã" },
-              { label: "Emergency & Incident Procedures", href: "/emergency-procedures", icon: "üö®" },
-              { label: "Announcements", href: "/announcements", icon: "üì£" },
-              ...(hasOutreachContacts ? [{ label: "My Outreach Contacts", href: "/my-outreach-contacts", icon: "üìá" }] : []),
-              ...(currentUser.id === "avy" || currentUser.id === "deann" ? [{ label: "Partnership Contact Tracker", href: "/outreach-partnership-tracker", icon: "ü§ù" }] : []),
-              { label: "Compensation Declaration", href: "/compensation", icon: "üíº" },
-              { label: "Task Requests ‚Äî Kisses", href: "/task-requests", icon: "‚úâÔ∏è" },
-              ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Staff Reports", href: "/staff-reports", icon: "üë•" }] : []),
-              ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Manage Resource Templates", href: "/admin/resource-templates", icon: "üõ†Ô∏è" }] : []),
-              ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Assign Outreach Contacts", href: "/admin/outreach-contacts", icon: "üìá" }] : []),
-              ...(currentUser.id === "ialana" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Ialana's Binder", href: "/ialana-binder", icon: "üìò" }] : []),
-              ...(currentUser.id === "erica" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Erica's Binder", href: "/erica-binder", icon: "üìó" }] : []),
-              ...(currentUser.id === "deann" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Deann's Binder", href: "/deann-binder", icon: "üìô" }] : []),
-              ...(currentUser.id === "dennis" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Dennis's Binder", href: "/dennis-binder", icon: "üìí" }] : []),
-              ...(currentUser.id === "aubreyon" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Kisses' Binder", href: "/aubreyon-binder", icon: "üìô" }] : []),
-              ...(currentUser.id === "travis" || currentUser.id === "avy" ? [{ label: "Travis's Binder", href: "/travis-binder", icon: "üìì" }] : []),
-              ...(currentUser.id === "avy" ? [{ label: "My Binder", href: "/avy-binder", icon: "üìî" }] : []),
+              { label: "My Workday", href: "/", icon: "??" },
+              { label: "Meeting Board", href: "/meetings", icon: "??" },
+              { label: "Expense Tracker", href: "/expenses", icon: "??" },
+              { label: "Mandatory Tasks", href: "/mandatory-tasks", icon: "??" },
+              { label: "Creative Tab", href: "/creative", icon: "??" },
+              { label: "Orientation Package", href: "/orientation", icon: "??" },
+              { label: "Navigation Guide", href: "/navigation", icon: "??" },
+              { label: "Vendor List", href: "/vendors", icon: "??" },
+              { label: "Property Opportunities", href: "/properties", icon: "??" },
+              { label: "Board & Team Directory", href: "/directory", icon: "??" },
+              { label: "Operations Binder ó House Rules", href: "/operations-binder", icon: "??" },
+              { label: "Emergency & Incident Procedures", href: "/emergency-procedures", icon: "??" },
+              { label: "Announcements", href: "/announcements", icon: "??" },
+              ...(hasOutreachContacts ? [{ label: "My Outreach Contacts", href: "/my-outreach-contacts", icon: "??" }] : []),
+              ...(currentUser.id === "avy" || currentUser.id === "deann" ? [{ label: "Partnership Contact Tracker", href: "/outreach-partnership-tracker", icon: "??" }] : []),
+              { label: "Housing Registry", href: "/housing-registry", icon: "??" },
+              { label: "Compensation Declaration", href: "/compensation", icon: "??" },
+              { label: "Task Requests ó Kisses", href: "/task-requests", icon: "??" },
+              ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Staff Reports", href: "/staff-reports", icon: "??" }] : []),
+              ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Manage Resource Templates", href: "/admin/resource-templates", icon: "???" }] : []),
+              ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Assign Outreach Contacts", href: "/admin/outreach-contacts", icon: "??" }] : []),
+              ...(currentUser.id === "ialana" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Ialana's Binder", href: "/ialana-binder", icon: "??" }] : []),
+              ...(currentUser.id === "erica" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Erica's Binder", href: "/erica-binder", icon: "??" }] : []),
+              ...(currentUser.id === "deann" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Deann's Binder", href: "/deann-binder", icon: "??" }] : []),
+              ...(currentUser.id === "dennis" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Dennis's Binder", href: "/dennis-binder", icon: "??" }] : []),
+              ...(currentUser.id === "aubreyon" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Kisses' Binder", href: "/aubreyon-binder", icon: "??" }] : []),
+              ...(currentUser.id === "travis" || currentUser.id === "avy" ? [{ label: "Travis's Binder", href: "/travis-binder", icon: "??" }] : []),
+              ...(currentUser.id === "avy" ? [{ label: "My Binder", href: "/avy-binder", icon: "??" }] : []),
             ].map((item) => (
               <a key={item.label} href={item.href} onClick={() => setMenuOpen(false)}
                 style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 20px", color: C.text, textDecoration: "none", borderBottom: "1px solid " + C.cardBorder, fontSize: 14, fontWeight: 600 }}
@@ -1555,10 +1556,10 @@ export default function WorkdayPortal() {
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                 >
                   <span style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                    <span style={{ fontSize: 18 }}>üìö</span>
+                    <span style={{ fontSize: 18 }}>??</span>
                     Outreach Resource Center
                   </span>
-                  <span style={{ color: C.gold, fontSize: 14 }}>{outreachMenuOpen ? "‚ñ≤" : "‚ñº"}</span>
+                  <span style={{ color: C.gold, fontSize: 14 }}>{outreachMenuOpen ? "?" : "?"}</span>
                 </button>
                 {outreachMenuOpen && (
                   <div style={{ background: C.dark }}>
@@ -1578,7 +1579,7 @@ export default function WorkdayPortal() {
                       style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px 14px 52px", color: C.muted, textDecoration: "none", fontSize: 13 }}
                       onMouseEnter={e => e.currentTarget.style.color = C.text}
                       onMouseLeave={e => e.currentTarget.style.color = C.muted}>
-                      <span>üéì</span> Director Training
+                      <span>??</span> Director Training
                     </a>
                   </div>
                 )}
@@ -1605,21 +1606,21 @@ export default function WorkdayPortal() {
           if (total === 0) return null;
           return (
             <div style={{ background: "#7B2D00", border: "1px solid " + C.error, borderRadius: 12, padding: "14px 18px", marginBottom: 20, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 24, flexShrink: 0 }}>üîî</span>
+              <span style={{ fontSize: 24, flexShrink: 0 }}>??</span>
               <div style={{ flex: 1 }}>
                 <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>You have {total} item{total !== 1 ? "s" : ""} that require your immediate attention</div>
                 <div style={{ color: C.muted, fontSize: 13, marginTop: 3 }}>
-                  {!orientationSigned && <span>Orientation not signed ¬∑ </span>}
-                  {!binderSigned && <span>Department binder not signed ¬∑ </span>}
-                  {pendingTasks.length > 0 && <span>{pendingTasks.length} mandatory task{pendingTasks.length !== 1 ? "s" : ""} pending ¬∑ </span>}
+                  {!orientationSigned && <span>Orientation not signed ∑ </span>}
+                  {!binderSigned && <span>Department binder not signed ∑ </span>}
+                  {pendingTasks.length > 0 && <span>{pendingTasks.length} mandatory task{pendingTasks.length !== 1 ? "s" : ""} pending ∑ </span>}
                   {pendingMeetings.length > 0 && <span>{pendingMeetings.length} meeting{pendingMeetings.length !== 1 ? "s" : ""} need your response</span>}
                 </div>
               </div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {!orientationSigned && <a href="/orientation" style={{ background: C.burgundy, border: "1px solid " + C.error, borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>Sign Orientation üìÑ</a>}
-                {!binderSigned && <a href={binderUrl} style={{ background: C.burgundy, border: "1px solid " + C.error, borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>Sign Binder üìò</a>}
-                {pendingTasks.length > 0 && <a href="/mandatory-tasks" style={{ background: C.error, border: "none", borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>View Tasks üìå</a>}
-                {pendingMeetings.length > 0 && <a href="/meetings" style={{ background: C.burgundy, border: "1px solid " + C.error, borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>View Meetings üìÖ</a>}
+                {!orientationSigned && <a href="/orientation" style={{ background: C.burgundy, border: "1px solid " + C.error, borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>Sign Orientation ??</a>}
+                {!binderSigned && <a href={binderUrl} style={{ background: C.burgundy, border: "1px solid " + C.error, borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>Sign Binder ??</a>}
+                {pendingTasks.length > 0 && <a href="/mandatory-tasks" style={{ background: C.error, border: "none", borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>View Tasks ??</a>}
+                {pendingMeetings.length > 0 && <a href="/meetings" style={{ background: C.burgundy, border: "1px solid " + C.error, borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>View Meetings ??</a>}
               </div>
             </div>
           );
@@ -1628,7 +1629,7 @@ export default function WorkdayPortal() {
         {pinnedAnnouncements.length > 0 && (
           <div style={{ background: C.burgundyDark, border: "1px solid " + C.gold + "77", borderRadius: 12, padding: "14px 18px", marginBottom: 20 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: pinnedAnnouncements.length > 0 ? 10 : 0 }}>
-              <span style={{ fontSize: 20 }}>üì£</span>
+              <span style={{ fontSize: 20 }}>??</span>
               <span style={{ color: C.gold, fontSize: 12, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase" }}>
                 Pinned Announcement{pinnedAnnouncements.length !== 1 ? "s" : ""}
               </span>
@@ -1637,12 +1638,12 @@ export default function WorkdayPortal() {
               <div key={a.id} style={{ marginBottom: 8 }}>
                 <div style={{ color: C.ivory, fontWeight: 700, fontSize: 14 }}>{a.title}</div>
                 <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>
-                  {a.body.length > 140 ? a.body.slice(0, 140) + "‚Ä¶" : a.body}
+                  {a.body.length > 140 ? a.body.slice(0, 140) + "Ö" : a.body}
                 </div>
               </div>
             ))}
             <a href="/announcements" style={{ display: "inline-block", marginTop: 6, background: C.gold, border: "none", borderRadius: 8, padding: "7px 14px", color: C.dark, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>
-              View Announcements üì£
+              View Announcements ??
             </a>
           </div>
         )}
@@ -1650,7 +1651,7 @@ export default function WorkdayPortal() {
         {resourceTemplateAlert.length > 0 && (
           <div style={{ background: C.card, border: "1px solid " + C.gold + "77", borderRadius: 12, padding: "14px 18px", marginBottom: 20 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-              <span style={{ fontSize: 20 }}>üìö</span>
+              <span style={{ fontSize: 20 }}>??</span>
               <span style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>
                 New or updated in your Resource Center
               </span>
@@ -1659,8 +1660,8 @@ export default function WorkdayPortal() {
               <a key={cat.categoryTitle + cat.section}
                 href={cat.categoryId ? "/outreach-resource-center?cat=" + cat.categoryId + "&section=" + encodeURIComponent(cat.section) : "/outreach-resource-center"}
                 style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", background: C.dark, borderRadius: 8, marginBottom: 6, textDecoration: "none" }}>
-                <span style={{ color: C.text, fontSize: 13 }}>{cat.icon} {cat.categoryTitle} ‚Äî {cat.section}</span>
-                <span style={{ background: C.gold, color: C.dark, fontSize: 11, fontWeight: 800, padding: "2px 9px", borderRadius: 10 }}>{cat.count} new ‚Üí</span>
+                <span style={{ color: C.text, fontSize: 13 }}>{cat.icon} {cat.categoryTitle} ó {cat.section}</span>
+                <span style={{ background: C.gold, color: C.dark, fontSize: 11, fontWeight: 800, padding: "2px 9px", borderRadius: 10 }}>{cat.count} new ?</span>
               </a>
             ))}
           </div>
@@ -1680,15 +1681,15 @@ export default function WorkdayPortal() {
           </div>
         )}{outreachContactAlert > 0 && (
           <div style={{ background: C.card, border: "1px solid " + C.gold + "77", borderRadius: 12, padding: "14px 18px", marginBottom: 20, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 22, flexShrink: 0 }}>üìá</span>
+            <span style={{ fontSize: 22, flexShrink: 0 }}>??</span>
             <div style={{ flex: 1 }}>
               <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>
                 {outreachContactAlert} outreach contact{outreachContactAlert !== 1 ? "s" : ""} to reach out to
               </div>
-              <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>Assigned by leadership ‚Äî check them off as you complete them</div>
+              <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>Assigned by leadership ó check them off as you complete them</div>
             </div>
             <a href="/my-outreach-contacts" style={{ background: C.gold, border: "none", borderRadius: 8, padding: "8px 14px", color: C.dark, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>
-              View Contacts üìá
+              View Contacts ??
             </a>
           </div>
         )}
@@ -1700,12 +1701,12 @@ export default function WorkdayPortal() {
           <div style={{ background: C.dark, borderRadius: 20, height: 8, overflow: "hidden" }}>
             <div style={{ background: pct === 100 ? "#4CAF50" : C.gold, height: 8, borderRadius: 20, width: pct + "%", transition: "width 0.4s" }} />
           </div>
-          {pct === 100 && <div style={{ color: "#4CAF50", fontSize: 13, marginTop: 10, fontWeight: 700, textAlign: "center" }}>All tasks complete ‚Äî generate your report below</div>}
+          {pct === 100 && <div style={{ color: "#4CAF50", fontSize: 13, marginTop: 10, fontWeight: 700, textAlign: "center" }}>All tasks complete ó generate your report below</div>}
         </div>
 
         {sharedTasksVisible.length > 0 && (
           <div style={{ marginBottom: 24 }}>
-            <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Staff Updates ‚Äî Shared Task Completions</div>
+            <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Staff Updates ó Shared Task Completions</div>
             {sharedTasksVisible.map(({ user, task, td }) => (
               <div key={user.id + task.id} style={{ background: td.completed ? C.green + "22" : C.card, border: "1px solid " + (td.completed ? "#4CAF5044" : C.cardBorder), borderRadius: 12, padding: "14px 18px", marginBottom: 8 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -1728,7 +1729,7 @@ export default function WorkdayPortal() {
           </div>
         )}
 
-        <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>Workday tasks ‚Äî click to open</div>
+        <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>Workday tasks ó click to open</div>
         {currentUser.tasks.map((task, i) => {
           const td = d[task.id];
           const isComplete = td && td.completed;
@@ -1739,15 +1740,15 @@ export default function WorkdayPortal() {
               onMouseEnter={e => { if (!isComplete) e.currentTarget.style.borderColor = C.gold + "66"; }}
               onMouseLeave={e => { if (!isComplete) e.currentTarget.style.borderColor = C.cardBorder; }}>
               <div style={{ width: 36, height: 36, borderRadius: "50%", background: isComplete ? "#4CAF5033" : C.cardBorder, border: "2px solid " + (isComplete ? "#4CAF50" : C.cardBorder), display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                {isComplete ? <span style={{ color: "#4CAF50", fontSize: 16, fontWeight: 900 }}>‚úì</span> : <span style={{ color: C.muted, fontSize: 13, fontWeight: 700 }}>{i + 1}</span>}
+                {isComplete ? <span style={{ color: "#4CAF50", fontSize: 16, fontWeight: 900 }}>?</span> : <span style={{ color: C.muted, fontSize: 13, fontWeight: 700 }}>{i + 1}</span>}
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ color: isComplete ? "#4CAF50" : C.text, fontWeight: 700, fontSize: 14, textDecoration: isComplete ? "line-through" : "none" }}>{task.title}</div>
                 <div style={{ color: C.muted, fontSize: 12, marginTop: 3 }}>
-                  {isComplete ? "Completed" : filledCount > 0 ? filledCount + " of " + task.fields.length + " fields filled ‚Äî click to continue" : task.fields.length + " fields to complete ‚Äî click to open workbook"}
+                  {isComplete ? "Completed" : filledCount > 0 ? filledCount + " of " + task.fields.length + " fields filled ó click to continue" : task.fields.length + " fields to complete ó click to open workbook"}
                 </div>
               </div>
-              {!isComplete && <span style={{ color: C.gold, fontSize: 20, flexShrink: 0 }}>‚Ä∫</span>}
+              {!isComplete && <span style={{ color: C.gold, fontSize: 20, flexShrink: 0 }}>õ</span>}
             </button>
           );
         })}
@@ -1766,7 +1767,7 @@ export default function WorkdayPortal() {
               <button onClick={downloadReport} style={{ flex: 1, background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "12px", color: C.muted, fontSize: 13, cursor: "pointer" }}>Download</button>
             </div>
             {sent && <div style={{ color: "#4CAF50", fontSize: 13, fontWeight: 700, textAlign: "center", padding: "10px 0" }}>
-              ‚úì {getSentConfirmation()} ‚Äî {new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+              ? {getSentConfirmation()} ó {new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
             </div>}
           </>
         )}
@@ -1775,3 +1776,4 @@ export default function WorkdayPortal() {
     </div>
   );
 }
+
