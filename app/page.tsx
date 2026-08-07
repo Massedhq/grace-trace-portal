@@ -1524,6 +1524,7 @@ export default function WorkdayPortal() {
               { label: "Announcements", href: "/announcements", icon: "📣" },
               ...(hasOutreachContacts ? [{ label: "My Outreach Contacts", href: "/my-outreach-contacts", icon: "📇" }] : []),
               ...(currentUser.id === "avy" || currentUser.id === "deann" ? [{ label: "Partnership Contact Tracker", href: "/outreach-partnership-tracker", icon: "🤝" }] : []),
+              { label: "Housing Registry", href: "/housing-registry", icon: "🏠" },
               { label: "Compensation Declaration", href: "/compensation", icon: "💼" },
               { label: "Task Requests — Kisses", href: "/task-requests", icon: "✉️" },
               ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Staff Reports", href: "/staff-reports", icon: "👥" }] : []),
@@ -1775,3 +1776,4 @@ export default function WorkdayPortal() {
     </div>
   );
 }
+
