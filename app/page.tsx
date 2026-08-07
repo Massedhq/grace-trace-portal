@@ -1076,7 +1076,7 @@ export default function WorkdayPortal() {
       const breakdown = Object.keys(byCategorySection).map((key) => {
         const [categoryTitle, section] = key.split("|||");
         const match = OUTREACH_CATEGORIES.find((c: any) => c.title.trim().toLowerCase() === categoryTitle.trim().toLowerCase());
-        return { categoryTitle, section, categoryId: match ? match.id : null, icon: match ? match.icon : "??", count: byCategorySection[key] };
+        return { categoryTitle, section, categoryId: match ? match.id : null, icon: match ? match.icon : "📚", count: byCategorySection[key] };
       });
       setResourceTemplateAlert(breakdown);
     }).catch(() => {});
@@ -1342,7 +1342,7 @@ export default function WorkdayPortal() {
       <div style={{ position: "relative", flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 20px" }}>
         <div style={{ textAlign: "center", marginBottom: 32 }}>
           <div style={{ width: 72, height: 72, borderRadius: "50%", background: "linear-gradient(135deg," + C.burgundy + " 0%," + C.burgundyDark + " 100%)", border: "2px solid " + C.gold, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px", boxShadow: "0 0 32px #C9A84C22" }}>
-            <span style={{ color: C.gold, fontSize: 28 }}>?</span>
+            <span style={{ color: C.gold, fontSize: 28 }}>✦</span>
           </div>
           <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 6, textTransform: "uppercase", marginBottom: 4 }}>Grace Trace</div>
           <h1 style={{ color: C.ivory, fontSize: 26, fontWeight: 900, margin: "0 0 6px", letterSpacing: -0.5 }}>Ministries</h1>
@@ -1352,14 +1352,14 @@ export default function WorkdayPortal() {
         </div>
         <div style={{ width: "100%", maxWidth: 420, background: "rgba(26,15,18,0.9)", border: "1px solid " + C.cardBorder, borderRadius: 20, padding: "32px 28px", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
           <div style={{ textAlign: "center", marginBottom: 24 }}>
-            <div style={{ width: 50, height: 50, borderRadius: "50%", background: C.cardBorder, border: "1px solid " + C.gold + "44", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", fontSize: 20 }}>??</div>
+            <div style={{ width: 50, height: 50, borderRadius: "50%", background: C.cardBorder, border: "1px solid " + C.gold + "44", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", fontSize: 20 }}>👤</div>
             <div style={{ color: C.ivory, fontWeight: 800, fontSize: 17 }}>Welcome Back</div>
             <div style={{ color: C.muted, fontSize: 13, marginTop: 3 }}>Sign in to access your account</div>
           </div>
           <div style={{ marginBottom: 14 }}>
             <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", marginBottom: 7 }}>Username or Employee ID</div>
             <div style={{ position: "relative" }}>
-              <span style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: C.muted, fontSize: 15 }}>??</span>
+              <span style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: C.muted, fontSize: 15 }}>👤</span>
               <input type="text" value={usernameInput} onChange={e => { setUsernameInput(e.target.value); setLoginError(""); }} onKeyDown={e => e.key === "Enter" && attemptLoginWithUsername()} placeholder="Enter your username or ID"
                 style={{ width: "100%", background: C.dark, border: "1px solid " + (loginError ? C.error : C.cardBorder), borderRadius: 10, padding: "12px 14px 12px 40px", color: C.text, fontSize: 14, outline: "none", fontFamily: "inherit" }} autoFocus />
             </div>
@@ -1367,24 +1367,24 @@ export default function WorkdayPortal() {
           <div style={{ marginBottom: 20 }}>
             <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", marginBottom: 7 }}>Password</div>
             <div style={{ position: "relative" }}>
-              <span style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: C.muted, fontSize: 15 }}>??</span>
+              <span style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: C.muted, fontSize: 15 }}>🔒</span>
               <input type={showPassword ? "text" : "password"} value={passwordInput} onChange={e => { setPasswordInput(e.target.value); setLoginError(""); }} onKeyDown={e => e.key === "Enter" && attemptLoginWithUsername()} placeholder="Enter your password"
                 style={{ width: "100%", background: C.dark, border: "1px solid " + (loginError ? C.error : C.cardBorder), borderRadius: 10, padding: "12px 44px 12px 40px", color: C.text, fontSize: 14, outline: "none", fontFamily: "inherit" }} />
               <button onClick={() => setShowPassword(!showPassword)} style={{ position: "absolute", right: 13, top: "50%", transform: "translateY(-50%)", background: "transparent", border: "none", color: C.muted, cursor: "pointer", fontSize: 16, padding: 0, lineHeight: 1 }}>
-                {showPassword ? "??" : "???"}
+                {showPassword ? "🙈" : "👁️"}
               </button>
             </div>
           </div>
           {loginError && <div style={{ color: C.error, fontSize: 13, marginBottom: 14, textAlign: "center" }}>{loginError}</div>}
           <button onClick={attemptLoginWithUsername}
             style={{ width: "100%", background: "linear-gradient(135deg," + C.burgundy + " 0%,#8B1A2E 100%)", border: "none", borderRadius: 10, padding: "14px", color: C.ivory, fontSize: 14, fontWeight: 800, cursor: "pointer", letterSpacing: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
-            SIGN IN <span style={{ fontSize: 16 }}>?</span>
+            SIGN IN <span style={{ fontSize: 16 }}>→</span>
           </button>
         </div>
       </div>
       <div style={{ position: "relative", textAlign: "center", padding: "14px 20px", borderTop: "1px solid " + C.cardBorder + "44" }}>
         <div style={{ color: C.muted, fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-          <span>??</span>
+          <span>🔒</span>
           <span style={{ fontWeight: 700, color: C.gold }}>AUTHORIZED USE ONLY.</span>
           <span>All access is monitored and recorded.</span>
         </div>
@@ -1409,9 +1409,9 @@ export default function WorkdayPortal() {
           <img src="/icons/icon-72x72.png" alt="GTM" style={{ width: 44, height: 44, borderRadius: 10, flexShrink: 0 }} />
           <div style={{ flex: 1 }}>
             <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>Install on iPhone</div>
-            <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>Tap the Share button ? at the bottom then tap <span style={{ color: C.gold, fontWeight: 700 }}>Add to Home Screen</span></div>
+            <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>Tap the Share button ⎋ at the bottom then tap <span style={{ color: C.gold, fontWeight: 700 }}>Add to Home Screen</span></div>
           </div>
-          <button onClick={() => setShowInstallBanner(false)} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "8px 14px", color: C.muted, fontSize: 13, cursor: "pointer" }}>?</button>
+          <button onClick={() => setShowInstallBanner(false)} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "8px 14px", color: C.muted, fontSize: 13, cursor: "pointer" }}>✕</button>
         </div>
       )}
     </div>
@@ -1442,7 +1442,7 @@ export default function WorkdayPortal() {
     return (
       <div style={{ minHeight: "100vh", background: C.dark, fontFamily: "'Inter','Segoe UI',sans-serif" }}>
         <div style={{ background: C.burgundyDark, borderBottom: "2px solid " + C.gold, padding: "14px 20px", display: "flex", alignItems: "center", gap: 14 }}>
-          <button onClick={() => setActiveTask(null)} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "7px 14px", color: C.muted, fontSize: 13, cursor: "pointer" }}>? Back</button>
+          <button onClick={() => setActiveTask(null)} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "7px 14px", color: C.muted, fontSize: 13, cursor: "pointer" }}>← Back</button>
           <div><div style={{ color: C.ivory, fontWeight: 800, fontSize: 15 }}>{task.title}</div><div style={{ color: C.gold, fontSize: 11 }}>{currentUser.name} — {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}</div></div>
         </div>
         <div style={{ maxWidth: 680, margin: "0 auto", padding: "24px 20px" }}>
@@ -1475,7 +1475,7 @@ export default function WorkdayPortal() {
           </div>
           <button onClick={() => submitTask(task.id)} disabled={!allFilled}
             style={{ width: "100%", background: allFilled ? C.green : C.cardBorder, border: "none", borderRadius: 10, padding: "14px", color: allFilled ? C.ivory : C.muted, fontSize: 15, fontWeight: 800, cursor: allFilled ? "pointer" : "not-allowed", marginTop: 12 }}>
-            {allFilled ? "? Submit and mark complete" : "Complete all fields to submit"}
+            {allFilled ? "✓ Submit and mark complete" : "Complete all fields to submit"}
           </button>
           <div style={{ height: 40 }} />
         </div>
@@ -1492,7 +1492,7 @@ export default function WorkdayPortal() {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ color: C.muted, fontSize: 12 }}>{new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</div>
-          <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "7px 12px", color: C.ivory, fontSize: 18, cursor: "pointer", lineHeight: 1 }}>?</button>
+          <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "7px 12px", color: C.ivory, fontSize: 18, cursor: "pointer", lineHeight: 1 }}>☰</button>
         </div>
       </div>
 
@@ -1505,38 +1505,37 @@ export default function WorkdayPortal() {
               <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase" }}>Menu</div>
               <div style={{ color: C.text, fontWeight: 700, fontSize: 14, marginTop: 2 }}>{currentUser.name}</div>
             </div>
-            <button onClick={() => setMenuOpen(false)} style={{ background: "transparent", border: "none", color: C.muted, fontSize: 22, cursor: "pointer", lineHeight: 1 }}>?</button>
+            <button onClick={() => setMenuOpen(false)} style={{ background: "transparent", border: "none", color: C.muted, fontSize: 22, cursor: "pointer", lineHeight: 1 }}>✕</button>
           </div>
           <div style={{ flex: 1, padding: "16px 0", overflowY: "auto" }}>
             {[
-              { label: "My Workday", href: "/", icon: "??" },
-              { label: "Meeting Board", href: "/meetings", icon: "??" },
-              { label: "Expense Tracker", href: "/expenses", icon: "??" },
-              { label: "Mandatory Tasks", href: "/mandatory-tasks", icon: "??" },
-              { label: "Creative Tab", href: "/creative", icon: "??" },
-              { label: "Orientation Package", href: "/orientation", icon: "??" },
-              { label: "Navigation Guide", href: "/navigation", icon: "??" },
-              { label: "Vendor List", href: "/vendors", icon: "??" },
-              { label: "Property Opportunities", href: "/properties", icon: "??" },
-              { label: "Board & Team Directory", href: "/directory", icon: "??" },
-              { label: "Operations Binder — House Rules", href: "/operations-binder", icon: "??" },
-              { label: "Emergency & Incident Procedures", href: "/emergency-procedures", icon: "??" },
-              { label: "Announcements", href: "/announcements", icon: "??" },
-              ...(hasOutreachContacts ? [{ label: "My Outreach Contacts", href: "/my-outreach-contacts", icon: "??" }] : []),
-              ...(currentUser.id === "avy" || currentUser.id === "deann" ? [{ label: "Partnership Contact Tracker", href: "/outreach-partnership-tracker", icon: "??" }] : []),
-              { label: "Housing Registry", href: "/housing-registry", icon: "??" },
-              { label: "Compensation Declaration", href: "/compensation", icon: "??" },
-              { label: "Task Requests — Kisses", href: "/task-requests", icon: "??" },
-              ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Staff Reports", href: "/staff-reports", icon: "??" }] : []),
-              ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Manage Resource Templates", href: "/admin/resource-templates", icon: "???" }] : []),
-              ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Assign Outreach Contacts", href: "/admin/outreach-contacts", icon: "??" }] : []),
-              ...(currentUser.id === "ialana" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Ialana's Binder", href: "/ialana-binder", icon: "??" }] : []),
-              ...(currentUser.id === "erica" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Erica's Binder", href: "/erica-binder", icon: "??" }] : []),
-              ...(currentUser.id === "deann" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Deann's Binder", href: "/deann-binder", icon: "??" }] : []),
-              ...(currentUser.id === "dennis" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Dennis's Binder", href: "/dennis-binder", icon: "??" }] : []),
-              ...(currentUser.id === "aubreyon" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Kisses' Binder", href: "/aubreyon-binder", icon: "??" }] : []),
-              ...(currentUser.id === "travis" || currentUser.id === "avy" ? [{ label: "Travis's Binder", href: "/travis-binder", icon: "??" }] : []),
-              ...(currentUser.id === "avy" ? [{ label: "My Binder", href: "/avy-binder", icon: "??" }] : []),
+              { label: "My Workday", href: "/", icon: "📋" },
+              { label: "Meeting Board", href: "/meetings", icon: "📅" },
+              { label: "Expense Tracker", href: "/expenses", icon: "💰" },
+              { label: "Mandatory Tasks", href: "/mandatory-tasks", icon: "📌" },
+              { label: "Creative Tab", href: "/creative", icon: "💡" },
+              { label: "Orientation Package", href: "/orientation", icon: "📄" },
+              { label: "Navigation Guide", href: "/navigation", icon: "🗺" },
+              { label: "Vendor List", href: "/vendors", icon: "🏪" },
+              { label: "Property Opportunities", href: "/properties", icon: "🏢" },
+              { label: "Board & Team Directory", href: "/directory", icon: "👥" },
+              { label: "Operations Binder — House Rules", href: "/operations-binder", icon: "📋" },
+              { label: "Emergency & Incident Procedures", href: "/emergency-procedures", icon: "🚨" },
+              { label: "Announcements", href: "/announcements", icon: "📣" },
+              ...(hasOutreachContacts ? [{ label: "My Outreach Contacts", href: "/my-outreach-contacts", icon: "📇" }] : []),
+              ...(currentUser.id === "avy" || currentUser.id === "deann" ? [{ label: "Partnership Contact Tracker", href: "/outreach-partnership-tracker", icon: "🤝" }] : []),
+              { label: "Compensation Declaration", href: "/compensation", icon: "💼" },
+              { label: "Task Requests — Kisses", href: "/task-requests", icon: "✉️" },
+              ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Staff Reports", href: "/staff-reports", icon: "👥" }] : []),
+              ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Manage Resource Templates", href: "/admin/resource-templates", icon: "🛠️" }] : []),
+              ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Assign Outreach Contacts", href: "/admin/outreach-contacts", icon: "📇" }] : []),
+              ...(currentUser.id === "ialana" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Ialana's Binder", href: "/ialana-binder", icon: "📘" }] : []),
+              ...(currentUser.id === "erica" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Erica's Binder", href: "/erica-binder", icon: "📗" }] : []),
+              ...(currentUser.id === "deann" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Deann's Binder", href: "/deann-binder", icon: "📙" }] : []),
+              ...(currentUser.id === "dennis" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Dennis's Binder", href: "/dennis-binder", icon: "📒" }] : []),
+              ...(currentUser.id === "aubreyon" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Kisses' Binder", href: "/aubreyon-binder", icon: "📙" }] : []),
+              ...(currentUser.id === "travis" || currentUser.id === "avy" ? [{ label: "Travis's Binder", href: "/travis-binder", icon: "📓" }] : []),
+              ...(currentUser.id === "avy" ? [{ label: "My Binder", href: "/avy-binder", icon: "📔" }] : []),
             ].map((item) => (
               <a key={item.label} href={item.href} onClick={() => setMenuOpen(false)}
                 style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 20px", color: C.text, textDecoration: "none", borderBottom: "1px solid " + C.cardBorder, fontSize: 14, fontWeight: 600 }}
@@ -1556,10 +1555,10 @@ export default function WorkdayPortal() {
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                 >
                   <span style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                    <span style={{ fontSize: 18 }}>??</span>
+                    <span style={{ fontSize: 18 }}>📚</span>
                     Outreach Resource Center
                   </span>
-                  <span style={{ color: C.gold, fontSize: 14 }}>{outreachMenuOpen ? "?" : "?"}</span>
+                  <span style={{ color: C.gold, fontSize: 14 }}>{outreachMenuOpen ? "▲" : "▼"}</span>
                 </button>
                 {outreachMenuOpen && (
                   <div style={{ background: C.dark }}>
@@ -1579,7 +1578,7 @@ export default function WorkdayPortal() {
                       style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px 14px 52px", color: C.muted, textDecoration: "none", fontSize: 13 }}
                       onMouseEnter={e => e.currentTarget.style.color = C.text}
                       onMouseLeave={e => e.currentTarget.style.color = C.muted}>
-                      <span>??</span> Director Training
+                      <span>🎓</span> Director Training
                     </a>
                   </div>
                 )}
@@ -1606,7 +1605,7 @@ export default function WorkdayPortal() {
           if (total === 0) return null;
           return (
             <div style={{ background: "#7B2D00", border: "1px solid " + C.error, borderRadius: 12, padding: "14px 18px", marginBottom: 20, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 24, flexShrink: 0 }}>??</span>
+              <span style={{ fontSize: 24, flexShrink: 0 }}>🔔</span>
               <div style={{ flex: 1 }}>
                 <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>You have {total} item{total !== 1 ? "s" : ""} that require your immediate attention</div>
                 <div style={{ color: C.muted, fontSize: 13, marginTop: 3 }}>
@@ -1617,10 +1616,10 @@ export default function WorkdayPortal() {
                 </div>
               </div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {!orientationSigned && <a href="/orientation" style={{ background: C.burgundy, border: "1px solid " + C.error, borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>Sign Orientation ??</a>}
-                {!binderSigned && <a href={binderUrl} style={{ background: C.burgundy, border: "1px solid " + C.error, borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>Sign Binder ??</a>}
-                {pendingTasks.length > 0 && <a href="/mandatory-tasks" style={{ background: C.error, border: "none", borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>View Tasks ??</a>}
-                {pendingMeetings.length > 0 && <a href="/meetings" style={{ background: C.burgundy, border: "1px solid " + C.error, borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>View Meetings ??</a>}
+                {!orientationSigned && <a href="/orientation" style={{ background: C.burgundy, border: "1px solid " + C.error, borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>Sign Orientation 📄</a>}
+                {!binderSigned && <a href={binderUrl} style={{ background: C.burgundy, border: "1px solid " + C.error, borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>Sign Binder 📘</a>}
+                {pendingTasks.length > 0 && <a href="/mandatory-tasks" style={{ background: C.error, border: "none", borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>View Tasks 📌</a>}
+                {pendingMeetings.length > 0 && <a href="/meetings" style={{ background: C.burgundy, border: "1px solid " + C.error, borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>View Meetings 📅</a>}
               </div>
             </div>
           );
@@ -1629,7 +1628,7 @@ export default function WorkdayPortal() {
         {pinnedAnnouncements.length > 0 && (
           <div style={{ background: C.burgundyDark, border: "1px solid " + C.gold + "77", borderRadius: 12, padding: "14px 18px", marginBottom: 20 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: pinnedAnnouncements.length > 0 ? 10 : 0 }}>
-              <span style={{ fontSize: 20 }}>??</span>
+              <span style={{ fontSize: 20 }}>📣</span>
               <span style={{ color: C.gold, fontSize: 12, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase" }}>
                 Pinned Announcement{pinnedAnnouncements.length !== 1 ? "s" : ""}
               </span>
@@ -1643,7 +1642,7 @@ export default function WorkdayPortal() {
               </div>
             ))}
             <a href="/announcements" style={{ display: "inline-block", marginTop: 6, background: C.gold, border: "none", borderRadius: 8, padding: "7px 14px", color: C.dark, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>
-              View Announcements ??
+              View Announcements 📣
             </a>
           </div>
         )}
@@ -1651,7 +1650,7 @@ export default function WorkdayPortal() {
         {resourceTemplateAlert.length > 0 && (
           <div style={{ background: C.card, border: "1px solid " + C.gold + "77", borderRadius: 12, padding: "14px 18px", marginBottom: 20 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-              <span style={{ fontSize: 20 }}>??</span>
+              <span style={{ fontSize: 20 }}>📚</span>
               <span style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>
                 New or updated in your Resource Center
               </span>
@@ -1661,7 +1660,7 @@ export default function WorkdayPortal() {
                 href={cat.categoryId ? "/outreach-resource-center?cat=" + cat.categoryId + "&section=" + encodeURIComponent(cat.section) : "/outreach-resource-center"}
                 style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", background: C.dark, borderRadius: 8, marginBottom: 6, textDecoration: "none" }}>
                 <span style={{ color: C.text, fontSize: 13 }}>{cat.icon} {cat.categoryTitle} — {cat.section}</span>
-                <span style={{ background: C.gold, color: C.dark, fontSize: 11, fontWeight: 800, padding: "2px 9px", borderRadius: 10 }}>{cat.count} new ?</span>
+                <span style={{ background: C.gold, color: C.dark, fontSize: 11, fontWeight: 800, padding: "2px 9px", borderRadius: 10 }}>{cat.count} new →</span>
               </a>
             ))}
           </div>
@@ -1681,7 +1680,7 @@ export default function WorkdayPortal() {
           </div>
         )}{outreachContactAlert > 0 && (
           <div style={{ background: C.card, border: "1px solid " + C.gold + "77", borderRadius: 12, padding: "14px 18px", marginBottom: 20, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 22, flexShrink: 0 }}>??</span>
+            <span style={{ fontSize: 22, flexShrink: 0 }}>📇</span>
             <div style={{ flex: 1 }}>
               <div style={{ color: C.ivory, fontWeight: 800, fontSize: 14 }}>
                 {outreachContactAlert} outreach contact{outreachContactAlert !== 1 ? "s" : ""} to reach out to
@@ -1689,7 +1688,7 @@ export default function WorkdayPortal() {
               <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>Assigned by leadership — check them off as you complete them</div>
             </div>
             <a href="/my-outreach-contacts" style={{ background: C.gold, border: "none", borderRadius: 8, padding: "8px 14px", color: C.dark, fontSize: 12, fontWeight: 800, textDecoration: "none" }}>
-              View Contacts ??
+              View Contacts 📇
             </a>
           </div>
         )}
@@ -1740,7 +1739,7 @@ export default function WorkdayPortal() {
               onMouseEnter={e => { if (!isComplete) e.currentTarget.style.borderColor = C.gold + "66"; }}
               onMouseLeave={e => { if (!isComplete) e.currentTarget.style.borderColor = C.cardBorder; }}>
               <div style={{ width: 36, height: 36, borderRadius: "50%", background: isComplete ? "#4CAF5033" : C.cardBorder, border: "2px solid " + (isComplete ? "#4CAF50" : C.cardBorder), display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                {isComplete ? <span style={{ color: "#4CAF50", fontSize: 16, fontWeight: 900 }}>?</span> : <span style={{ color: C.muted, fontSize: 13, fontWeight: 700 }}>{i + 1}</span>}
+                {isComplete ? <span style={{ color: "#4CAF50", fontSize: 16, fontWeight: 900 }}>✓</span> : <span style={{ color: C.muted, fontSize: 13, fontWeight: 700 }}>{i + 1}</span>}
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ color: isComplete ? "#4CAF50" : C.text, fontWeight: 700, fontSize: 14, textDecoration: isComplete ? "line-through" : "none" }}>{task.title}</div>
@@ -1767,7 +1766,7 @@ export default function WorkdayPortal() {
               <button onClick={downloadReport} style={{ flex: 1, background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "12px", color: C.muted, fontSize: 13, cursor: "pointer" }}>Download</button>
             </div>
             {sent && <div style={{ color: "#4CAF50", fontSize: 13, fontWeight: 700, textAlign: "center", padding: "10px 0" }}>
-              ? {getSentConfirmation()} — {new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+              ✓ {getSentConfirmation()} — {new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
             </div>}
           </>
         )}
@@ -1776,5 +1775,3 @@ export default function WorkdayPortal() {
     </div>
   );
 }
-
-
