@@ -448,6 +448,126 @@ export default function PropertyInspection() {
     reader.readAsDataURL(file);
   }
 
+  function generatePDF() {
+    const date = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+    let html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>Grace Trace Ministries — Property Inspection Report</title>
+    <style>
+      body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 32px; color: #1A0F12; }
+      h1 { color: #4A0E1A; font-size: 24px; margin-bottom: 4px; }
+      h2 { color: #4A0E1A; font-size: 16px; margin: 24px 0 8px; border-bottom: 2px solid #4A0E1A; padding-bottom: 4px; }
+      h3 { color: #1E4D2B; font-size: 13px; margin: 16px 0 6px; }
+      .sub { color: #A08878; font-size: 13px; margin-bottom: 24px; }
+      .inspector-card { display: inline-block; background: #F5F0E8; border: 1px solid #D4C8B8; padding: 14px 20px; margin: 8px 8px 8px 0; border-radius: 8px; vertical-align: top; width: 43%; }
+      .inspector-card h3 { margin: 0 0 6px; color: #4A0E1A; }
+      .rating { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 12px; font-weight: bold; }
+      .rating-Excellent,.rating-Good { background: #EAF3DE; color: #27500A; }
+      .rating-Fair { background: #FAEEDA; color: #633806; }
+      .rating-Poor { background: #FAECE7; color: #712B13; }
+      .rating-Unsafeforoccupancy { background: #FCEBEB; color: #791F1F; }
+      .section { margin-bottom: 16px; }
+      .item { display: flex; align-items: flex-start; gap: 10px; padding: 5px 0; border-bottom: 1px solid #EEE; font-size: 13px; }
+      .check { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
+      .item-label { flex: 1; }
+      .item-label.done { text-decoration: line-through; color: #999; }
+      .flag { display: inline-block; font-size: 11px; font-weight: bold; padding: 1px 8px; border-radius: 8px; margin-left: 6px; }
+      .flag-Good { background: #EAF3DE; color: #27500A; }
+      .flag-Concern,.flag-Needsrepair { background: #FAECE7; color: #712B13; }
+      .flag-Unsafe { background: #FCEBEB; color: #791F1F; }
+      .note { font-style: italic; color: #C9A84C; font-size: 12px; margin-top: 2px; }
+      .inspector-tag { font-size: 11px; font-weight: bold; padding: 1px 7px; border-radius: 8px; margin-right: 4px; }
+      .tag-avy { background: #F5E6EC; color: #4A0E1A; }
+      .tag-dennis { background: #E6F0E9; color: #1E4D2B; }
+      .concerns { background: #FFF3EE; border: 2px solid #D85A30; padding: 16px; border-radius: 8px; margin: 24px 0; }
+      .concern-item { padding: 6px 0; border-bottom: 1px solid #F0C4B0; font-size: 13px; }
+      .concern-item:last-child { border-bottom: none; }
+      .photos { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+      .photo-thumb { width: 80px; height: 80px; object-fit: cover; border-radius: 4px; border: 1px solid #DDD; }
+      .no-data { color: #999; font-style: italic; font-size: 13px; }
+      @media print { body { padding: 16px; } button { display: none; } }
+    </style></head><body>`;
+
+    html += `<h1>Grace Trace Ministries</h1>
+    <div class="sub">Property Inspection Report &mdash; Athens, TX &middot; State Hwy 31 West &middot; ${date}</div>`;
+
+    // Inspector summary cards
+    html += `<div style="margin-bottom:24px">`;
+    sharedReportData.forEach(({ report, progress }) => {
+      const ratingClass = (report.overall_rating || "").replace(/[^a-zA-Z]/g, "");
+      html += `<div class="inspector-card">
+        <h3>${report.inspector_name}</h3>
+        <div style="font-size:12px;color:#666;margin-bottom:6px">${report.wing || "Area not set"} &middot; ${report.room_area || "Room not set"}</div>
+        <div style="font-size:12px;margin-bottom:4px">Progress: <strong>${progress}%</strong></div>
+        ${report.overall_rating ? `<div>Rating: <span class="rating rating-${ratingClass}">${report.overall_rating}</span></div>` : ""}
+        ${report.general_notes ? `<div style="font-size:12px;color:#666;margin-top:6px;font-style:italic">"${report.general_notes}"</div>` : ""}
+      </div>`;
+    });
+    html += `</div>`;
+
+    // Flagged concerns summary
+    if (sharedFlags.length > 0) {
+      html += `<div class="concerns"><h2 style="color:#D85A30;border-color:#D85A30;margin-top:0">&#9888; Flagged Concerns (${sharedFlags.length})</h2>`;
+      sharedFlags.forEach(f => {
+        html += `<div class="concern-item">
+          <strong>${f.wing ? f.wing + (f.room ? " &mdash; " + f.room + " &mdash; " : " &mdash; ") : ""}${f.label}</strong><br>
+          <span style="font-size:12px;color:#666">${f.inspector}${f.time ? " &middot; " + f.time : ""} &middot; ${f.flag}</span>
+          ${f.note ? `<br><span style="font-style:italic;color:#C9A84C">"${f.note}"</span>` : ""}
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    // Full checklist
+    CHECKLIST.forEach(sec => {
+      html += `<div class="section"><h2>${sec.section}</h2>`;
+      sec.items.forEach(item => {
+        const inspectorData = sharedReportData.map(({ report, items, photos }) => ({
+          report, item: items[item.key], photos: photos[item.key] || []
+        })).filter(d => d.item || d.photos.length > 0);
+
+        const anyChecked = inspectorData.some(d => d.item?.checked);
+        html += `<div class="item">
+          <input type="checkbox" class="check" ${anyChecked ? "checked" : ""} disabled>
+          <div class="item-label ${anyChecked ? "done" : ""}">${item.label}`;
+
+        inspectorData.forEach(({ report, item: itm, photos }) => {
+          if (!itm && photos.length === 0) return;
+          const tagClass = report.inspector_id === "avy" ? "tag-avy" : "tag-dennis";
+          html += `<div style="margin-top:4px">
+            <span class="inspector-tag ${tagClass}">${report.inspector_name.split(" ")[0]}</span>`;
+          if (itm?.checked) html += `<span style="color:#3B6D11;font-size:11px">&#10003; Checked</span>`;
+          if (itm?.flag) {
+            const fc = (itm.flag || "").replace(/[^a-zA-Z]/g, "");
+            html += `<span class="flag flag-${fc}">${itm.flag}</span>`;
+          }
+          if (itm?.note) html += `<div class="note">"${itm.note}"</div>`;
+          if (photos.length > 0) {
+            html += `<div class="photos">`;
+            photos.forEach(p => {
+              if (p.photo_data) html += `<img src="${p.photo_data}" class="photo-thumb" alt="Inspection photo">`;
+            });
+            html += `</div>`;
+          }
+          html += `</div>`;
+        });
+
+        html += `</div></div>`;
+      });
+      html += `</div>`;
+    });
+
+    html += `<div style="margin-top:32px;font-size:11px;color:#999;border-top:1px solid #EEE;padding-top:12px">
+      Generated by Grace Trace Ministries Staff Portal &middot; ${date} &middot; Confidential — Internal Use Only
+    </div></body></html>`;
+
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const win = window.open(url, "_blank");
+    if (win) {
+      win.onload = () => { win.print(); };
+    }
+  }
+
   if (!currentUser) return <div style={{ background: C.dark, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: C.muted }}>Loading...</div>;
 
   const totalItems = CHECKLIST.reduce((acc, s) => acc + s.items.length, 0);
@@ -791,8 +911,8 @@ export default function PropertyInspection() {
               <button onClick={loadAllReports} style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "11px 16px", color: C.muted, fontSize: 13, cursor: "pointer" }}>
                 ↻ Refresh
               </button>
-              <button onClick={() => window.print()} style={{ background: C.green, border: "none", borderRadius: 8, padding: "11px 16px", color: C.ivory, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-                Print / Export report
+              <button onClick={() => generatePDF()} style={{ background: C.green, border: "none", borderRadius: 8, padding: "11px 16px", color: C.ivory, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                📄 Download PDF Report
               </button>
             </div>
           </>

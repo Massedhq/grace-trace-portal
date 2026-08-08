@@ -33,14 +33,14 @@ export async function GET(req: Request) {
     let photos;
     if (item_key) {
       photos = await sql`
-        SELECT id, inspection_id, item_key, inspector_id, file_name, caption, uploaded_at
+        SELECT id, inspection_id, item_key, inspector_id, photo_data, file_name, caption, uploaded_at
         FROM property_inspection_photos
         WHERE inspection_id = ${inspection_id} AND item_key = ${item_key}
         ORDER BY uploaded_at ASC
       `;
     } else {
       photos = await sql`
-        SELECT id, inspection_id, item_key, inspector_id, file_name, caption, uploaded_at
+        SELECT id, inspection_id, item_key, inspector_id, photo_data, file_name, caption, uploaded_at
         FROM property_inspection_photos
         WHERE inspection_id = ${inspection_id}
         ORDER BY uploaded_at ASC
