@@ -258,16 +258,21 @@ export default function PropertyInspection() {
     }
   }, [currentUser]);
 
+  const [sharedReportData, setSharedReportData] = useState([]);
+  const [lightboxPhoto, setLightboxPhoto] = useState(null);
+  const [myPhotos, setMyPhotos] = useState({});
+
   async function loadAllReports() {
     const r = await fetch("/api/property-inspection");
     const d = await r.json();
     const reports = d.reports || [];
     setAllReports(reports);
 
-    const mine = reports.filter(r => r.inspector_id === currentUser.id);
-    const others = reports.filter(r => r.inspector_id !== currentUser.id);
+    const mine = reports.filter(rep => rep.inspector_id === currentUser.id);
+    const others = reports.filter(rep => rep.inspector_id !== currentUser.id);
+    const total = CHECKLIST.reduce((acc, s) => acc + s.items.length, 0);
 
-    // Calculate my progress
+    // Load my report fully
     if (mine.length > 0) {
       const latestMine = mine[0];
       setInspectionId(latestMine.id);
@@ -275,47 +280,68 @@ export default function PropertyInspection() {
       setRoomArea(latestMine.room_area || "");
       setRating(latestMine.overall_rating || "");
       setGeneralNotes(latestMine.general_notes || "");
-      // Load items
       const ir = await fetch("/api/property-inspection?id=" + latestMine.id);
       const id2 = await ir.json();
       const map = {};
       (id2.items || []).forEach(item => { map[item.item_key] = item; });
       setItemStates(map);
-      const total = CHECKLIST.reduce((acc, s) => acc + s.items.length, 0);
       const done = (id2.items || []).filter(i => i.checked).length;
       setMyProgress(total ? Math.round((done / total) * 100) : 0);
-    }
-
-    // Other inspector progress
-    if (others.length > 0) {
-      const otherReport = others[0];
-      const or = await fetch("/api/property-inspection?id=" + otherReport.id);
-      const od = await or.json();
-      const total = CHECKLIST.reduce((acc, s) => acc + s.items.length, 0);
-      const done = (od.items || []).filter(i => i.checked).length;
-      setOtherProgress(total ? Math.round((done / total) * 100) : 0);
-
-      // Collect flags from both
-      const flags = [];
-      const allItems = [...(od.items || [])];
-      if (mine.length > 0) {
-        const mir = await fetch("/api/property-inspection?id=" + mine[0].id);
-        const mid = await mir.json();
-        allItems.push(...(mid.items || []).map(i => ({ ...i, _mine: true })));
-      }
-      allItems.filter(i => i.flag === "Concern" || i.flag === "Needs repair" || i.flag === "Unsafe").forEach(i => {
-        flags.push({
-          label: i.item_label,
-          flag: i.flag,
-          note: i.note,
-          inspector: i._mine ? currentUser.name : otherReport.inspector_name,
-          wing: i._mine ? mine[0]?.wing : otherReport.wing,
-          room: i._mine ? mine[0]?.room_area : otherReport.room_area,
-          time: i.checked_at ? new Date(i.checked_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "",
-        });
+      // Load my photos
+      const pr = await fetch("/api/property-inspection-photos?inspection_id=" + latestMine.id);
+      const pd = await pr.json();
+      const photoMap = {};
+      (pd.photos || []).forEach(p => {
+        if (!photoMap[p.item_key]) photoMap[p.item_key] = [];
+        photoMap[p.item_key].push(p);
       });
-      setSharedFlags(flags);
+      setMyPhotos(photoMap);
     }
+
+    // Load ALL reports with full items + photos for shared view
+    const sharedData = await Promise.all(
+      reports.map(async (report) => {
+        const ir = await fetch("/api/property-inspection?id=" + report.id);
+        const id2 = await ir.json();
+        const pr = await fetch("/api/property-inspection-photos?inspection_id=" + report.id);
+        const pd = await pr.json();
+        const photoMap = {};
+        (pd.photos || []).forEach(p => {
+          if (!photoMap[p.item_key]) photoMap[p.item_key] = [];
+          photoMap[p.item_key].push(p);
+        });
+        const itemMap = {};
+        (id2.items || []).forEach(i => { itemMap[i.item_key] = i; });
+        const done = (id2.items || []).filter(i => i.checked).length;
+        return { report, items: itemMap, photos: photoMap, progress: total ? Math.round((done / total) * 100) : 0 };
+      })
+    );
+    setSharedReportData(sharedData);
+
+    // Other progress
+    if (others.length > 0) {
+      const otherData = sharedData.find(sd => sd.report.inspector_id !== currentUser.id);
+      setOtherProgress(otherData?.progress || 0);
+    }
+
+    // Build flags from all reports
+    const flags = [];
+    sharedData.forEach(({ report, items }) => {
+      Object.values(items).forEach((i) => {
+        if ((i as any).flag === "Concern" || (i as any).flag === "Needs repair" || (i as any).flag === "Unsafe") {
+          flags.push({
+            label: (i as any).item_label,
+            flag: (i as any).flag,
+            note: (i as any).note,
+            inspector: report.inspector_name,
+            wing: report.wing,
+            room: report.room_area,
+            time: (i as any).checked_at ? new Date((i as any).checked_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "",
+          });
+        }
+      });
+    });
+    setSharedFlags(flags);
   }
 
   async function getOrCreateInspection() {
@@ -362,16 +388,21 @@ export default function PropertyInspection() {
   }
 
   async function saveNote(itemKey, note) {
+    // Capture everything before clearing modal
     const current = itemStates[itemKey];
     const section = noteModal?.section;
     const label = noteModal?.label;
-    setItemStates(prev => ({ ...prev, [itemKey]: { ...current, note } }));
+    const flag = current?.flag;
+    const checked = current?.checked || false;
+    // Update local state immediately
+    setItemStates(prev => ({ ...prev, [itemKey]: { ...(prev[itemKey] || {}), note } }));
     setNoteModal(null);
+    // Save to database
     const id = await getOrCreateInspection();
     await fetch("/api/property-inspection", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, item: { section, item_key: itemKey, item_label: label, checked: current?.checked || false, flag: current?.flag, note } }),
+      body: JSON.stringify({ id, item: { section: section || "General", item_key: itemKey, item_label: label || itemKey, checked, flag, note } }),
     });
   }
 
@@ -397,13 +428,21 @@ export default function PropertyInspection() {
     reader.onload = async (ev) => {
       const base64 = ev.target?.result as string;
       const id = await getOrCreateInspection();
-      await fetch("/api/property-inspection-photos", {
+      const res = await fetch("/api/property-inspection-photos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ inspection_id: id, item_key: itemKey, inspector_id: currentUser.id, photo_data: base64, file_name: file.name }),
       });
+      const resData = await res.json();
       const current = itemStates[itemKey];
       setItemStates(prev => ({ ...prev, [itemKey]: { ...current, photo_count: (current?.photo_count || 0) + 1 } }));
+      // Add photo to myPhotos state so it displays immediately
+      setMyPhotos(prev => {
+        const existing = prev[itemKey] || [];
+        return { ...prev, [itemKey]: [...existing, { ...resData.photo, photo_data: base64 }] };
+      });
+      // Reset file input so same file can be uploaded again if needed
+      if (fileInputRef.current) fileInputRef.current.value = "";
       setPhotoUploading(false);
     };
     reader.readAsDataURL(file);
@@ -452,6 +491,13 @@ export default function PropertyInspection() {
 
         {view === "mine" && (
           <>
+            {/* Lightbox for my report */}
+            {lightboxPhoto && (
+              <div onClick={() => setLightboxPhoto(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.92)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, cursor: "pointer" }}>
+                <img src={lightboxPhoto} alt="Inspection photo" style={{ maxWidth: "100%", maxHeight: "90vh", borderRadius: 8, objectFit: "contain" }} />
+                <div style={{ position: "absolute", top: 20, right: 20, color: "#fff", fontSize: 28, cursor: "pointer" }}>✕</div>
+              </div>
+            )}
             {/* Area selectors */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
@@ -516,6 +562,16 @@ export default function PropertyInspection() {
                             {state.note && (
                               <div style={{ fontSize: 11, color: C.gold, marginTop: 3, fontStyle: "italic" }}>Note: {state.note}</div>
                             )}
+                            {myPhotos[item.key]?.length > 0 && (
+                              <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 5 }}>
+                                {myPhotos[item.key].map((photo, pi) => (
+                                  <div key={pi} onClick={() => setLightboxPhoto(photo.photo_data)}
+                                    style={{ width: 48, height: 48, borderRadius: 5, overflow: "hidden", border: "1px solid " + C.cardBorder, cursor: "pointer", flexShrink: 0 }}>
+                                    <img src={photo.photo_data} alt={"Photo " + (pi+1)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
                           <div style={{ display: "flex", gap: 5, alignItems: "center", flexShrink: 0, flexWrap: "wrap" }}>
                             {state.flag && <FlagDot flag={state.flag} />}
@@ -528,9 +584,9 @@ export default function PropertyInspection() {
                               style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, border: "1px solid " + C.cardBorder, background: C.dark, color: C.muted, cursor: "pointer" }}>
                               Note
                             </button>
-                            <button onClick={() => { setActivePhotoKey(item.key); fileInputRef.current?.click(); }}
+                            <button onClick={() => { setActivePhotoKey(item.key); setTimeout(() => fileInputRef.current?.click(), 50); }}
                               style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, border: "1px solid " + C.cardBorder, background: C.dark, color: C.muted, cursor: "pointer", display: "flex", alignItems: "center", gap: 3 }}>
-                              📷 {state.photo_count > 0 && <span style={{ background: C.gold, color: C.dark, fontSize: 10, fontWeight: 700, padding: "1px 5px", borderRadius: 8 }}>{state.photo_count}</span>}
+                              📷 {(myPhotos[item.key]?.length || state.photo_count || 0) > 0 && <span style={{ background: C.gold, color: C.dark, fontSize: 10, fontWeight: 700, padding: "1px 5px", borderRadius: 8 }}>{myPhotos[item.key]?.length || state.photo_count}</span>}
                             </button>
                           </div>
                         </div>
@@ -585,66 +641,142 @@ export default function PropertyInspection() {
 
         {view === "shared" && (
           <>
-            {/* Progress both */}
+            {/* Lightbox */}
+            {lightboxPhoto && (
+              <div onClick={() => setLightboxPhoto(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.92)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, cursor: "pointer" }}>
+                <img src={lightboxPhoto} alt="Inspection photo" style={{ maxWidth: "100%", maxHeight: "90vh", borderRadius: 8, objectFit: "contain" }} />
+                <div style={{ position: "absolute", top: 20, right: 20, color: "#fff", fontSize: 28, cursor: "pointer" }}>✕</div>
+              </div>
+            )}
+
+            {/* Progress */}
             <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "14px 16px", marginBottom: 14 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: C.gold, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Inspection progress — both inspectors</div>
-              {[
-                { label: "Avy Evans", pct: currentUser.id === "avy" ? myProgress : otherProgress, color: C.burgundyDark },
-                { label: "Dennis", pct: currentUser.id === "dennis" ? myProgress : otherProgress, color: C.green },
-              ].map(p => (
-                <div key={p.label} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                  <span style={{ fontSize: 12, color: C.muted, width: 100, flexShrink: 0 }}>{p.label}</span>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.gold, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Combined inspection — Athens TX · State Hwy 31 West</div>
+              {sharedReportData.map(({ report, progress }) => (
+                <div key={report.id} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                  <span style={{ fontSize: 12, color: C.muted, width: 110, flexShrink: 0 }}>{report.inspector_name.split(" ")[0]}</span>
                   <div style={{ flex: 1, background: C.dark, borderRadius: 4, height: 7, overflow: "hidden" }}>
-                    <div style={{ background: p.color, height: 7, borderRadius: 4, width: p.pct + "%", transition: "width 0.3s" }} />
+                    <div style={{ background: report.inspector_id === "avy" ? C.burgundyDark : C.green, height: 7, borderRadius: 4, width: progress + "%", transition: "width 0.3s" }} />
                   </div>
-                  <span style={{ color: C.text, fontSize: 12, fontWeight: 700, width: 32, textAlign: "right" }}>{p.pct}%</span>
+                  <span style={{ color: C.text, fontSize: 12, fontWeight: 700, width: 32, textAlign: "right" }}>{progress}%</span>
                 </div>
               ))}
             </div>
 
-            {/* Both inspector panels */}
+            {/* Inspector summary cards */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
-              {allReports.slice(0, 2).map(report => (
+              {sharedReportData.map(({ report }) => (
                 <div key={report.id} style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "14px 16px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, paddingBottom: 10, borderBottom: "1px solid " + C.cardBorder }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, paddingBottom: 10, borderBottom: "1px solid " + C.cardBorder }}>
                     <div style={{ width: 36, height: 36, borderRadius: "50%", background: report.inspector_id === "avy" ? C.burgundyDark : C.green, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: C.ivory, flexShrink: 0 }}>
-                      {report.inspector_name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                      {(report.inspector_name || "?").split(" ").map(n => n[0]).join("").slice(0, 2)}
                     </div>
                     <div>
                       <div style={{ color: C.text, fontWeight: 700, fontSize: 13 }}>{report.inspector_name}</div>
-                      <div style={{ color: C.muted, fontSize: 11, marginTop: 2 }}>{report.wing || "—"} · {report.room_area || "—"}</div>
+                      <div style={{ color: C.muted, fontSize: 11, marginTop: 2 }}>{report.wing || "Area not set"} · {report.room_area || "Room not set"}</div>
                     </div>
                   </div>
                   {report.overall_rating && (
-                    <div style={{ marginBottom: 8 }}>
+                    <div style={{ marginBottom: 6 }}>
                       <span style={{ fontSize: 11, color: C.muted }}>Rating: </span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: RATING_COLORS[report.overall_rating]?.color || C.text }}>
-                        {report.overall_rating}
-                      </span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: RATING_COLORS[report.overall_rating]?.color || C.text }}>{report.overall_rating}</span>
                     </div>
                   )}
                   {report.general_notes && (
-                    <div style={{ fontSize: 12, color: C.muted, fontStyle: "italic", marginBottom: 8 }}>"{report.general_notes}"</div>
+                    <div style={{ fontSize: 12, color: C.muted, fontStyle: "italic", marginTop: 4 }}>General notes: "{report.general_notes}"</div>
                   )}
-                  <div style={{ fontSize: 11, color: C.muted }}>Last updated: {new Date(report.updated_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</div>
+                  <div style={{ fontSize: 11, color: C.muted, marginTop: 6 }}>
+                    Last updated: {new Date(report.updated_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                  </div>
                 </div>
               ))}
             </div>
 
-            {/* Flagged concerns */}
+            {/* Full combined checklist */}
+            {CHECKLIST.map(sec => {
+              const hasActivity = sharedReportData.some(({ items }) =>
+                sec.items.some(i => items[i.key]?.checked || items[i.key]?.flag || items[i.key]?.note)
+              );
+              return (
+                <div key={sec.section} style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "12px 16px", marginBottom: 10 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: C.gold, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>
+                    {sec.section}
+                    {!hasActivity && <span style={{ color: C.muted, fontWeight: 400, marginLeft: 8 }}>— not yet inspected</span>}
+                  </div>
+                  {sec.items.map(item => {
+                    const inspectorData = sharedReportData.map(({ report, items, photos }) => ({
+                      report,
+                      item: items[item.key],
+                      photos: photos[item.key] || [],
+                    })).filter(d => d.item?.checked || d.item?.flag || d.item?.note || d.photos.length > 0);
+
+                    if (inspectorData.length === 0) return (
+                      <div key={item.key} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0", borderBottom: "1px solid " + C.cardBorder, opacity: 0.4 }}>
+                        <input type="checkbox" disabled style={{ width: 14, height: 14, flexShrink: 0 }} />
+                        <span style={{ fontSize: 13, color: C.muted }}>{item.label}</span>
+                      </div>
+                    );
+
+                    return (
+                      <div key={item.key} style={{ padding: "8px 0", borderBottom: "1px solid " + C.cardBorder }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                          <input type="checkbox" checked={inspectorData.some(d => d.item?.checked)} disabled style={{ width: 14, height: 14, flexShrink: 0, marginTop: 2 }} />
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 13, color: C.text, lineHeight: 1.4 }}>{item.label}</div>
+                            {inspectorData.map(({ report, item: itm, photos }) => (
+                              <div key={report.id} style={{ marginTop: 6, paddingLeft: 0 }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                                  <div style={{ width: 20, height: 20, borderRadius: "50%", background: report.inspector_id === "avy" ? C.burgundyDark : C.green, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: C.ivory, flexShrink: 0 }}>
+                                    {(report.inspector_name || "?")[0]}
+                                  </div>
+                                  <span style={{ fontSize: 11, color: C.muted }}>{report.inspector_name.split(" ")[0]}</span>
+                                  {itm?.checked && <span style={{ fontSize: 11, color: C.success }}>✓ Checked</span>}
+                                  {itm?.flag && (
+                                    <span style={{ fontSize: 11, fontWeight: 700, color: itm.flag === "Good" ? "#3B6D11" : itm.flag === "Unsafe" ? "#A32D2D" : "#D85A30", background: itm.flag === "Good" ? "#EAF3DE" : itm.flag === "Unsafe" ? "#FCEBEB" : "#FAECE7", padding: "1px 8px", borderRadius: 8 }}>
+                                      {itm.flag}
+                                    </span>
+                                  )}
+                                  {itm?.note && <span style={{ fontSize: 11, color: C.gold, fontStyle: "italic" }}>"{itm.note}"</span>}
+                                </div>
+                                {/* Photo thumbnails */}
+                                {photos.length > 0 && (
+                                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 6 }}>
+                                    {photos.map((photo, pi) => (
+                                      <div key={pi} onClick={() => setLightboxPhoto(photo.photo_data)}
+                                        style={{ width: 56, height: 56, borderRadius: 6, overflow: "hidden", border: "1px solid " + C.cardBorder, cursor: "pointer", flexShrink: 0, background: C.dark }}>
+                                        {photo.photo_data
+                                          ? <img src={photo.photo_data} alt={"Photo " + (pi + 1)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                          : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>📷</div>
+                                        }
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+
+            {/* Flagged concerns summary */}
             {sharedFlags.length > 0 && (
-              <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "14px 16px", marginBottom: 14 }}>
+              <div style={{ background: "#2A1008", border: "1px solid #D85A30", borderRadius: 12, padding: "14px 16px", marginBottom: 14 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: "#D85A30", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>
                   ⚠️ Flagged concerns — both reports ({sharedFlags.length})
                 </div>
                 {sharedFlags.map((f, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0", borderBottom: i < sharedFlags.length - 1 ? "1px solid " + C.cardBorder : "none" }}>
+                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0", borderBottom: i < sharedFlags.length - 1 ? "1px solid #3D2028" : "none" }}>
                     <FlagDot flag={f.flag} />
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, color: C.text }}>{f.wing && f.room ? f.wing + " — " + f.room + " — " : ""}{f.label}</div>
+                      <div style={{ fontSize: 13, color: C.text }}>{f.wing ? f.wing + (f.room ? " — " + f.room + " — " : " — ") : ""}{f.label}</div>
                       <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>
                         {f.inspector}{f.time ? " · " + f.time : ""} · {f.flag}
-                        {f.note && <span> · "{f.note}"</span>}
+                        {f.note && <span style={{ color: C.gold }}> · "{f.note}"</span>}
                       </div>
                     </div>
                   </div>
@@ -652,18 +784,15 @@ export default function PropertyInspection() {
               </div>
             )}
 
-            {sharedFlags.length === 0 && (
-              <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "20px", marginBottom: 14, textAlign: "center", color: C.muted, fontSize: 14 }}>
-                No concerns flagged yet — flags will appear here as both inspectors work through the checklist.
-              </div>
-            )}
-
-            <div style={{ display: "flex", gap: 10 }}>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <button onClick={() => setView("mine")} style={{ background: C.burgundyDark, border: "none", borderRadius: 8, padding: "11px 20px", color: C.ivory, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
                 Back to my report
               </button>
               <button onClick={loadAllReports} style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "11px 16px", color: C.muted, fontSize: 13, cursor: "pointer" }}>
                 ↻ Refresh
+              </button>
+              <button onClick={() => window.print()} style={{ background: C.green, border: "none", borderRadius: 8, padding: "11px 16px", color: C.ivory, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                Print / Export report
               </button>
             </div>
           </>
