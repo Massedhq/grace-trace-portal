@@ -238,6 +238,7 @@ export default function PropertyInspection() {
   const [activeSection, setActiveSection] = useState(null);
   const fileInputRef = useRef(null);
   const [activePhotoKey, setActivePhotoKey] = useState(null);
+  const [showMyAreas, setShowMyAreas] = useState(false);
 
   useEffect(() => {
     try {
@@ -421,31 +422,42 @@ export default function PropertyInspection() {
   }
 
   async function handlePhotoUpload(e, itemKey) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
     setPhotoUploading(true);
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-      const base64 = ev.target?.result as string;
-      const id = await getOrCreateInspection();
-      const res = await fetch("/api/property-inspection-photos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ inspection_id: id, item_key: itemKey, inspector_id: currentUser.id, photo_data: base64, file_name: file.name }),
+
+    const id = await getOrCreateInspection();
+
+    for (const file of files) {
+      await new Promise<void>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+          const base64 = ev.target?.result as string;
+          const res = await fetch("/api/property-inspection-photos", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ inspection_id: id, item_key: itemKey, inspector_id: currentUser.id, photo_data: base64, file_name: file.name }),
+          });
+          const resData = await res.json();
+          setItemStates(prev => ({
+            ...prev,
+            [itemKey]: { ...(prev[itemKey] || {}), photo_count: (prev[itemKey]?.photo_count || 0) + 1 }
+          }));
+          setMyPhotos(prev => {
+            const existing = prev[itemKey] || [];
+            return { ...prev, [itemKey]: [...existing, { ...(resData.photo || {}), photo_data: base64 }] };
+          });
+          resolve();
+        };
+        reader.readAsDataURL(file);
       });
-      const resData = await res.json();
-      const current = itemStates[itemKey];
-      setItemStates(prev => ({ ...prev, [itemKey]: { ...current, photo_count: (current?.photo_count || 0) + 1 } }));
-      // Add photo to myPhotos state so it displays immediately
-      setMyPhotos(prev => {
-        const existing = prev[itemKey] || [];
-        return { ...prev, [itemKey]: [...existing, { ...resData.photo, photo_data: base64 }] };
-      });
-      // Reset file input so same file can be uploaded again if needed
-      if (fileInputRef.current) fileInputRef.current.value = "";
-      setPhotoUploading(false);
-    };
-    reader.readAsDataURL(file);
+    }
+
+    // Always reset input so more photos can be added immediately
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    setPhotoUploading(false);
   }
 
   function generatePDF() {
@@ -587,7 +599,7 @@ export default function PropertyInspection() {
         />
       )}
 
-      <input type="file" ref={fileInputRef} accept="image/*" capture="environment" style={{ display: "none" }}
+      <input type="file" ref={fileInputRef} accept="image/*" multiple style={{ display: "none" }}
         onChange={e => handlePhotoUpload(e, activePhotoKey)} />
 
       {/* Header */}
@@ -704,9 +716,19 @@ export default function PropertyInspection() {
                               style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, border: "1px solid " + C.cardBorder, background: C.dark, color: C.muted, cursor: "pointer" }}>
                               Note
                             </button>
-                            <button onClick={() => { setActivePhotoKey(item.key); setTimeout(() => fileInputRef.current?.click(), 50); }}
-                              style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, border: "1px solid " + C.cardBorder, background: C.dark, color: C.muted, cursor: "pointer", display: "flex", alignItems: "center", gap: 3 }}>
-                              📷 {(myPhotos[item.key]?.length || state.photo_count || 0) > 0 && <span style={{ background: C.gold, color: C.dark, fontSize: 10, fontWeight: 700, padding: "1px 5px", borderRadius: 8 }}>{myPhotos[item.key]?.length || state.photo_count}</span>}
+                            <button onClick={() => {
+                                setActivePhotoKey(item.key);
+                                // Force reset then click so multiple uploads work
+                                if (fileInputRef.current) {
+                                  fileInputRef.current.value = "";
+                                  setTimeout(() => fileInputRef.current?.click(), 50);
+                                }
+                              }}
+                              style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, border: "1px solid " + C.gold, background: C.dark, color: C.gold, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontWeight: 600 }}>
+                              📷 {(myPhotos[item.key]?.length || 0) > 0
+                                ? <span>+Add · <span style={{ background: C.gold, color: C.dark, fontSize: 10, fontWeight: 700, padding: "1px 5px", borderRadius: 8 }}>{myPhotos[item.key]?.length}</span></span>
+                                : "Add photos"}
+                              {photoUploading && activePhotoKey === item.key && <span style={{ fontSize: 10, color: C.muted }}>Uploading...</span>}
                             </button>
                           </div>
                         </div>
@@ -747,15 +769,70 @@ export default function PropertyInspection() {
               <button onClick={saveHeader} style={{ background: C.burgundyDark, border: "none", borderRadius: 8, padding: "11px 20px", color: C.ivory, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
                 {saving ? "Saving..." : "Save this area"}
               </button>
-              <button onClick={() => { setWing(""); setRoomArea(""); setRating(""); setGeneralNotes(""); setInspectionId(null); setItemStates({}); }}
+              <button onClick={() => { setWing(""); setRoomArea(""); setRating(""); setGeneralNotes(""); setInspectionId(null); setItemStates({}); setMyPhotos({}); }}
                 style={{ background: C.green, border: "none", borderRadius: 8, padding: "11px 20px", color: C.ivory, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-                Start new area
+                + Start new area
+              </button>
+              <button onClick={() => setShowMyAreas(!showMyAreas)}
+                style={{ background: C.card, border: "1px solid " + C.gold, borderRadius: 8, padding: "11px 16px", color: C.gold, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                📋 My saved areas ({allReports.filter(r => r.inspector_id === currentUser.id).length})
               </button>
               <button onClick={() => { setView("shared"); loadAllReports(); }}
                 style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "11px 16px", color: C.muted, fontSize: 13, cursor: "pointer" }}>
                 View shared report
               </button>
             </div>
+            {showMyAreas && (
+              <div style={{ background: C.card, border: "1px solid " + C.gold, borderRadius: 12, padding: "14px 16px", marginTop: 14 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: C.gold, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>
+                  My saved areas — tap to load and add photos
+                </div>
+                {allReports.filter(r => r.inspector_id === currentUser.id).length === 0 && (
+                  <div style={{ color: C.muted, fontSize: 13 }}>No saved areas yet.</div>
+                )}
+                {allReports.filter(r => r.inspector_id === currentUser.id).map(report => (
+                  <div key={report.id}
+                    onClick={async () => {
+                      setInspectionId(report.id);
+                      setWing(report.wing || "");
+                      setRoomArea(report.room_area || "");
+                      setRating(report.overall_rating || "");
+                      setGeneralNotes(report.general_notes || "");
+                      // Load items
+                      const ir = await fetch("/api/property-inspection?id=" + report.id);
+                      const id2 = await ir.json();
+                      const map = {};
+                      (id2.items || []).forEach(item => { map[item.item_key] = item; });
+                      setItemStates(map);
+                      // Load photos
+                      const pr = await fetch("/api/property-inspection-photos?inspection_id=" + report.id);
+                      const pd = await pr.json();
+                      const photoMap = {};
+                      (pd.photos || []).forEach(p => {
+                        if (!photoMap[p.item_key]) photoMap[p.item_key] = [];
+                        photoMap[p.item_key].push(p);
+                      });
+                      setMyPhotos(photoMap);
+                      setShowMyAreas(false);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", background: inspectionId === report.id ? "#2A1A0A" : C.dark, border: "1px solid " + (inspectionId === report.id ? C.gold : C.cardBorder), borderRadius: 8, marginBottom: 8, cursor: "pointer" }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = C.gold}
+                    onMouseLeave={e => { if (inspectionId !== report.id) e.currentTarget.style.borderColor = C.cardBorder; }}>
+                    <div>
+                      <div style={{ color: C.text, fontWeight: 600, fontSize: 13 }}>{report.wing || "No wing set"} — {report.room_area || "No room set"}</div>
+                      <div style={{ color: C.muted, fontSize: 11, marginTop: 2 }}>
+                        {report.overall_rating || "No rating"} · Last updated {new Date(report.updated_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                      </div>
+                    </div>
+                    {inspectionId === report.id
+                      ? <span style={{ color: C.gold, fontSize: 12, fontWeight: 700 }}>Active</span>
+                      : <span style={{ color: C.muted, fontSize: 13 }}>Load →</span>
+                    }
+                  </div>
+                ))}
+              </div>
+            )}
           </>
         )}
 
