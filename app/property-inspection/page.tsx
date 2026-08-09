@@ -264,80 +264,52 @@ export default function PropertyInspection() {
   }, [currentUser]);
 
   async function loadMyAreas() {
-    const r = await fetch("/api/property-inspection");
+    const r = await fetch("/api/property-inspection?full=true");
     const d = await r.json();
     setMyAreas(d.reports || []);
+    setSharedReportData(d.enriched || []);
   }
 
   async function loadAllReports() {
     try {
-      const r = await fetch("/api/property-inspection");
+      // Single API call returns everything — reports, items, photos all at once
+      const r = await fetch("/api/property-inspection?full=true");
       const d = await r.json();
       const reports = d.reports || [];
+      const enriched = d.enriched || [];
+
       setAllReports(reports);
       setMyAreas(reports);
+      setSharedReportData(enriched);
 
-      const total = CHECKLIST.reduce((acc, s) => acc + s.items.length, 0);
       const mine = reports.filter(rep => rep.inspector_id === currentUser.id);
       const others = reports.filter(rep => rep.inspector_id !== currentUser.id);
 
-      // Load my most recent report items and photos
+      // Set my most recent report into the editing view
       if (mine.length > 0) {
         const latestMine = mine[0];
+        const mineEnriched = enriched.find(e => e.report.id === latestMine.id);
         setInspectionId(latestMine.id);
         setWing(latestMine.wing || "");
         setRoomArea(latestMine.room_area || "");
         setRating(latestMine.overall_rating || "");
         setGeneralNotes(latestMine.general_notes || "");
-        const ir = await fetch("/api/property-inspection?id=" + latestMine.id);
-        const id2 = await ir.json();
-        const map = {};
-        (id2.items || []).forEach(item => { map[item.item_key] = item; });
-        setItemStates(map);
-        const done = (id2.items || []).filter(i => i.checked).length;
-        setMyProgress(total ? Math.round((done / total) * 100) : 0);
-        const pr = await fetch("/api/property-inspection-photos?inspection_id=" + latestMine.id);
-        const pd = await pr.json();
-        const photoMap = {};
-        (pd.photos || []).forEach(p => {
-          if (!photoMap[p.item_key]) photoMap[p.item_key] = [];
-          photoMap[p.item_key].push(p);
-        });
-        setMyPhotos(photoMap);
-      }
-
-      // Build shared view data — load items and photos for each report
-      const sharedData = [];
-      for (const report of reports) {
-        try {
-          const ir = await fetch("/api/property-inspection?id=" + report.id);
-          const id2 = await ir.json();
-          const pr = await fetch("/api/property-inspection-photos?inspection_id=" + report.id);
-          const pd = await pr.json();
-          const photoMap = {};
-          (pd.photos || []).forEach(p => {
-            if (!photoMap[p.item_key]) photoMap[p.item_key] = [];
-            photoMap[p.item_key].push(p);
-          });
-          const itemMap = {};
-          (id2.items || []).forEach(i => { itemMap[i.item_key] = i; });
-          const done = (id2.items || []).filter(i => i.checked).length;
-          sharedData.push({ report, items: itemMap, photos: photoMap, progress: total ? Math.round((done / total) * 100) : 0 });
-        } catch (e) {
-          console.error("Failed to load report", report.id, e);
+        if (mineEnriched) {
+          setItemStates(mineEnriched.items);
+          setMyPhotos(mineEnriched.photos);
+          setMyProgress(mineEnriched.progress);
         }
       }
-      setSharedReportData(sharedData);
 
       // Other inspector progress
       if (others.length > 0) {
-        const otherData = sharedData.find(sd => sd.report.inspector_id !== currentUser.id);
-        setOtherProgress(otherData?.progress || 0);
+        const otherEnriched = enriched.find(e => e.report.inspector_id !== currentUser.id);
+        setOtherProgress(otherEnriched?.progress || 0);
       }
 
-      // Build flags
+      // Build flags from all enriched data
       const flags = [];
-      sharedData.forEach(({ report, items }) => {
+      enriched.forEach(({ report, items }) => {
         Object.values(items).forEach((i: any) => {
           if (i.flag === "Concern" || i.flag === "Needs repair" || i.flag === "Unsafe") {
             flags.push({
@@ -811,31 +783,29 @@ export default function PropertyInspection() {
                 {myAreas.map(report => (
                   <div key={report.id}
                     onClick={async () => {
-                      setInspectionId(report.id);
-                      setWing(report.wing || "");
-                      setRoomArea(report.room_area || "");
-                      setRating(report.overall_rating || "");
-                      setGeneralNotes(report.general_notes || "");
-                      // Load all items for this report
+                      // Load this specific report with one API call
                       const ir = await fetch("/api/property-inspection?id=" + report.id);
                       const id2 = await ir.json();
-                      const map = {};
-                      (id2.items || []).forEach(item => { map[item.item_key] = item; });
-                      setItemStates(map);
-                      // Load all photos for this report
                       const pr = await fetch("/api/property-inspection-photos?inspection_id=" + report.id);
                       const pd = await pr.json();
+                      const map = {};
+                      (id2.items || []).forEach(item => { map[item.item_key] = item; });
                       const photoMap = {};
                       (pd.photos || []).forEach(p => {
                         if (!photoMap[p.item_key]) photoMap[p.item_key] = [];
                         photoMap[p.item_key].push(p);
                       });
+                      setInspectionId(report.id);
+                      setWing(report.wing || "");
+                      setRoomArea(report.room_area || "");
+                      setRating(report.overall_rating || "");
+                      setGeneralNotes(report.general_notes || "");
+                      setItemStates(map);
                       setMyPhotos(photoMap);
-                      setShowMyAreas(false);
-                      // Recalculate progress
                       const total = CHECKLIST.reduce((acc, s) => acc + s.items.length, 0);
                       const done = (id2.items || []).filter(i => i.checked).length;
                       setMyProgress(total ? Math.round((done / total) * 100) : 0);
+                      setShowMyAreas(false);
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
                     style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", background: inspectionId === report.id ? "#2A1A0A" : C.dark, border: "1px solid " + (inspectionId === report.id ? C.gold : C.cardBorder), borderRadius: 8, marginBottom: 8, cursor: "pointer" }}
