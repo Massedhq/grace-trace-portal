@@ -175,3 +175,4 @@ export async function PATCH(req: Request) {
     return Response.json({ error: "Failed to update inspection" }, { status: 500 });
   }
 }
+
