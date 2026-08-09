@@ -1,4 +1,8 @@
 ﻿// app/api/property-inspection/route.ts
+// Stores property inspection reports for Grace Trace Ministries.
+// Each inspector (Avy or Dennis) submits their own report per area.
+// Self-healing tables — CREATE TABLE IF NOT EXISTS on every request.
+
 import { neon } from "@neondatabase/serverless";
 
 const sql = neon(process.env.DATABASE_URL!);
@@ -7,7 +11,7 @@ async function ensureTables() {
   await sql`
     CREATE TABLE IF NOT EXISTS property_inspections (
       id SERIAL PRIMARY KEY,
-      property_name TEXT NOT NULL DEFAULT 'Athens TX - State Hwy 31 West',
+      property_name TEXT NOT NULL DEFAULT 'Athens TX — State Hwy 31 West',
       inspector_id TEXT NOT NULL,
       inspector_name TEXT NOT NULL,
       wing TEXT,
@@ -20,6 +24,7 @@ async function ensureTables() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `;
+
   await sql`
     CREATE TABLE IF NOT EXISTS property_inspection_items (
       id SERIAL PRIMARY KEY,
@@ -35,21 +40,7 @@ async function ensureTables() {
       UNIQUE (inspection_id, item_key)
     )
   `;
-  await sql`
-    CREATE TABLE IF NOT EXISTS property_inspection_photos (
-      id SERIAL PRIMARY KEY,
-      inspection_id INTEGER NOT NULL,
-      item_key TEXT,
-      inspector_id TEXT NOT NULL,
-      photo_data TEXT NOT NULL,
-      file_name TEXT,
-      caption TEXT,
-      uploaded_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
-  `;
 }
-
-const CHECKLIST_TOTAL = 84;
 
 export async function GET(req: Request) {
   try {
@@ -57,7 +48,6 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
     const inspector_id = searchParams.get("inspector_id");
-    const full = searchParams.get("full");
 
     if (id) {
       const [report] = await sql`SELECT * FROM property_inspections WHERE id = ${id}`;
@@ -74,44 +64,43 @@ export async function GET(req: Request) {
       return Response.json({ reports });
     }
 
-    const reports = await sql`SELECT * FROM property_inspections ORDER BY updated_at DESC`;
+    // Full load — returns all reports with their items and photos in one call
+    const full = searchParams.get("full");
+    const reports = await sql`
+      SELECT * FROM property_inspections ORDER BY updated_at DESC
+    `;
 
     if (full === "true") {
       const allItems = await sql`
         SELECT * FROM property_inspection_items ORDER BY inspection_id, id ASC
       `;
       const allPhotos = await sql`
-        SELECT id, inspection_id, item_key, inspector_id, photo_data, file_name, uploaded_at
+        SELECT id, inspection_id, item_key, inspector_id, photo_data, file_name, caption, uploaded_at
         FROM property_inspection_photos
         ORDER BY inspection_id, uploaded_at ASC
       `;
 
-      const enriched = (reports || []).map(report => {
-        const items = (allItems || []).filter(i => Number(i.inspection_id) === Number(report.id));
-        const photos = (allPhotos || []).filter(p => Number(p.inspection_id) === Number(report.id));
-        const itemMap: Record<string, any> = {};
+      const total = 84;
+      const enriched = reports.map(report => {
+        const items = allItems.filter(i => i.inspection_id === report.id);
+        const photos = allPhotos.filter(p => p.inspection_id === report.id);
+        const itemMap = {};
         items.forEach(i => { itemMap[i.item_key] = i; });
-        const photoMap: Record<string, any[]> = {};
+        const photoMap = {};
         photos.forEach(p => {
           if (!photoMap[p.item_key]) photoMap[p.item_key] = [];
           photoMap[p.item_key].push(p);
         });
         const done = items.filter(i => i.checked).length;
-        return {
-          report,
-          items: itemMap,
-          photos: photoMap,
-          progress: CHECKLIST_TOTAL ? Math.round((done / CHECKLIST_TOTAL) * 100) : 0,
-        };
+        return { report, items: itemMap, photos: photoMap, progress: total ? Math.round((done / total) * 100) : 0 };
       });
-
       return Response.json({ reports, enriched });
     }
 
     return Response.json({ reports });
-  } catch (err: any) {
+  } catch (err) {
     console.error("GET /api/property-inspection failed:", err);
-    return Response.json({ error: err?.message || String(err), reports: [], enriched: [] }, { status: 500 });
+    return Response.json({ error: "Failed to load inspections" }, { status: 500 });
   }
 }
 
@@ -128,7 +117,7 @@ export async function POST(req: Request) {
     const [report] = await sql`
       INSERT INTO property_inspections (property_name, inspector_id, inspector_name, wing, room_area, inspection_date, overall_rating, general_notes)
       VALUES (
-        ${property_name || "Athens TX - State Hwy 31 West"},
+        ${property_name || "Athens TX — State Hwy 31 West"},
         ${inspector_id}, ${inspector_name},
         ${wing || null}, ${room_area || null},
         ${inspection_date || new Date().toLocaleDateString("en-US")},
@@ -137,9 +126,9 @@ export async function POST(req: Request) {
       RETURNING *
     `;
     return Response.json({ report }, { status: 201 });
-  } catch (err: any) {
+  } catch (err) {
     console.error("POST /api/property-inspection failed:", err);
-    return Response.json({ error: err?.message || String(err) }, { status: 500 });
+    return Response.json({ error: "Failed to create inspection" }, { status: 500 });
   }
 }
 
@@ -151,6 +140,7 @@ export async function PATCH(req: Request) {
 
     if (!id) return Response.json({ error: "id is required" }, { status: 400 });
 
+    // Update an individual checklist item
     if (item) {
       const { section, item_key, item_label, checked, flag, note } = item;
       const [row] = await sql`
@@ -167,6 +157,7 @@ export async function PATCH(req: Request) {
       return Response.json({ item: row });
     }
 
+    // Update the report header
     const [report] = await sql`
       UPDATE property_inspections
       SET wing = COALESCE(${wing || null}, wing),
@@ -179,8 +170,8 @@ export async function PATCH(req: Request) {
       RETURNING *
     `;
     return Response.json({ report });
-  } catch (err: any) {
+  } catch (err) {
     console.error("PATCH /api/property-inspection failed:", err);
-    return Response.json({ error: err?.message || String(err) }, { status: 500 });
+    return Response.json({ error: "Failed to update inspection" }, { status: 500 });
   }
 }

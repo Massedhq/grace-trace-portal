@@ -233,6 +233,7 @@ export default function PropertyInspection() {
   const [myProgress, setMyProgress] = useState(0);
   const [otherProgress, setOtherProgress] = useState(0);
   const [sharedFlags, setSharedFlags] = useState([]);
+  const [debugInfo, setDebugInfo] = useState("");
   const [noteModal, setNoteModal] = useState(null); // { key, label }
   const [photoUploading, setPhotoUploading] = useState(false);
   const [activeSection, setActiveSection] = useState(null);
@@ -272,11 +273,11 @@ export default function PropertyInspection() {
 
   async function loadAllReports() {
     try {
-      // Single API call returns everything — reports, items, photos all at once
       const r = await fetch("/api/property-inspection?full=true");
       const d = await r.json();
       const reports = d.reports || [];
       const enriched = d.enriched || [];
+      setDebugInfo("API returned: " + reports.length + " reports, " + enriched.length + " enriched. Keys: " + Object.keys(d).join(", "));
 
       setAllReports(reports);
       setMyAreas(reports);
@@ -610,6 +611,7 @@ export default function PropertyInspection() {
       </div>
 
       <div style={{ maxWidth: 800, margin: "0 auto", padding: "20px 16px" }}>
+        {debugInfo && <div style={{ background: "#1A2A0A", border: "1px solid #4CAF50", borderRadius: 8, padding: "10px 14px", marginBottom: 14, color: "#4CAF50", fontSize: 12, fontFamily: "monospace" }}>{debugInfo}</div>}
 
         {view === "mine" && (
           <>
