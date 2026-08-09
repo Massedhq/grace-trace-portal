@@ -1,4 +1,4 @@
-// app/api/property-inspection/route.ts
+﻿// app/api/property-inspection/route.ts
 import { neon } from "@neondatabase/serverless";
 
 const sql = neon(process.env.DATABASE_URL!);
@@ -7,7 +7,7 @@ async function ensureTables() {
   await sql`
     CREATE TABLE IF NOT EXISTS property_inspections (
       id SERIAL PRIMARY KEY,
-      property_name TEXT NOT NULL DEFAULT 'Athens TX — State Hwy 31 West',
+      property_name TEXT NOT NULL DEFAULT 'Athens TX â€” State Hwy 31 West',
       inspector_id TEXT NOT NULL,
       inspector_name TEXT NOT NULL,
       wing TEXT,
@@ -33,6 +33,18 @@ async function ensureTables() {
       photo_count INTEGER NOT NULL DEFAULT 0,
       checked_at TIMESTAMPTZ,
       UNIQUE (inspection_id, item_key)
+    )
+  `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS property_inspection_photos (
+      id SERIAL PRIMARY KEY,
+      inspection_id INTEGER NOT NULL,
+      item_key TEXT,
+      inspector_id TEXT NOT NULL,
+      photo_data TEXT NOT NULL,
+      file_name TEXT,
+      caption TEXT,
+      uploaded_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `;
 }
@@ -65,19 +77,24 @@ export async function GET(req: Request) {
     const reports = await sql`SELECT * FROM property_inspections ORDER BY updated_at DESC`;
 
     if (full === "true") {
-      const allItems = await sql`SELECT * FROM property_inspection_items ORDER BY inspection_id, id ASC`;
+      // Load items
+      const allItems = await sql`
+        SELECT * FROM property_inspection_items ORDER BY inspection_id, id ASC
+      `;
+
+      // Load photos â€” only metadata + data, no joins
       const allPhotos = await sql`
-        SELECT id, inspection_id, item_key, inspector_id, photo_data, file_name, caption, uploaded_at
+        SELECT id, inspection_id, item_key, inspector_id, photo_data, file_name, uploaded_at
         FROM property_inspection_photos
         ORDER BY inspection_id, uploaded_at ASC
       `;
 
-      const enriched = reports.map(report => {
-        const items = allItems.filter(i => i.inspection_id === report.id);
-        const photos = allPhotos.filter(p => p.inspection_id === report.id);
-        const itemMap = {};
+      const enriched = (reports || []).map(report => {
+        const items = (allItems || []).filter(i => Number(i.inspection_id) === Number(report.id));
+        const photos = (allPhotos || []).filter(p => Number(p.inspection_id) === Number(report.id));
+        const itemMap: Record<string, any> = {};
         items.forEach(i => { itemMap[i.item_key] = i; });
-        const photoMap = {};
+        const photoMap: Record<string, any[]> = {};
         photos.forEach(p => {
           if (!photoMap[p.item_key]) photoMap[p.item_key] = [];
           photoMap[p.item_key].push(p);
@@ -87,7 +104,7 @@ export async function GET(req: Request) {
           report,
           items: itemMap,
           photos: photoMap,
-          progress: CHECKLIST_TOTAL ? Math.round((done / CHECKLIST_TOTAL) * 100) : 0
+          progress: CHECKLIST_TOTAL ? Math.round((done / CHECKLIST_TOTAL) * 100) : 0,
         };
       });
 
@@ -95,9 +112,13 @@ export async function GET(req: Request) {
     }
 
     return Response.json({ reports });
-  } catch (err) {
+  } catch (err: any) {
     console.error("GET /api/property-inspection failed:", err);
-    return Response.json({ error: "Failed to load inspections" }, { status: 500 });
+    return Response.json({
+      error: err?.message || String(err),
+      reports: [],
+      enriched: [],
+    }, { status: 500 });
   }
 }
 
@@ -114,7 +135,7 @@ export async function POST(req: Request) {
     const [report] = await sql`
       INSERT INTO property_inspections (property_name, inspector_id, inspector_name, wing, room_area, inspection_date, overall_rating, general_notes)
       VALUES (
-        ${property_name || "Athens TX — State Hwy 31 West"},
+        ${property_name || "Athens TX â€” State Hwy 31 West"},
         ${inspector_id}, ${inspector_name},
         ${wing || null}, ${room_area || null},
         ${inspection_date || new Date().toLocaleDateString("en-US")},
@@ -123,9 +144,9 @@ export async function POST(req: Request) {
       RETURNING *
     `;
     return Response.json({ report }, { status: 201 });
-  } catch (err) {
+  } catch (err: any) {
     console.error("POST /api/property-inspection failed:", err);
-    return Response.json({ error: "Failed to create inspection" }, { status: 500 });
+    return Response.json({ error: err?.message || String(err) }, { status: 500 });
   }
 }
 
@@ -165,8 +186,9 @@ export async function PATCH(req: Request) {
       RETURNING *
     `;
     return Response.json({ report });
-  } catch (err) {
+  } catch (err: any) {
     console.error("PATCH /api/property-inspection failed:", err);
-    return Response.json({ error: "Failed to update inspection" }, { status: 500 });
+    return Response.json({ error: err?.message || String(err) }, { status: 500 });
   }
 }
+
