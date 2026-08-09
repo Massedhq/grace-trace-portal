@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 "use client";
 import { useState, useEffect, useRef } from "react";
 
@@ -233,7 +233,6 @@ export default function PropertyInspection() {
   const [myProgress, setMyProgress] = useState(0);
   const [otherProgress, setOtherProgress] = useState(0);
   const [sharedFlags, setSharedFlags] = useState([]);
-  const [debugInfo, setDebugInfo] = useState("");
   const [noteModal, setNoteModal] = useState(null); // { key, label }
   const [photoUploading, setPhotoUploading] = useState(false);
   const [activeSection, setActiveSection] = useState(null);
@@ -241,9 +240,6 @@ export default function PropertyInspection() {
   const [activePhotoKey, setActivePhotoKey] = useState(null);
   const [showMyAreas, setShowMyAreas] = useState(false);
   const [myAreas, setMyAreas] = useState([]);
-  const [sharedReportData, setSharedReportData] = useState([]);
-  const [lightboxPhoto, setLightboxPhoto] = useState(null);
-  const [myPhotos, setMyPhotos] = useState({});
 
   useEffect(() => {
     try {
@@ -261,76 +257,105 @@ export default function PropertyInspection() {
   useEffect(() => {
     if (currentUser) {
       loadAllReports();
+      loadMyAreas();
     }
   }, [currentUser]);
 
   async function loadMyAreas() {
-    const r = await fetch("/api/property-inspection");
+    // Load ALL of the current user's inspection reports specifically
+    const r = await fetch("/api/property-inspection?inspector_id=" + (currentUser?.id || ""));
     const d = await r.json();
     setMyAreas(d.reports || []);
-    setSharedReportData(d.enriched || []);
   }
 
+  const [sharedReportData, setSharedReportData] = useState([]);
+  const [lightboxPhoto, setLightboxPhoto] = useState(null);
+  const [myPhotos, setMyPhotos] = useState({});
+
   async function loadAllReports() {
-    try {
-      const r = await fetch("/api/property-inspection");
-      const d = await r.json();
-      const reports = d.reports || [];
-      const enriched = [];
-      setDebugInfo("API returned: " + reports.length + " reports, " + enriched.length + " enriched. Keys: " + Object.keys(d).join(", "));
+    const r = await fetch("/api/property-inspection");
+    const d = await r.json();
+    const reports = d.reports || [];
+    setAllReports(reports);
 
-      setAllReports(reports);
-      setMyAreas(reports);
-      setSharedReportData(enriched);
+    const mine = reports.filter(rep => rep.inspector_id === currentUser.id);
+    const others = reports.filter(rep => rep.inspector_id !== currentUser.id);
+    const total = CHECKLIST.reduce((acc, s) => acc + s.items.length, 0);
 
-      const mine = reports.filter(rep => rep.inspector_id === currentUser.id);
-      const others = reports.filter(rep => rep.inspector_id !== currentUser.id);
-
-      // Set my most recent report into the editing view
-      if (mine.length > 0) {
-        const latestMine = mine[0];
-        const mineEnriched = enriched.find(e => e.report.id === latestMine.id);
-        setInspectionId(latestMine.id);
-        setWing(latestMine.wing || "");
-        setRoomArea(latestMine.room_area || "");
-        setRating(latestMine.overall_rating || "");
-        setGeneralNotes(latestMine.general_notes || "");
-        if (mineEnriched) {
-          setItemStates(mineEnriched.items);
-          setMyPhotos(mineEnriched.photos);
-          setMyProgress(mineEnriched.progress);
-        }
-      }
-
-      // Other inspector progress
-      if (others.length > 0) {
-        const otherEnriched = enriched.find(e => e.report.inspector_id !== currentUser.id);
-        setOtherProgress(otherEnriched?.progress || 0);
-      }
-
-      // Build flags from all enriched data
-      const flags = [];
-      enriched.forEach(({ report, items }) => {
-        Object.values(items).forEach((i: any) => {
-          if (i.flag === "Concern" || i.flag === "Needs repair" || i.flag === "Unsafe") {
-            flags.push({
-              label: i.item_label, flag: i.flag, note: i.note,
-              inspector: report.inspector_name, wing: report.wing, room: report.room_area,
-              time: i.checked_at ? new Date(i.checked_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "",
-            });
-          }
-        });
+    // Load my report fully
+    if (mine.length > 0) {
+      const latestMine = mine[0];
+      setInspectionId(latestMine.id);
+      setWing(latestMine.wing || "");
+      setRoomArea(latestMine.room_area || "");
+      setRating(latestMine.overall_rating || "");
+      setGeneralNotes(latestMine.general_notes || "");
+      const ir = await fetch("/api/property-inspection?id=" + latestMine.id);
+      const id2 = await ir.json();
+      const map = {};
+      (id2.items || []).forEach(item => { map[item.item_key] = item; });
+      setItemStates(map);
+      const done = (id2.items || []).filter(i => i.checked).length;
+      setMyProgress(total ? Math.round((done / total) * 100) : 0);
+      // Load my photos
+      const pr = await fetch("/api/property-inspection-photos?inspection_id=" + latestMine.id);
+      const pd = await pr.json();
+      const photoMap = {};
+      (pd.photos || []).forEach(p => {
+        if (!photoMap[p.item_key]) photoMap[p.item_key] = [];
+        photoMap[p.item_key].push(p);
       });
-      setSharedFlags(flags);
-    } catch (err) {
-      console.error("loadAllReports failed:", err);
+      setMyPhotos(photoMap);
     }
+
+    // Load ALL reports with full items + photos for shared view
+    const sharedData = await Promise.all(
+      reports.map(async (report) => {
+        const ir = await fetch("/api/property-inspection?id=" + report.id);
+        const id2 = await ir.json();
+        const pr = await fetch("/api/property-inspection-photos?inspection_id=" + report.id);
+        const pd = await pr.json();
+        const photoMap = {};
+        (pd.photos || []).forEach(p => {
+          if (!photoMap[p.item_key]) photoMap[p.item_key] = [];
+          photoMap[p.item_key].push(p);
+        });
+        const itemMap = {};
+        (id2.items || []).forEach(i => { itemMap[i.item_key] = i; });
+        const done = (id2.items || []).filter(i => i.checked).length;
+        return { report, items: itemMap, photos: photoMap, progress: total ? Math.round((done / total) * 100) : 0 };
+      })
+    );
+    setSharedReportData(sharedData);
+
+    // Other progress
+    if (others.length > 0) {
+      const otherData = sharedData.find(sd => sd.report.inspector_id !== currentUser.id);
+      setOtherProgress(otherData?.progress || 0);
+    }
+
+    // Build flags from all reports
+    const flags = [];
+    sharedData.forEach(({ report, items }) => {
+      Object.values(items).forEach((i) => {
+        if ((i as any).flag === "Concern" || (i as any).flag === "Needs repair" || (i as any).flag === "Unsafe") {
+          flags.push({
+            label: (i as any).item_label,
+            flag: (i as any).flag,
+            note: (i as any).note,
+            inspector: report.inspector_name,
+            wing: report.wing,
+            room: report.room_area,
+            time: (i as any).checked_at ? new Date((i as any).checked_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "",
+          });
+        }
+      });
+    });
+    setSharedFlags(flags);
   }
 
   async function getOrCreateInspection() {
-    // If a report is already loaded (including someone else's), use it
     if (inspectionId) return inspectionId;
-    // Otherwise create a new one under the current user
     const r = await fetch("/api/property-inspection", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -338,9 +363,6 @@ export default function PropertyInspection() {
     });
     const d = await r.json();
     setInspectionId(d.report.id);
-    const r2 = await fetch("/api/property-inspection");
-    const d2 = await r2.json();
-    setMyAreas(d2.reports || []);
     return d.report.id;
   }
 
@@ -406,10 +428,7 @@ export default function PropertyInspection() {
       await getOrCreateInspection();
     }
     setSaving(false);
-    // Refresh areas list
-    const r2 = await fetch("/api/property-inspection");
-    const d2 = await r2.json();
-    setMyAreas(d2.reports || []);
+    loadMyAreas();
   }
 
   async function handlePhotoUpload(e, itemKey) {
@@ -611,7 +630,6 @@ export default function PropertyInspection() {
       </div>
 
       <div style={{ maxWidth: 800, margin: "0 auto", padding: "20px 16px" }}>
-        {debugInfo && <div style={{ background: "#1A2A0A", border: "1px solid #4CAF50", borderRadius: 8, padding: "10px 14px", marginBottom: 14, color: "#4CAF50", fontSize: 12, fontFamily: "monospace" }}>{debugInfo}</div>}
 
         {view === "mine" && (
           <>
@@ -767,7 +785,7 @@ export default function PropertyInspection() {
               </button>
               <button onClick={() => setShowMyAreas(!showMyAreas)}
                 style={{ background: C.card, border: "1px solid " + C.gold, borderRadius: 8, padding: "11px 16px", color: C.gold, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-                📋 All saved areas ({myAreas.length})
+                📋 My saved areas ({myAreas.length})
               </button>
               <button onClick={() => { setView("shared"); loadAllReports(); }}
                 style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "11px 16px", color: C.muted, fontSize: 13, cursor: "pointer" }}>
@@ -777,7 +795,7 @@ export default function PropertyInspection() {
             {showMyAreas && (
               <div style={{ background: C.card, border: "1px solid " + C.gold, borderRadius: 12, padding: "14px 16px", marginTop: 14 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: C.gold, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>
-                  All saved areas — tap any to load and add photos or notes
+                  My saved areas — tap to load and add photos
                 </div>
                 {myAreas.length === 0 && (
                   <div style={{ color: C.muted, fontSize: 13 }}>No saved areas yet.</div>
@@ -785,28 +803,26 @@ export default function PropertyInspection() {
                 {myAreas.map(report => (
                   <div key={report.id}
                     onClick={async () => {
-                      // Load this specific report with one API call
-                      const ir = await fetch("/api/property-inspection?id=" + report.id);
-                      const id2 = await ir.json();
-                      const pr = await fetch("/api/property-inspection-photos?inspection_id=" + report.id);
-                      const pd = await pr.json();
-                      const map = {};
-                      (id2.items || []).forEach(item => { map[item.item_key] = item; });
-                      const photoMap = {};
-                      (pd.photos || []).forEach(p => {
-                        if (!photoMap[p.item_key]) photoMap[p.item_key] = [];
-                        photoMap[p.item_key].push(p);
-                      });
                       setInspectionId(report.id);
                       setWing(report.wing || "");
                       setRoomArea(report.room_area || "");
                       setRating(report.overall_rating || "");
                       setGeneralNotes(report.general_notes || "");
+                      // Load items
+                      const ir = await fetch("/api/property-inspection?id=" + report.id);
+                      const id2 = await ir.json();
+                      const map = {};
+                      (id2.items || []).forEach(item => { map[item.item_key] = item; });
                       setItemStates(map);
+                      // Load photos
+                      const pr = await fetch("/api/property-inspection-photos?inspection_id=" + report.id);
+                      const pd = await pr.json();
+                      const photoMap = {};
+                      (pd.photos || []).forEach(p => {
+                        if (!photoMap[p.item_key]) photoMap[p.item_key] = [];
+                        photoMap[p.item_key].push(p);
+                      });
                       setMyPhotos(photoMap);
-                      const total = CHECKLIST.reduce((acc, s) => acc + s.items.length, 0);
-                      const done = (id2.items || []).filter(i => i.checked).length;
-                      setMyProgress(total ? Math.round((done / total) * 100) : 0);
                       setShowMyAreas(false);
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
@@ -816,13 +832,12 @@ export default function PropertyInspection() {
                     <div>
                       <div style={{ color: C.text, fontWeight: 600, fontSize: 13 }}>{report.wing || "No wing set"} — {report.room_area || "No room set"}</div>
                       <div style={{ color: C.muted, fontSize: 11, marginTop: 2 }}>
-                        <span style={{ color: report.inspector_id === "avy" ? "#C9A84C" : "#4CAF50", fontWeight: 700 }}>{report.inspector_name}</span>
-                        {" · "}{report.overall_rating || "No rating"} · {new Date(report.updated_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                        {report.overall_rating || "No rating"} · Last updated {new Date(report.updated_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
                       </div>
                     </div>
                     {inspectionId === report.id
-                      ? <span style={{ color: C.gold, fontSize: 12, fontWeight: 700 }}>Active ✓</span>
-                      : <span style={{ color: C.muted, fontSize: 13 }}>Open →</span>
+                      ? <span style={{ color: C.gold, fontSize: 12, fontWeight: 700 }}>Active</span>
+                      : <span style={{ color: C.muted, fontSize: 13 }}>Load →</span>
                     }
                   </div>
                 ))}
@@ -993,5 +1008,3 @@ export default function PropertyInspection() {
     </div>
   );
 }
-
-
