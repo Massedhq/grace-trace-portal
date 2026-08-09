@@ -262,10 +262,8 @@ export default function PropertyInspection() {
   }, [currentUser]);
 
   async function loadMyAreas() {
-    // Load ALL inspection reports from ALL inspectors so anyone can edit any area
-    const r = await fetch("/api/property-inspection");
-    const d = await r.json();
-    setMyAreas(d.reports || []);
+    // loadAllReports already handles this — just refresh
+    await loadAllReports();
   }
 
   const [sharedReportData, setSharedReportData] = useState([]);
@@ -273,85 +271,88 @@ export default function PropertyInspection() {
   const [myPhotos, setMyPhotos] = useState({});
 
   async function loadAllReports() {
-    const r = await fetch("/api/property-inspection");
-    const d = await r.json();
-    const reports = d.reports || [];
-    setAllReports(reports);
+    try {
+      const r = await fetch("/api/property-inspection");
+      const d = await r.json();
+      const reports = d.reports || [];
+      setAllReports(reports);
+      setMyAreas(reports);
 
-    const mine = reports.filter(rep => rep.inspector_id === currentUser.id);
-    const others = reports.filter(rep => rep.inspector_id !== currentUser.id);
-    const total = CHECKLIST.reduce((acc, s) => acc + s.items.length, 0);
+      const total = CHECKLIST.reduce((acc, s) => acc + s.items.length, 0);
+      const mine = reports.filter(rep => rep.inspector_id === currentUser.id);
+      const others = reports.filter(rep => rep.inspector_id !== currentUser.id);
 
-    // Load my report fully
-    if (mine.length > 0) {
-      const latestMine = mine[0];
-      setInspectionId(latestMine.id);
-      setWing(latestMine.wing || "");
-      setRoomArea(latestMine.room_area || "");
-      setRating(latestMine.overall_rating || "");
-      setGeneralNotes(latestMine.general_notes || "");
-      const ir = await fetch("/api/property-inspection?id=" + latestMine.id);
-      const id2 = await ir.json();
-      const map = {};
-      (id2.items || []).forEach(item => { map[item.item_key] = item; });
-      setItemStates(map);
-      const done = (id2.items || []).filter(i => i.checked).length;
-      setMyProgress(total ? Math.round((done / total) * 100) : 0);
-      // Load my photos
-      const pr = await fetch("/api/property-inspection-photos?inspection_id=" + latestMine.id);
-      const pd = await pr.json();
-      const photoMap = {};
-      (pd.photos || []).forEach(p => {
-        if (!photoMap[p.item_key]) photoMap[p.item_key] = [];
-        photoMap[p.item_key].push(p);
-      });
-      setMyPhotos(photoMap);
-    }
-
-    // Load ALL reports with full items + photos for shared view
-    const sharedData = await Promise.all(
-      reports.map(async (report) => {
-        const ir = await fetch("/api/property-inspection?id=" + report.id);
+      // Load my most recent report items and photos
+      if (mine.length > 0 && !inspectionId) {
+        const latestMine = mine[0];
+        setInspectionId(latestMine.id);
+        setWing(latestMine.wing || "");
+        setRoomArea(latestMine.room_area || "");
+        setRating(latestMine.overall_rating || "");
+        setGeneralNotes(latestMine.general_notes || "");
+        const ir = await fetch("/api/property-inspection?id=" + latestMine.id);
         const id2 = await ir.json();
-        const pr = await fetch("/api/property-inspection-photos?inspection_id=" + report.id);
+        const map = {};
+        (id2.items || []).forEach(item => { map[item.item_key] = item; });
+        setItemStates(map);
+        const done = (id2.items || []).filter(i => i.checked).length;
+        setMyProgress(total ? Math.round((done / total) * 100) : 0);
+        const pr = await fetch("/api/property-inspection-photos?inspection_id=" + latestMine.id);
         const pd = await pr.json();
         const photoMap = {};
         (pd.photos || []).forEach(p => {
           if (!photoMap[p.item_key]) photoMap[p.item_key] = [];
           photoMap[p.item_key].push(p);
         });
-        const itemMap = {};
-        (id2.items || []).forEach(i => { itemMap[i.item_key] = i; });
-        const done = (id2.items || []).filter(i => i.checked).length;
-        return { report, items: itemMap, photos: photoMap, progress: total ? Math.round((done / total) * 100) : 0 };
-      })
-    );
-    setSharedReportData(sharedData);
+        setMyPhotos(photoMap);
+      }
 
-    // Other progress
-    if (others.length > 0) {
-      const otherData = sharedData.find(sd => sd.report.inspector_id !== currentUser.id);
-      setOtherProgress(otherData?.progress || 0);
-    }
-
-    // Build flags from all reports
-    const flags = [];
-    sharedData.forEach(({ report, items }) => {
-      Object.values(items).forEach((i) => {
-        if ((i as any).flag === "Concern" || (i as any).flag === "Needs repair" || (i as any).flag === "Unsafe") {
-          flags.push({
-            label: (i as any).item_label,
-            flag: (i as any).flag,
-            note: (i as any).note,
-            inspector: report.inspector_name,
-            wing: report.wing,
-            room: report.room_area,
-            time: (i as any).checked_at ? new Date((i as any).checked_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "",
+      // Build shared view data — load items and photos for each report
+      const sharedData = [];
+      for (const report of reports) {
+        try {
+          const ir = await fetch("/api/property-inspection?id=" + report.id);
+          const id2 = await ir.json();
+          const pr = await fetch("/api/property-inspection-photos?inspection_id=" + report.id);
+          const pd = await pr.json();
+          const photoMap = {};
+          (pd.photos || []).forEach(p => {
+            if (!photoMap[p.item_key]) photoMap[p.item_key] = [];
+            photoMap[p.item_key].push(p);
           });
+          const itemMap = {};
+          (id2.items || []).forEach(i => { itemMap[i.item_key] = i; });
+          const done = (id2.items || []).filter(i => i.checked).length;
+          sharedData.push({ report, items: itemMap, photos: photoMap, progress: total ? Math.round((done / total) * 100) : 0 });
+        } catch (e) {
+          console.error("Failed to load report", report.id, e);
         }
+      }
+      setSharedReportData(sharedData);
+
+      // Other inspector progress
+      if (others.length > 0) {
+        const otherData = sharedData.find(sd => sd.report.inspector_id !== currentUser.id);
+        setOtherProgress(otherData?.progress || 0);
+      }
+
+      // Build flags
+      const flags = [];
+      sharedData.forEach(({ report, items }) => {
+        Object.values(items).forEach((i: any) => {
+          if (i.flag === "Concern" || i.flag === "Needs repair" || i.flag === "Unsafe") {
+            flags.push({
+              label: i.item_label, flag: i.flag, note: i.note,
+              inspector: report.inspector_name, wing: report.wing, room: report.room_area,
+              time: i.checked_at ? new Date(i.checked_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "",
+            });
+          }
+        });
       });
-    });
-    setSharedFlags(flags);
+      setSharedFlags(flags);
+    } catch (err) {
+      console.error("loadAllReports failed:", err);
+    }
   }
 
   async function getOrCreateInspection() {
