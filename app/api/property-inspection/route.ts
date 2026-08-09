@@ -7,7 +7,7 @@ async function ensureTables() {
   await sql`
     CREATE TABLE IF NOT EXISTS property_inspections (
       id SERIAL PRIMARY KEY,
-      property_name TEXT NOT NULL DEFAULT 'Athens TX â€” State Hwy 31 West',
+      property_name TEXT NOT NULL DEFAULT 'Athens TX - State Hwy 31 West',
       inspector_id TEXT NOT NULL,
       inspector_name TEXT NOT NULL,
       wing TEXT,
@@ -77,12 +77,9 @@ export async function GET(req: Request) {
     const reports = await sql`SELECT * FROM property_inspections ORDER BY updated_at DESC`;
 
     if (full === "true") {
-      // Load items
       const allItems = await sql`
         SELECT * FROM property_inspection_items ORDER BY inspection_id, id ASC
       `;
-
-      // Load photos â€” only metadata + data, no joins
       const allPhotos = await sql`
         SELECT id, inspection_id, item_key, inspector_id, photo_data, file_name, uploaded_at
         FROM property_inspection_photos
@@ -114,11 +111,7 @@ export async function GET(req: Request) {
     return Response.json({ reports });
   } catch (err: any) {
     console.error("GET /api/property-inspection failed:", err);
-    return Response.json({
-      error: err?.message || String(err),
-      reports: [],
-      enriched: [],
-    }, { status: 500 });
+    return Response.json({ error: err?.message || String(err), reports: [], enriched: [] }, { status: 500 });
   }
 }
 
@@ -135,7 +128,7 @@ export async function POST(req: Request) {
     const [report] = await sql`
       INSERT INTO property_inspections (property_name, inspector_id, inspector_name, wing, room_area, inspection_date, overall_rating, general_notes)
       VALUES (
-        ${property_name || "Athens TX â€” State Hwy 31 West"},
+        ${property_name || "Athens TX - State Hwy 31 West"},
         ${inspector_id}, ${inspector_name},
         ${wing || null}, ${room_area || null},
         ${inspection_date || new Date().toLocaleDateString("en-US")},
@@ -191,4 +184,3 @@ export async function PATCH(req: Request) {
     return Response.json({ error: err?.message || String(err) }, { status: 500 });
   }
 }
-
