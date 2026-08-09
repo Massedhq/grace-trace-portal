@@ -262,8 +262,8 @@ export default function PropertyInspection() {
   }, [currentUser]);
 
   async function loadMyAreas() {
-    // Load ALL of the current user's inspection reports specifically
-    const r = await fetch("/api/property-inspection?inspector_id=" + (currentUser?.id || ""));
+    // Load ALL inspection reports from ALL inspectors so anyone can edit any area
+    const r = await fetch("/api/property-inspection");
     const d = await r.json();
     setMyAreas(d.reports || []);
   }
@@ -355,7 +355,9 @@ export default function PropertyInspection() {
   }
 
   async function getOrCreateInspection() {
+    // If a report is already loaded (including someone else's), use it
     if (inspectionId) return inspectionId;
+    // Otherwise create a new one under the current user
     const r = await fetch("/api/property-inspection", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -363,6 +365,7 @@ export default function PropertyInspection() {
     });
     const d = await r.json();
     setInspectionId(d.report.id);
+    loadMyAreas();
     return d.report.id;
   }
 
@@ -785,7 +788,7 @@ export default function PropertyInspection() {
               </button>
               <button onClick={() => setShowMyAreas(!showMyAreas)}
                 style={{ background: C.card, border: "1px solid " + C.gold, borderRadius: 8, padding: "11px 16px", color: C.gold, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-                📋 My saved areas ({myAreas.length})
+                📋 All saved areas ({myAreas.length})
               </button>
               <button onClick={() => { setView("shared"); loadAllReports(); }}
                 style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "11px 16px", color: C.muted, fontSize: 13, cursor: "pointer" }}>
@@ -795,7 +798,7 @@ export default function PropertyInspection() {
             {showMyAreas && (
               <div style={{ background: C.card, border: "1px solid " + C.gold, borderRadius: 12, padding: "14px 16px", marginTop: 14 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: C.gold, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>
-                  My saved areas — tap to load and add photos
+                  All saved areas — tap any to load and add photos or notes
                 </div>
                 {myAreas.length === 0 && (
                   <div style={{ color: C.muted, fontSize: 13 }}>No saved areas yet.</div>
@@ -808,13 +811,13 @@ export default function PropertyInspection() {
                       setRoomArea(report.room_area || "");
                       setRating(report.overall_rating || "");
                       setGeneralNotes(report.general_notes || "");
-                      // Load items
+                      // Load all items for this report
                       const ir = await fetch("/api/property-inspection?id=" + report.id);
                       const id2 = await ir.json();
                       const map = {};
                       (id2.items || []).forEach(item => { map[item.item_key] = item; });
                       setItemStates(map);
-                      // Load photos
+                      // Load all photos for this report
                       const pr = await fetch("/api/property-inspection-photos?inspection_id=" + report.id);
                       const pd = await pr.json();
                       const photoMap = {};
@@ -824,6 +827,10 @@ export default function PropertyInspection() {
                       });
                       setMyPhotos(photoMap);
                       setShowMyAreas(false);
+                      // Recalculate progress
+                      const total = CHECKLIST.reduce((acc, s) => acc + s.items.length, 0);
+                      const done = (id2.items || []).filter(i => i.checked).length;
+                      setMyProgress(total ? Math.round((done / total) * 100) : 0);
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
                     style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", background: inspectionId === report.id ? "#2A1A0A" : C.dark, border: "1px solid " + (inspectionId === report.id ? C.gold : C.cardBorder), borderRadius: 8, marginBottom: 8, cursor: "pointer" }}
@@ -832,12 +839,13 @@ export default function PropertyInspection() {
                     <div>
                       <div style={{ color: C.text, fontWeight: 600, fontSize: 13 }}>{report.wing || "No wing set"} — {report.room_area || "No room set"}</div>
                       <div style={{ color: C.muted, fontSize: 11, marginTop: 2 }}>
-                        {report.overall_rating || "No rating"} · Last updated {new Date(report.updated_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                        <span style={{ color: report.inspector_id === "avy" ? "#C9A84C" : "#4CAF50", fontWeight: 700 }}>{report.inspector_name}</span>
+                        {" · "}{report.overall_rating || "No rating"} · {new Date(report.updated_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
                       </div>
                     </div>
                     {inspectionId === report.id
-                      ? <span style={{ color: C.gold, fontSize: 12, fontWeight: 700 }}>Active</span>
-                      : <span style={{ color: C.muted, fontSize: 13 }}>Load →</span>
+                      ? <span style={{ color: C.gold, fontSize: 12, fontWeight: 700 }}>Active ✓</span>
+                      : <span style={{ color: C.muted, fontSize: 13 }}>Open →</span>
                     }
                   </div>
                 ))}
