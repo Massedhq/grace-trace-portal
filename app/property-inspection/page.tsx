@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 "use client";
 import { useState, useEffect, useRef } from "react";
 
@@ -265,7 +265,7 @@ export default function PropertyInspection() {
   }, [currentUser]);
 
   async function loadMyAreas() {
-    const r = await fetch("/api/property-inspection?full=true");
+    const r = await fetch("/api/property-inspection");
     const d = await r.json();
     setMyAreas(d.reports || []);
     setSharedReportData(d.enriched || []);
@@ -273,10 +273,10 @@ export default function PropertyInspection() {
 
   async function loadAllReports() {
     try {
-      const r = await fetch("/api/property-inspection?full=true");
+      const r = await fetch("/api/property-inspection");
       const d = await r.json();
       const reports = d.reports || [];
-      const enriched = d.enriched || [];
+      const enriched = [];
       setDebugInfo("API returned: " + reports.length + " reports, " + enriched.length + " enriched. Keys: " + Object.keys(d).join(", "));
 
       setAllReports(reports);
@@ -993,3 +993,5 @@ export default function PropertyInspection() {
     </div>
   );
 }
+
+
