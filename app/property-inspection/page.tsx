@@ -240,6 +240,9 @@ export default function PropertyInspection() {
   const [activePhotoKey, setActivePhotoKey] = useState(null);
   const [showMyAreas, setShowMyAreas] = useState(false);
   const [myAreas, setMyAreas] = useState([]);
+  const [sharedReportData, setSharedReportData] = useState([]);
+  const [lightboxPhoto, setLightboxPhoto] = useState(null);
+  const [myPhotos, setMyPhotos] = useState({});
 
   useEffect(() => {
     try {
@@ -257,18 +260,14 @@ export default function PropertyInspection() {
   useEffect(() => {
     if (currentUser) {
       loadAllReports();
-      loadMyAreas();
     }
   }, [currentUser]);
 
   async function loadMyAreas() {
-    // loadAllReports already handles this — just refresh
-    await loadAllReports();
+    const r = await fetch("/api/property-inspection");
+    const d = await r.json();
+    setMyAreas(d.reports || []);
   }
-
-  const [sharedReportData, setSharedReportData] = useState([]);
-  const [lightboxPhoto, setLightboxPhoto] = useState(null);
-  const [myPhotos, setMyPhotos] = useState({});
 
   async function loadAllReports() {
     try {
@@ -283,7 +282,7 @@ export default function PropertyInspection() {
       const others = reports.filter(rep => rep.inspector_id !== currentUser.id);
 
       // Load my most recent report items and photos
-      if (mine.length > 0 && !inspectionId) {
+      if (mine.length > 0) {
         const latestMine = mine[0];
         setInspectionId(latestMine.id);
         setWing(latestMine.wing || "");
@@ -366,7 +365,9 @@ export default function PropertyInspection() {
     });
     const d = await r.json();
     setInspectionId(d.report.id);
-    loadMyAreas();
+    const r2 = await fetch("/api/property-inspection");
+    const d2 = await r2.json();
+    setMyAreas(d2.reports || []);
     return d.report.id;
   }
 
@@ -432,7 +433,10 @@ export default function PropertyInspection() {
       await getOrCreateInspection();
     }
     setSaving(false);
-    loadMyAreas();
+    // Refresh areas list
+    const r2 = await fetch("/api/property-inspection");
+    const d2 = await r2.json();
+    setMyAreas(d2.reports || []);
   }
 
   async function handlePhotoUpload(e, itemKey) {
