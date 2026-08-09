@@ -1,4 +1,4 @@
-﻿// app/api/property-inspection/route.ts
+// app/api/property-inspection/route.ts
 // Stores property inspection reports for Grace Trace Ministries.
 // Each inspector (Avy or Dennis) submits their own report per area.
 // Self-healing tables — CREATE TABLE IF NOT EXISTS on every request.
@@ -11,7 +11,7 @@ async function ensureTables() {
   await sql`
     CREATE TABLE IF NOT EXISTS property_inspections (
       id SERIAL PRIMARY KEY,
-      property_name TEXT NOT NULL DEFAULT 'Athens TX - State Hwy 31 West',
+      property_name TEXT NOT NULL DEFAULT 'Athens TX — State Hwy 31 West',
       inspector_id TEXT NOT NULL,
       inspector_name TEXT NOT NULL,
       wing TEXT,
@@ -64,39 +64,10 @@ export async function GET(req: Request) {
       return Response.json({ reports });
     }
 
-    // Full load — returns all reports with their items and photos in one call
-    const full = searchParams.get("full");
+    // All reports for shared view
     const reports = await sql`
       SELECT * FROM property_inspections ORDER BY updated_at DESC
     `;
-
-    if (full === "true") {
-      const allItems = await sql`
-        SELECT * FROM property_inspection_items ORDER BY inspection_id, id ASC
-      `;
-      const allPhotos = await sql`
-        SELECT id, inspection_id, item_key, inspector_id, photo_data, file_name, caption, uploaded_at
-        FROM property_inspection_photos
-        ORDER BY inspection_id, uploaded_at ASC
-      `;
-
-      const total = 84;
-      const enriched = reports.map(report => {
-        const items = allItems.filter(i => i.inspection_id === report.id);
-        const photos = allPhotos.filter(p => p.inspection_id === report.id);
-        const itemMap = {};
-        items.forEach(i => { itemMap[i.item_key] = i; });
-        const photoMap = {};
-        photos.forEach(p => {
-          if (!photoMap[p.item_key]) photoMap[p.item_key] = [];
-          photoMap[p.item_key].push(p);
-        });
-        const done = items.filter(i => i.checked).length;
-        return { report, items: itemMap, photos: photoMap, progress: total ? Math.round((done / total) * 100) : 0 };
-      });
-      return Response.json({ reports, enriched });
-    }
-
     return Response.json({ reports });
   } catch (err) {
     console.error("GET /api/property-inspection failed:", err);
@@ -117,7 +88,7 @@ export async function POST(req: Request) {
     const [report] = await sql`
       INSERT INTO property_inspections (property_name, inspector_id, inspector_name, wing, room_area, inspection_date, overall_rating, general_notes)
       VALUES (
-        ${property_name || "Athens TX - State Hwy 31 West"},
+        ${property_name || "Athens TX — State Hwy 31 West"},
         ${inspector_id}, ${inspector_name},
         ${wing || null}, ${room_area || null},
         ${inspection_date || new Date().toLocaleDateString("en-US")},
@@ -175,4 +146,3 @@ export async function PATCH(req: Request) {
     return Response.json({ error: "Failed to update inspection" }, { status: 500 });
   }
 }
-
