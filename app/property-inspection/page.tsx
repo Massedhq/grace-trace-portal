@@ -239,6 +239,7 @@ export default function PropertyInspection() {
   const fileInputRef = useRef(null);
   const [activePhotoKey, setActivePhotoKey] = useState(null);
   const [showMyAreas, setShowMyAreas] = useState(false);
+  const [myAreas, setMyAreas] = useState([]);
 
   useEffect(() => {
     try {
@@ -256,8 +257,16 @@ export default function PropertyInspection() {
   useEffect(() => {
     if (currentUser) {
       loadAllReports();
+      loadMyAreas();
     }
   }, [currentUser]);
+
+  async function loadMyAreas() {
+    // Load ALL of the current user's inspection reports specifically
+    const r = await fetch("/api/property-inspection?inspector_id=" + (currentUser?.id || ""));
+    const d = await r.json();
+    setMyAreas(d.reports || []);
+  }
 
   const [sharedReportData, setSharedReportData] = useState([]);
   const [lightboxPhoto, setLightboxPhoto] = useState(null);
@@ -419,6 +428,7 @@ export default function PropertyInspection() {
       await getOrCreateInspection();
     }
     setSaving(false);
+    loadMyAreas();
   }
 
   async function handlePhotoUpload(e, itemKey) {
@@ -775,7 +785,7 @@ export default function PropertyInspection() {
               </button>
               <button onClick={() => setShowMyAreas(!showMyAreas)}
                 style={{ background: C.card, border: "1px solid " + C.gold, borderRadius: 8, padding: "11px 16px", color: C.gold, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-                📋 My saved areas ({allReports.filter(r => r.inspector_id === currentUser.id).length})
+                📋 My saved areas ({myAreas.length})
               </button>
               <button onClick={() => { setView("shared"); loadAllReports(); }}
                 style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "11px 16px", color: C.muted, fontSize: 13, cursor: "pointer" }}>
@@ -787,10 +797,10 @@ export default function PropertyInspection() {
                 <div style={{ fontSize: 11, fontWeight: 700, color: C.gold, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>
                   My saved areas — tap to load and add photos
                 </div>
-                {allReports.filter(r => r.inspector_id === currentUser.id).length === 0 && (
+                {myAreas.length === 0 && (
                   <div style={{ color: C.muted, fontSize: 13 }}>No saved areas yet.</div>
                 )}
-                {allReports.filter(r => r.inspector_id === currentUser.id).map(report => (
+                {myAreas.map(report => (
                   <div key={report.id}
                     onClick={async () => {
                       setInspectionId(report.id);
