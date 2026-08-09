@@ -1,8 +1,4 @@
 // app/api/property-inspection/route.ts
-// Stores property inspection reports for Grace Trace Ministries.
-// Each inspector (Avy or Dennis) submits their own report per area.
-// Self-healing tables — CREATE TABLE IF NOT EXISTS on every request.
-
 import { neon } from "@neondatabase/serverless";
 
 const sql = neon(process.env.DATABASE_URL!);
@@ -24,7 +20,6 @@ async function ensureTables() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `;
-
   await sql`
     CREATE TABLE IF NOT EXISTS property_inspection_items (
       id SERIAL PRIMARY KEY,
@@ -42,12 +37,15 @@ async function ensureTables() {
   `;
 }
 
+const CHECKLIST_TOTAL = 84;
+
 export async function GET(req: Request) {
   try {
     await ensureTables();
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
     const inspector_id = searchParams.get("inspector_id");
+    const full = searchParams.get("full");
 
     if (id) {
       const [report] = await sql`SELECT * FROM property_inspections WHERE id = ${id}`;
@@ -64,10 +62,38 @@ export async function GET(req: Request) {
       return Response.json({ reports });
     }
 
-    // All reports for shared view
-    const reports = await sql`
-      SELECT * FROM property_inspections ORDER BY updated_at DESC
-    `;
+    const reports = await sql`SELECT * FROM property_inspections ORDER BY updated_at DESC`;
+
+    if (full === "true") {
+      const allItems = await sql`SELECT * FROM property_inspection_items ORDER BY inspection_id, id ASC`;
+      const allPhotos = await sql`
+        SELECT id, inspection_id, item_key, inspector_id, photo_data, file_name, caption, uploaded_at
+        FROM property_inspection_photos
+        ORDER BY inspection_id, uploaded_at ASC
+      `;
+
+      const enriched = reports.map(report => {
+        const items = allItems.filter(i => i.inspection_id === report.id);
+        const photos = allPhotos.filter(p => p.inspection_id === report.id);
+        const itemMap = {};
+        items.forEach(i => { itemMap[i.item_key] = i; });
+        const photoMap = {};
+        photos.forEach(p => {
+          if (!photoMap[p.item_key]) photoMap[p.item_key] = [];
+          photoMap[p.item_key].push(p);
+        });
+        const done = items.filter(i => i.checked).length;
+        return {
+          report,
+          items: itemMap,
+          photos: photoMap,
+          progress: CHECKLIST_TOTAL ? Math.round((done / CHECKLIST_TOTAL) * 100) : 0
+        };
+      });
+
+      return Response.json({ reports, enriched });
+    }
+
     return Response.json({ reports });
   } catch (err) {
     console.error("GET /api/property-inspection failed:", err);
@@ -111,7 +137,6 @@ export async function PATCH(req: Request) {
 
     if (!id) return Response.json({ error: "id is required" }, { status: 400 });
 
-    // Update an individual checklist item
     if (item) {
       const { section, item_key, item_label, checked, flag, note } = item;
       const [row] = await sql`
@@ -128,7 +153,6 @@ export async function PATCH(req: Request) {
       return Response.json({ item: row });
     }
 
-    // Update the report header
     const [report] = await sql`
       UPDATE property_inspections
       SET wing = COALESCE(${wing || null}, wing),
