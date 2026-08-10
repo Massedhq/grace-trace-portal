@@ -231,6 +231,7 @@ export async function DELETE(req: Request) {
     return Response.json({ error: "Failed to delete inspection" }, { status: 500 });
   }
 }
+export async function PATCH(req: Request) {
   try {
     await ensureTables();
     const body = await req.json();
