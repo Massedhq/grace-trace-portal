@@ -924,51 +924,110 @@ export default function PropertyInspection() {
       });
       html += `</div>`;
 
+      // ---- Merge every contributing report's data into one combined checklist ----
+      const exteriorMerged = {};   // item_key -> [{report, item, photos}]
+      const legacyMerged = {};     // section -> { item_key -> { label, contributors: [...] } }
+      const areaGroups = {};       // normKey -> { wing, room, sections: { section -> { item_key -> { label, contributors: [...] } } } }
+      const areaGroupOrder = [];
+
       entries.forEach(({ report, items, photos, areas: reportAreas }) => {
-        html += `<h2>${report.inspector_name} — Exterior</h2>`;
-        EXTERIOR_SECTION.items.forEach(item => {
-          const itm = items[item.key];
-          const photoList = photos[item.key] || [];
-          if (!itm && photoList.length === 0) return;
-          html += `<div class="item">
-            <input type="checkbox" class="check" ${itm?.checked ? "checked" : ""} disabled>
-            <div class="item-label ${itm?.checked ? "done" : ""}">${item.label}`;
-          if (itm?.flag) {
-            const fc = (itm.flag || "").replace(/[^a-zA-Z]/g, "");
-            html += `<span class="flag flag-${fc}">${itm.flag}</span>`;
+        Object.entries(items).forEach(([key, itm]) => {
+          const parsed = parseAreaItemKey(key);
+          if (parsed) return; // area items handled below
+          const photoList = photos[key] || [];
+          if (!itm?.checked && !itm?.flag && !itm?.note && photoList.length === 0) return;
+
+          if (EXTERIOR_KEYS.has(key)) {
+            if (!exteriorMerged[key]) exteriorMerged[key] = [];
+            exteriorMerged[key].push({ report, item: itm, photos: photoList });
+          } else {
+            const secName = itm.section || "Other";
+            if (!legacyMerged[secName]) legacyMerged[secName] = {};
+            if (!legacyMerged[secName][key]) legacyMerged[secName][key] = { label: itm.item_label || key, contributors: [] };
+            legacyMerged[secName][key].contributors.push({ report, item: itm, photos: photoList });
           }
-          if (itm?.note) html += `<div class="note">"${itm.note}"</div>`;
-          if (photoList.length > 0) {
-            html += `<div class="photos">`;
-            photoList.forEach(p => { if (p.photo_data) html += `<img src="${p.photo_data}" class="photo-thumb" alt="Inspection photo">`; });
-            html += `</div>`;
-          }
-          html += `</div></div>`;
         });
 
         (reportAreas || []).forEach(area => {
-          html += `<div class="area-title">${report.inspector_name} — ${area.wing} — ${area.room}</div>`;
+          const normKey = (area.wing || "").trim().toLowerCase() + "||" + (area.room || "").trim().toLowerCase();
+          if (!areaGroups[normKey]) {
+            areaGroups[normKey] = { wing: area.wing, room: area.room, sections: {} };
+            areaGroupOrder.push(normKey);
+          }
           INTERIOR_SECTIONS.forEach(sec => {
-            sec.items.forEach(item => {
-              const key = "AREA_" + area.id + "__" + item.key;
-              const itm = items[key];
-              const photoList = photos[key] || [];
-              if (!itm && photoList.length === 0) return;
-              html += `<div class="item">
-                <input type="checkbox" class="check" ${itm?.checked ? "checked" : ""} disabled>
-                <div class="item-label ${itm?.checked ? "done" : ""}">${item.label}`;
-              if (itm?.flag) {
-                const fc = (itm.flag || "").replace(/[^a-zA-Z]/g, "");
-                html += `<span class="flag flag-${fc}">${itm.flag}</span>`;
+            sec.items.forEach(interiorItem => {
+              const encodedKey = "AREA_" + area.id + "__" + interiorItem.key;
+              const itm = items[encodedKey];
+              const photoList = photos[encodedKey] || [];
+              if (!itm?.checked && !itm?.flag && !itm?.note && photoList.length === 0) return;
+              if (!areaGroups[normKey].sections[sec.section]) areaGroups[normKey].sections[sec.section] = {};
+              if (!areaGroups[normKey].sections[sec.section][interiorItem.key]) {
+                areaGroups[normKey].sections[sec.section][interiorItem.key] = { label: interiorItem.label, contributors: [] };
               }
-              if (itm?.note) html += `<div class="note">"${itm.note}"</div>`;
-              if (photoList.length > 0) {
-                html += `<div class="photos">`;
-                photoList.forEach(p => { if (p.photo_data) html += `<img src="${p.photo_data}" class="photo-thumb" alt="Inspection photo">`; });
-                html += `</div>`;
-              }
-              html += `</div></div>`;
+              areaGroups[normKey].sections[sec.section][interiorItem.key].contributors.push({ report, item: itm, photos: photoList });
             });
+          });
+        });
+      });
+
+      function renderContributors(contributors) {
+        let out = "";
+        contributors.forEach(({ report, item: itm, photos: photoList }) => {
+          const tagClass = report.inspector_id === "avy" ? "tag-avy" : "tag-dennis";
+          out += `<div style="margin-top:4px"><span class="inspector-tag ${tagClass}">${report.inspector_name.split(" ")[0]}</span>`;
+          if (itm?.checked) out += `<span style="color:#3B6D11;font-size:11px">&#10003; Checked</span>`;
+          if (itm?.flag) {
+            const fc = (itm.flag || "").replace(/[^a-zA-Z]/g, "");
+            out += `<span class="flag flag-${fc}">${itm.flag}</span>`;
+          }
+          if (itm?.note) out += `<div class="note">"${itm.note}"</div>`;
+          if (photoList.length > 0) {
+            out += `<div class="photos">`;
+            photoList.forEach(p => { if (p.photo_data) out += `<img src="${p.photo_data}" class="photo-thumb" alt="Inspection photo">`; });
+            out += `</div>`;
+          }
+          out += `</div>`;
+        });
+        return out;
+      }
+
+      // Exterior — one combined section for the whole property
+      if (Object.keys(exteriorMerged).length > 0) {
+        html += `<h2>Exterior</h2>`;
+        EXTERIOR_SECTION.items.forEach(item => {
+          const contributors = exteriorMerged[item.key];
+          if (!contributors) return;
+          const anyChecked = contributors.some(c => c.item?.checked);
+          html += `<div class="item"><input type="checkbox" class="check" ${anyChecked ? "checked" : ""} disabled>
+            <div class="item-label ${anyChecked ? "done" : ""}">${item.label}${renderContributors(contributors)}</div></div>`;
+        });
+      }
+
+      // Legacy items — from before wing/room tracking, still combined (not repeated per report)
+      Object.entries(legacyMerged).forEach(([secName, itemsMap]) => {
+        html += `<h2>${secName} <span style="font-size:11px;color:#999;font-weight:normal">(recorded before wing/room tracking)</span></h2>`;
+        Object.entries(itemsMap).forEach(([, bucket]) => {
+          const anyChecked = bucket.contributors.some(c => c.item?.checked);
+          html += `<div class="item"><input type="checkbox" class="check" ${anyChecked ? "checked" : ""} disabled>
+            <div class="item-label ${anyChecked ? "done" : ""}">${bucket.label}${renderContributors(bucket.contributors)}</div></div>`;
+        });
+      });
+
+      // Interior areas — one combined section per Wing/Room, merging all inspectors who worked that area
+      areaGroupOrder.forEach(normKey => {
+        const grp = areaGroups[normKey];
+        if (Object.keys(grp.sections).length === 0) return;
+        html += `<div class="area-title">${grp.wing} — ${grp.room}</div>`;
+        INTERIOR_SECTIONS.forEach(sec => {
+          const itemsMap = grp.sections[sec.section];
+          if (!itemsMap) return;
+          html += `<h3>${sec.section}</h3>`;
+          sec.items.forEach(interiorItem => {
+            const bucket = itemsMap[interiorItem.key];
+            if (!bucket) return;
+            const anyChecked = bucket.contributors.some(c => c.item?.checked);
+            html += `<div class="item"><input type="checkbox" class="check" ${anyChecked ? "checked" : ""} disabled>
+              <div class="item-label ${anyChecked ? "done" : ""}">${bucket.label}${renderContributors(bucket.contributors)}</div></div>`;
           });
         });
       });
