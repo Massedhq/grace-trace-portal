@@ -607,7 +607,7 @@ export default function PropertyInspection() {
   const otherName = otherInspector?.inspector_name || (currentUser.id === "avy" ? "Dennis" : "Avy");
 
   return (
-    <div style={{ minHeight: "100vh", background: C.dark, fontFamily: "'Inter','Segoe UI',sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: C.dark, fontFamily: "'Inter','Segoe UI',sans-serif", overflowX: "hidden" }}>
 
       {noteModal && (
         <NoteModal
@@ -704,36 +704,38 @@ export default function PropertyInspection() {
                     {sec.items.map(item => {
                       const state = itemStates[item.key] || {};
                       return (
-                        <div key={item.key} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0", borderBottom: "1px solid " + C.cardBorder }}>
-                          <input type="checkbox" checked={!!state.checked} onChange={() => toggleItem(sec.section, item)}
-                            style={{ width: 15, height: 15, flexShrink: 0, marginTop: 2, accentColor: C.green, cursor: "pointer" }} />
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 13, color: state.checked ? C.muted : C.text, textDecoration: state.checked ? "line-through" : "none", lineHeight: 1.4 }}>
-                              {item.label}
-                            </div>
-                            {state.note && (
-                              <div style={{ fontSize: 11, color: C.gold, marginTop: 3, fontStyle: "italic" }}>Note: {state.note}</div>
-                            )}
-                            {myPhotos[item.key]?.length > 0 && (
-                              <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 5 }}>
-                                {myPhotos[item.key].map((photo, pi) => (
-                                  <div key={pi} onClick={() => setLightboxPhoto(photo.photo_data)}
-                                    style={{ width: 48, height: 48, borderRadius: 5, overflow: "hidden", border: "1px solid " + C.cardBorder, cursor: "pointer", flexShrink: 0 }}>
-                                    <img src={photo.photo_data} alt={"Photo " + (pi+1)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                                  </div>
-                                ))}
+                        <div key={item.key} style={{ padding: "10px 0", borderBottom: "1px solid " + C.cardBorder }}>
+                          <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                            <input type="checkbox" checked={!!state.checked} onChange={() => toggleItem(sec.section, item)}
+                              style={{ width: 15, height: 15, flexShrink: 0, marginTop: 2, accentColor: C.green, cursor: "pointer" }} />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 13, color: state.checked ? C.muted : C.text, textDecoration: state.checked ? "line-through" : "none", lineHeight: 1.4 }}>
+                                {item.label}
                               </div>
-                            )}
+                              {state.note && (
+                                <div style={{ fontSize: 11, color: C.gold, marginTop: 3, fontStyle: "italic" }}>Note: {state.note}</div>
+                              )}
+                              {myPhotos[item.key]?.length > 0 && (
+                                <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 5 }}>
+                                  {myPhotos[item.key].map((photo, pi) => (
+                                    <div key={pi} onClick={() => setLightboxPhoto(photo.photo_data)}
+                                      style={{ width: 48, height: 48, borderRadius: 5, overflow: "hidden", border: "1px solid " + C.cardBorder, cursor: "pointer", flexShrink: 0 }}>
+                                      <img src={photo.photo_data} alt={"Photo " + (pi+1)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <div style={{ display: "flex", gap: 5, alignItems: "center", flexShrink: 0, flexWrap: "wrap" }}>
+                          <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", marginTop: 8, paddingLeft: 25 }}>
                             {state.flag && <FlagDot flag={state.flag} />}
                             <select value={state.flag || ""} onChange={e => saveFlag(item.key, item.label, sec.section, e.target.value)}
-                              style={{ fontSize: 11, padding: "3px 6px", borderRadius: 6, border: "1px solid " + C.cardBorder, background: C.dark, color: C.text, fontFamily: "inherit", cursor: "pointer" }}>
+                              style={{ fontSize: 11, padding: "4px 6px", borderRadius: 6, border: "1px solid " + C.cardBorder, background: C.dark, color: C.text, fontFamily: "inherit", cursor: "pointer" }}>
                               <option value="">Flag</option>
                               {FLAG_OPTS.map(f => <option key={f} value={f}>{f}</option>)}
                             </select>
                             <button onClick={() => setNoteModal({ key: item.key, label: item.label, section: sec.section })}
-                              style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, border: "1px solid " + C.cardBorder, background: C.dark, color: C.muted, cursor: "pointer" }}>
+                              style={{ fontSize: 11, padding: "4px 9px", borderRadius: 6, border: "1px solid " + C.cardBorder, background: C.dark, color: C.muted, cursor: "pointer" }}>
                               Note
                             </button>
                             <button onClick={() => {
@@ -743,7 +745,7 @@ export default function PropertyInspection() {
                                   setTimeout(() => cameraInputRef.current?.click(), 50);
                                 }
                               }}
-                              style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, border: "1px solid " + C.gold, background: C.dark, color: C.gold, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontWeight: 600 }}>
+                              style={{ fontSize: 11, padding: "4px 9px", borderRadius: 6, border: "1px solid " + C.gold, background: C.dark, color: C.gold, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontWeight: 600 }}>
                               📷 Take photo
                             </button>
                             <button onClick={() => {
@@ -754,7 +756,7 @@ export default function PropertyInspection() {
                                   setTimeout(() => fileInputRef.current?.click(), 50);
                                 }
                               }}
-                              style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, border: "1px solid " + C.cardBorder, background: C.dark, color: C.muted, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontWeight: 600 }}>
+                              style={{ fontSize: 11, padding: "4px 9px", borderRadius: 6, border: "1px solid " + C.cardBorder, background: C.dark, color: C.muted, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontWeight: 600 }}>
                               🖼️ {(myPhotos[item.key]?.length || 0) > 0
                                 ? <span>+Add · <span style={{ background: C.gold, color: C.dark, fontSize: 10, fontWeight: 700, padding: "1px 5px", borderRadius: 8 }}>{myPhotos[item.key]?.length}</span></span>
                                 : "Library"}
