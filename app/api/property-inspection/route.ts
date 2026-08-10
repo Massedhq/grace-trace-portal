@@ -87,8 +87,12 @@ export async function GET(req: Request) {
         WHERE inspection_id = ANY(${ids})
       `;
 
-      const allPhotos = await sql`
-        SELECT id, inspection_id, item_key, inspector_id, photo_data, file_name, caption, uploaded_at
+      // NOTE: photo_data is deliberately excluded here — bundling full base64
+      // image data for every report in one response blows past Vercel's
+      // response size limit. Real photo bytes are fetched separately, per
+      // report, via /api/property-inspection-photos?inspection_id=...
+      const allPhotoMeta = await sql`
+        SELECT id, inspection_id, item_key, inspector_id, file_name, caption, uploaded_at
         FROM property_inspection_photos
         WHERE inspection_id = ANY(${ids})
         ORDER BY uploaded_at ASC
@@ -96,7 +100,7 @@ export async function GET(req: Request) {
 
       const enriched = reports.map((report: any) => {
         const itemsForReport = allItems.filter((i: any) => i.inspection_id === report.id);
-        const photosForReport = allPhotos.filter((p: any) => p.inspection_id === report.id);
+        const photosForReport = allPhotoMeta.filter((p: any) => p.inspection_id === report.id);
 
         const itemsMap: Record<string, any> = {};
         itemsForReport.forEach((i: any) => { itemsMap[i.item_key] = i; });

@@ -233,7 +233,6 @@ export default function PropertyInspection() {
   const [myProgress, setMyProgress] = useState(0);
   const [otherProgress, setOtherProgress] = useState(0);
   const [sharedFlags, setSharedFlags] = useState([]);
-  const [debugInfo, setDebugInfo] = useState("");
   const [noteModal, setNoteModal] = useState(null); // { key, label }
   const [photoUploading, setPhotoUploading] = useState(false);
   const [activeSection, setActiveSection] = useState(null);
@@ -276,8 +275,35 @@ export default function PropertyInspection() {
       const r = await fetch("/api/property-inspection?full=true");
       const d = await r.json();
       const reports = d.reports || [];
-      const enriched = d.enriched || [];
-      setDebugInfo("API returned: " + reports.length + " reports, " + enriched.length + " enriched. Keys: " + Object.keys(d).join(", "));
+      let enriched = d.enriched || [];
+
+      // The bulk full=true response deliberately excludes raw photo bytes
+      // (base64 image data across many reports/photos can exceed the
+      // platform's response size limit). Fetch actual photo data per report
+      // in parallel, then merge it into the enriched photos map.
+      if (reports.length > 0) {
+        const photoResults = await Promise.all(
+          reports.map((rep: any) =>
+            fetch("/api/property-inspection-photos?inspection_id=" + rep.id)
+              .then(res => res.json())
+              .then(pd => ({ id: rep.id, photos: pd.photos || [] }))
+              .catch(() => ({ id: rep.id, photos: [] }))
+          )
+        );
+        const photosByReport: Record<number, any[]> = {};
+        photoResults.forEach(pr => { photosByReport[pr.id] = pr.photos; });
+
+        enriched = enriched.map((e: any) => {
+          const fullPhotos = photosByReport[e.report.id] || [];
+          const photoMap: Record<string, any[]> = {};
+          fullPhotos.forEach((p: any) => {
+            const key = p.item_key || "general";
+            if (!photoMap[key]) photoMap[key] = [];
+            photoMap[key].push(p);
+          });
+          return { ...e, photos: photoMap };
+        });
+      }
 
       setAllReports(reports);
       setMyAreas(reports);
