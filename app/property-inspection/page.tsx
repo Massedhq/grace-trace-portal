@@ -546,6 +546,8 @@ export default function PropertyInspection() {
 
     setPropertyName(newName);
     setInspectionId(null);
+    setViewingInspectorId(null);
+    setViewingInspectorName(null);
     setItemStates({});
     setMyPhotos({});
     setAreas([]);
@@ -567,6 +569,8 @@ export default function PropertyInspection() {
     const d = await r.json();
     setInspectionId(d.report.id);
     setPropertyName(d.report.property_name || finalName);
+    setViewingInspectorId(currentUser.id);
+    setViewingInspectorName(currentUser.name);
     const r2 = await fetch("/api/property-inspection?inspector_id=" + currentUser.id);
     const d2 = await r2.json();
     setMyProperties(d2.reports || []);
@@ -732,6 +736,33 @@ export default function PropertyInspection() {
     setPhotoUploading(false);
   }
 
+  async function deletePhoto(photoId, itemKey, areaId) {
+    if (!photoId) return;
+    await fetch("/api/property-inspection-photos?id=" + photoId, { method: "DELETE" });
+
+    if (areaId) {
+      setAreaPhotos(prev => {
+        const areaMap = prev[areaId] || {};
+        const existing = areaMap[itemKey] || [];
+        return { ...prev, [areaId]: { ...areaMap, [itemKey]: existing.filter(p => p.id !== photoId) } };
+      });
+      setAreaItemStates(prev => ({
+        ...prev,
+        [areaId]: { ...(prev[areaId] || {}), [itemKey]: { ...(prev[areaId]?.[itemKey] || {}), photo_count: Math.max(0, (prev[areaId]?.[itemKey]?.photo_count || 0) - 1) } }
+      }));
+    } else {
+      setMyPhotos(prev => {
+        const existing = prev[itemKey] || [];
+        return { ...prev, [itemKey]: existing.filter(p => p.id !== photoId) };
+      });
+      setItemStates(prev => ({
+        ...prev,
+        [itemKey]: { ...(prev[itemKey] || {}), photo_count: Math.max(0, (prev[itemKey]?.photo_count || 0) - 1) }
+      }));
+    }
+    setLightboxPhoto(null);
+  }
+
   function openCamera(itemKey, areaId) {
     setActivePhotoKey(itemKey);
     setActivePhotoAreaId(areaId || null);
@@ -771,9 +802,17 @@ export default function PropertyInspection() {
               {photoList.length > 0 && (
                 <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 5 }}>
                   {photoList.map((photo, pi) => (
-                    <div key={pi} onClick={() => setLightboxPhoto(photo.photo_data)}
-                      style={{ width: 48, height: 48, borderRadius: 5, overflow: "hidden", border: "1px solid " + C.cardBorder, cursor: "pointer", flexShrink: 0 }}>
-                      <img src={photo.photo_data} alt={"Photo " + (pi + 1)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <div key={pi} style={{ position: "relative", width: 48, height: 48, flexShrink: 0 }}>
+                      <div onClick={() => setLightboxPhoto({ src: photo.photo_data, photoId: photo.id, itemKey: item.key, areaId })}
+                        style={{ width: 48, height: 48, borderRadius: 5, overflow: "hidden", border: "1px solid " + C.cardBorder, cursor: "pointer" }}>
+                        <img src={photo.photo_data} alt={"Photo " + (pi + 1)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      </div>
+                      {!readOnly && (
+                        <button onClick={(e) => { e.stopPropagation(); if (window.confirm("Delete this photo?")) deletePhoto(photo.id, item.key, areaId); }}
+                          style={{ position: "absolute", top: -6, right: -6, width: 18, height: 18, borderRadius: "50%", background: "#A32D2D", color: "#fff", border: "none", fontSize: 11, lineHeight: "16px", cursor: "pointer", padding: 0 }}>
+                          ×
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -1004,8 +1043,20 @@ export default function PropertyInspection() {
           <>
             {lightboxPhoto && (
               <div onClick={() => setLightboxPhoto(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.92)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, cursor: "pointer" }}>
-                <img src={lightboxPhoto} alt="Inspection photo" style={{ maxWidth: "100%", maxHeight: "90vh", borderRadius: 8, objectFit: "contain" }} />
+                <img src={lightboxPhoto.src} alt="Inspection photo" style={{ maxWidth: "100%", maxHeight: "90vh", borderRadius: 8, objectFit: "contain" }} />
                 <div style={{ position: "absolute", top: 20, right: 20, color: "#fff", fontSize: 28, cursor: "pointer" }}>✕</div>
+                {!isReadOnly && lightboxPhoto.photoId && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.confirm("Delete this photo? This can't be undone.")) {
+                        deletePhoto(lightboxPhoto.photoId, lightboxPhoto.itemKey, lightboxPhoto.areaId);
+                      }
+                    }}
+                    style={{ position: "absolute", bottom: 30, left: "50%", transform: "translateX(-50%)", background: "#A32D2D", color: "#fff", border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+                    🗑️ Delete this photo
+                  </button>
+                )}
               </div>
             )}
 
@@ -1279,7 +1330,7 @@ export default function PropertyInspection() {
           <>
             {lightboxPhoto && (
               <div onClick={() => setLightboxPhoto(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.92)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, cursor: "pointer" }}>
-                <img src={lightboxPhoto} alt="Inspection photo" style={{ maxWidth: "100%", maxHeight: "90vh", borderRadius: 8, objectFit: "contain" }} />
+                <img src={lightboxPhoto.src} alt="Inspection photo" style={{ maxWidth: "100%", maxHeight: "90vh", borderRadius: 8, objectFit: "contain" }} />
                 <div style={{ position: "absolute", top: 20, right: 20, color: "#fff", fontSize: 28, cursor: "pointer" }}>✕</div>
               </div>
             )}
@@ -1336,7 +1387,7 @@ export default function PropertyInspection() {
                                 {photoList.length > 0 && (
                                   <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 4 }}>
                                     {photoList.map((photo, pi) => (
-                                      <div key={pi} onClick={() => setLightboxPhoto(photo.photo_data)} style={{ width: 40, height: 40, borderRadius: 5, overflow: "hidden", border: "1px solid " + C.cardBorder, cursor: "pointer" }}>
+                                      <div key={pi} onClick={() => setLightboxPhoto({ src: photo.photo_data })} style={{ width: 40, height: 40, borderRadius: 5, overflow: "hidden", border: "1px solid " + C.cardBorder, cursor: "pointer" }}>
                                         {photo.photo_data && <img src={photo.photo_data} alt="Photo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
                                       </div>
                                     ))}
@@ -1367,7 +1418,7 @@ export default function PropertyInspection() {
                                 {photoList.length > 0 && (
                                   <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 4 }}>
                                     {photoList.map((photo, pi) => (
-                                      <div key={pi} onClick={() => setLightboxPhoto(photo.photo_data)} style={{ width: 40, height: 40, borderRadius: 5, overflow: "hidden", border: "1px solid " + C.cardBorder, cursor: "pointer" }}>
+                                      <div key={pi} onClick={() => setLightboxPhoto({ src: photo.photo_data })} style={{ width: 40, height: 40, borderRadius: 5, overflow: "hidden", border: "1px solid " + C.cardBorder, cursor: "pointer" }}>
                                         {photo.photo_data && <img src={photo.photo_data} alt="Photo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
                                       </div>
                                     ))}
@@ -1404,7 +1455,7 @@ export default function PropertyInspection() {
                                   {photoList.length > 0 && (
                                     <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 4 }}>
                                       {photoList.map((photo, pi) => (
-                                        <div key={pi} onClick={() => setLightboxPhoto(photo.photo_data)} style={{ width: 40, height: 40, borderRadius: 5, overflow: "hidden", border: "1px solid " + C.cardBorder, cursor: "pointer" }}>
+                                        <div key={pi} onClick={() => setLightboxPhoto({ src: photo.photo_data })} style={{ width: 40, height: 40, borderRadius: 5, overflow: "hidden", border: "1px solid " + C.cardBorder, cursor: "pointer" }}>
                                           {photo.photo_data && <img src={photo.photo_data} alt="Photo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
                                         </div>
                                       ))}
