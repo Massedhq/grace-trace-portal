@@ -213,7 +213,24 @@ export async function POST(req: Request) {
   }
 }
 
-export async function PATCH(req: Request) {
+export async function DELETE(req: Request) {
+  try {
+    await ensureTables();
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+    if (!id) return Response.json({ error: "id is required" }, { status: 400 });
+
+    await sql`DELETE FROM property_inspection_items WHERE inspection_id = ${id}`;
+    await sql`DELETE FROM property_inspection_photos WHERE inspection_id = ${id}`;
+    await sql`DELETE FROM property_inspection_areas WHERE inspection_id = ${id}`;
+    const [deleted] = await sql`DELETE FROM property_inspections WHERE id = ${id} RETURNING id`;
+
+    return Response.json({ deleted: !!deleted });
+  } catch (err) {
+    console.error("DELETE /api/property-inspection failed:", err);
+    return Response.json({ error: "Failed to delete inspection" }, { status: 500 });
+  }
+}
   try {
     await ensureTables();
     const body = await req.json();

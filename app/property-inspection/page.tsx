@@ -209,6 +209,27 @@ function parseAreaItemKey(item_key) {
   return { areaId: rest.slice(0, sep), key: rest.slice(sep + 2) };
 }
 
+const EXTERIOR_KEYS = new Set(EXTERIOR_SECTION.items.map(i => i.key));
+
+// Items saved before Wing/Room tracking existed have plain (unprefixed) keys
+// that aren't in EXTERIOR_KEYS either — e.g. "int_walls" or "kit_stove" from
+// an old per-room report. Nothing was lost; this just makes that data
+// visible again by grouping it using the section/label already stored on
+// each item row, without needing to touch the database.
+function buildLegacySections(itemsMap) {
+  const bySection = {};
+  const order = [];
+  Object.values(itemsMap || {}).forEach((it) => {
+    if (!it || EXTERIOR_KEYS.has(it.item_key)) return;
+    const secName = it.section || "Other (unlabeled)";
+    if (!bySection[secName]) { bySection[secName] = []; order.push(secName); }
+    if (!bySection[secName].some(existing => existing.key === it.item_key)) {
+      bySection[secName].push({ key: it.item_key, label: it.item_label || it.item_key });
+    }
+  });
+  return order.map(secName => ({ section: secName, items: bySection[secName] }));
+}
+
 function FlagDot({ flag }) {
   const color = flag === "Good" ? "#3B6D11" : flag === "Concern" || flag === "Needs repair" ? "#D85A30" : flag === "Unsafe" ? "#A32D2D" : "#3D2028";
   return <span style={{ width: 8, height: 8, borderRadius: "50%", background: color, display: "inline-block", flexShrink: 0 }} />;
@@ -304,12 +325,15 @@ export default function PropertyInspection() {
   function computeProgress(exteriorMap, areaMap, areaCount) {
     const exteriorTotal = EXTERIOR_SECTION.items.length;
     const interiorPerArea = INTERIOR_SECTIONS.reduce((a, s) => a + s.items.length, 0);
-    const exteriorChecked = Object.values(exteriorMap).filter(i => i.checked).length;
+    const exteriorItems = Object.values(exteriorMap).filter(i => EXTERIOR_KEYS.has(i.item_key));
+    const legacyItems = Object.values(exteriorMap).filter(i => !EXTERIOR_KEYS.has(i.item_key));
+    const exteriorChecked = exteriorItems.filter(i => i.checked).length;
+    const legacyChecked = legacyItems.filter(i => i.checked).length;
     const interiorChecked = Object.values(areaMap).reduce(
       (acc, itemsObj) => acc + Object.values(itemsObj || {}).filter(i => i.checked).length, 0
     );
-    const totalPossible = exteriorTotal + interiorPerArea * areaCount;
-    const checked = exteriorChecked + interiorChecked;
+    const totalPossible = exteriorTotal + interiorPerArea * areaCount + legacyItems.length;
+    const checked = exteriorChecked + interiorChecked + legacyChecked;
     return totalPossible ? Math.round((checked / totalPossible) * 100) : 0;
   }
 
@@ -470,6 +494,27 @@ export default function PropertyInspection() {
     } catch (err) {
       console.error("loadAllReports failed:", err);
     }
+  }
+
+  async function deleteReport(id) {
+    await fetch("/api/property-inspection?id=" + id, { method: "DELETE" });
+
+    if (inspectionId === id) {
+      setInspectionId(null);
+      setPropertyName("");
+      setItemStates({});
+      setMyPhotos({});
+      setAreas([]);
+      setAreaItemStates({});
+      setAreaPhotos({});
+      setRating("");
+      setGeneralNotes("");
+      setMyProgress(0);
+    }
+
+    const r2 = await fetch("/api/property-inspection?inspector_id=" + currentUser.id);
+    const d2 = await r2.json();
+    setMyProperties(d2.reports || []);
   }
 
   async function loadReportById(id) {
@@ -992,6 +1037,22 @@ export default function PropertyInspection() {
               )}
             </div>
 
+            {/* Previously recorded items — from before Wing/Room tracking existed.
+                Nothing was deleted; this surfaces old checklist data and photos
+                that don't fit the new Exterior/Area structure so you can still
+                see, edit, and photograph them. */}
+            {buildLegacySections(itemStates).map(sec => (
+              <div key={"legacy-" + sec.section} style={{ background: C.card, border: "1px solid #6B1A2A", borderRadius: 12, padding: "12px 16px", marginBottom: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#D85A30", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
+                  Previously recorded — {sec.section}
+                </div>
+                <div style={{ fontSize: 11, color: C.muted, marginBottom: 10 }}>
+                  Saved before wing/room tracking was added. Still fully editable — assign it to a wing/room by adding a new area and rechecking there if you'd like it organized going forward.
+                </div>
+                {renderSectionItems(sec, itemStates, myPhotos, null)}
+              </div>
+            ))}
+
             {/* INTERIOR AREAS — Wing -> Room */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
               <span style={{ fontSize: 12, fontWeight: 700, color: C.gold, textTransform: "uppercase", letterSpacing: 1 }}>Interior areas ({areas.length})</span>
@@ -1138,20 +1199,29 @@ export default function PropertyInspection() {
                 )}
                 {myProperties.map(report => (
                   <div key={report.id}
-                    onClick={() => loadReportById(report.id)}
-                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", background: inspectionId === report.id ? "#2A1A0A" : C.dark, border: "1px solid " + (inspectionId === report.id ? C.gold : C.cardBorder), borderRadius: 8, marginBottom: 8, cursor: "pointer" }}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", background: inspectionId === report.id ? "#2A1A0A" : C.dark, border: "1px solid " + (inspectionId === report.id ? C.gold : C.cardBorder), borderRadius: 8, marginBottom: 8, gap: 8 }}
                     onMouseEnter={e => e.currentTarget.style.borderColor = C.gold}
                     onMouseLeave={e => { if (inspectionId !== report.id) e.currentTarget.style.borderColor = C.cardBorder; }}>
-                    <div>
+                    <div onClick={() => loadReportById(report.id)} style={{ cursor: "pointer", flex: 1, minWidth: 0 }}>
                       <div style={{ color: C.text, fontWeight: 600, fontSize: 13 }}>{report.property_name}</div>
                       <div style={{ color: C.muted, fontSize: 11, marginTop: 2 }}>
                         {report.overall_rating || "No rating"} · {new Date(report.updated_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
                       </div>
                     </div>
                     {inspectionId === report.id
-                      ? <span style={{ color: C.gold, fontSize: 12, fontWeight: 700 }}>Active ✓</span>
-                      : <span style={{ color: C.muted, fontSize: 13 }}>Open →</span>
+                      ? <span style={{ color: C.gold, fontSize: 12, fontWeight: 700, flexShrink: 0 }}>Active ✓</span>
+                      : <span onClick={() => loadReportById(report.id)} style={{ color: C.muted, fontSize: 13, cursor: "pointer", flexShrink: 0 }}>Open →</span>
                     }
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (window.confirm("Delete this report for \"" + report.property_name + "\"? This removes its checklist, notes, and photos permanently.")) {
+                          deleteReport(report.id);
+                        }
+                      }}
+                      style={{ background: "transparent", border: "1px solid #A32D2D", borderRadius: 6, padding: "5px 8px", color: "#D85A30", fontSize: 12, cursor: "pointer", flexShrink: 0 }}>
+                      🗑️
+                    </button>
                   </div>
                 ))}
               </div>
@@ -1231,6 +1301,37 @@ export default function PropertyInspection() {
                           })}
                         </div>
                       )}
+
+                      {/* Previously recorded items — from before Wing/Room tracking */}
+                      {buildLegacySections(items).map(sec => (
+                        <div key={"legacy-" + sec.section} style={{ marginBottom: 12 }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: "#D85A30", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+                            Previously recorded — {sec.section}
+                          </div>
+                          {sec.items.map(item => {
+                            const itm = items[item.key];
+                            const photoList = photos[item.key] || [];
+                            if (!itm?.checked && !itm?.flag && !itm?.note && photoList.length === 0) return null;
+                            return (
+                              <div key={item.key} style={{ fontSize: 12, color: C.text, padding: "4px 0", borderBottom: "1px solid " + C.cardBorder }}>
+                                {itm?.checked && <span style={{ color: C.success, marginRight: 6 }}>✓</span>}
+                                {item.label}
+                                {itm?.flag && <span style={{ marginLeft: 6, fontSize: 11, fontWeight: 700, color: itm.flag === "Good" ? "#3B6D11" : "#D85A30" }}>{itm.flag}</span>}
+                                {itm?.note && <div style={{ fontSize: 11, color: C.gold, fontStyle: "italic" }}>"{itm.note}"</div>}
+                                {photoList.length > 0 && (
+                                  <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 4 }}>
+                                    {photoList.map((photo, pi) => (
+                                      <div key={pi} onClick={() => setLightboxPhoto(photo.photo_data)} style={{ width: 40, height: 40, borderRadius: 5, overflow: "hidden", border: "1px solid " + C.cardBorder, cursor: "pointer" }}>
+                                        {photo.photo_data && <img src={photo.photo_data} alt="Photo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ))}
 
                       {/* Areas */}
                       {(reportAreas || []).map(area => {
