@@ -611,7 +611,6 @@ export default function PropertyInspection() {
       </div>
 
       <div style={{ maxWidth: 800, margin: "0 auto", padding: "20px 16px" }}>
-        {debugInfo && <div style={{ background: "#1A2A0A", border: "1px solid #4CAF50", borderRadius: 8, padding: "10px 14px", marginBottom: 14, color: "#4CAF50", fontSize: 12, fontFamily: "monospace" }}>{debugInfo}</div>}
 
         {view === "mine" && (
           <>

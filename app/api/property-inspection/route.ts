@@ -7,6 +7,8 @@ import { neon } from "@neondatabase/serverless";
 
 const sql = neon(process.env.DATABASE_URL!);
 
+const TOTAL_CHECKLIST_ITEMS = 84;
+
 async function ensureTables() {
   await sql`
     CREATE TABLE IF NOT EXISTS property_inspections (
@@ -40,6 +42,19 @@ async function ensureTables() {
       UNIQUE (inspection_id, item_key)
     )
   `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS property_inspection_photos (
+      id SERIAL PRIMARY KEY,
+      inspection_id INTEGER NOT NULL,
+      item_key TEXT,
+      inspector_id TEXT NOT NULL,
+      photo_data TEXT NOT NULL,
+      file_name TEXT,
+      caption TEXT,
+      uploaded_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
 }
 
 export async function GET(req: Request) {
@@ -48,11 +63,60 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
     const inspector_id = searchParams.get("inspector_id");
+    const full = searchParams.get("full");
 
     if (id) {
       const [report] = await sql`SELECT * FROM property_inspections WHERE id = ${id}`;
       const items = await sql`SELECT * FROM property_inspection_items WHERE inspection_id = ${id} ORDER BY id ASC`;
       return Response.json({ report: report || null, items });
+    }
+
+    if (full === "true") {
+      const reports = await sql`
+        SELECT * FROM property_inspections ORDER BY updated_at DESC
+      `;
+
+      if (reports.length === 0) {
+        return Response.json({ reports: [], enriched: [] });
+      }
+
+      const ids = reports.map((r: any) => r.id);
+
+      const allItems = await sql`
+        SELECT * FROM property_inspection_items
+        WHERE inspection_id = ANY(${ids})
+      `;
+
+      const allPhotos = await sql`
+        SELECT id, inspection_id, item_key, inspector_id, photo_data, file_name, caption, uploaded_at
+        FROM property_inspection_photos
+        WHERE inspection_id = ANY(${ids})
+        ORDER BY uploaded_at ASC
+      `;
+
+      const enriched = reports.map((report: any) => {
+        const itemsForReport = allItems.filter((i: any) => i.inspection_id === report.id);
+        const photosForReport = allPhotos.filter((p: any) => p.inspection_id === report.id);
+
+        const itemsMap: Record<string, any> = {};
+        itemsForReport.forEach((i: any) => { itemsMap[i.item_key] = i; });
+
+        const photosMap: Record<string, any[]> = {};
+        photosForReport.forEach((p: any) => {
+          const key = p.item_key || "general";
+          if (!photosMap[key]) photosMap[key] = [];
+          photosMap[key].push(p);
+        });
+
+        const checkedCount = itemsForReport.filter((i: any) => i.checked).length;
+        const progress = TOTAL_CHECKLIST_ITEMS
+          ? Math.round((checkedCount / TOTAL_CHECKLIST_ITEMS) * 100)
+          : 0;
+
+        return { report, items: itemsMap, photos: photosMap, progress };
+      });
+
+      return Response.json({ reports, enriched });
     }
 
     if (inspector_id) {
