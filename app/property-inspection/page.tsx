@@ -237,6 +237,7 @@ export default function PropertyInspection() {
   const [photoUploading, setPhotoUploading] = useState(false);
   const [activeSection, setActiveSection] = useState(null);
   const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
   const [activePhotoKey, setActivePhotoKey] = useState(null);
   const [showMyAreas, setShowMyAreas] = useState(false);
   const [myAreas, setMyAreas] = useState([]);
@@ -618,6 +619,8 @@ export default function PropertyInspection() {
 
       <input type="file" ref={fileInputRef} accept="image/*" multiple style={{ display: "none" }}
         onChange={e => handlePhotoUpload(e, activePhotoKey)} />
+      <input type="file" ref={cameraInputRef} accept="image/*" capture="environment" style={{ display: "none" }}
+        onChange={e => handlePhotoUpload(e, activePhotoKey)} />
 
       {/* Header */}
       <div style={{ background: C.burgundyDark, borderBottom: "2px solid " + C.gold, padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
@@ -735,16 +738,26 @@ export default function PropertyInspection() {
                             </button>
                             <button onClick={() => {
                                 setActivePhotoKey(item.key);
+                                if (cameraInputRef.current) {
+                                  cameraInputRef.current.value = "";
+                                  setTimeout(() => cameraInputRef.current?.click(), 50);
+                                }
+                              }}
+                              style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, border: "1px solid " + C.gold, background: C.dark, color: C.gold, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontWeight: 600 }}>
+                              📷 Take photo
+                            </button>
+                            <button onClick={() => {
+                                setActivePhotoKey(item.key);
                                 // Force reset then click so multiple uploads work
                                 if (fileInputRef.current) {
                                   fileInputRef.current.value = "";
                                   setTimeout(() => fileInputRef.current?.click(), 50);
                                 }
                               }}
-                              style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, border: "1px solid " + C.gold, background: C.dark, color: C.gold, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontWeight: 600 }}>
-                              📷 {(myPhotos[item.key]?.length || 0) > 0
+                              style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, border: "1px solid " + C.cardBorder, background: C.dark, color: C.muted, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontWeight: 600 }}>
+                              🖼️ {(myPhotos[item.key]?.length || 0) > 0
                                 ? <span>+Add · <span style={{ background: C.gold, color: C.dark, fontSize: 10, fontWeight: 700, padding: "1px 5px", borderRadius: 8 }}>{myPhotos[item.key]?.length}</span></span>
-                                : "Add photos"}
+                                : "Library"}
                               {photoUploading && activePhotoKey === item.key && <span style={{ fontSize: 10, color: C.muted }}>Uploading...</span>}
                             </button>
                           </div>
