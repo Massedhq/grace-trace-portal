@@ -269,6 +269,8 @@ export default function PropertyInspection() {
   const [view, setView] = useState("mine"); // "mine" | "shared"
   const [propertyName, setPropertyName] = useState("");
   const [inspectionId, setInspectionId] = useState(null);
+  const [viewingInspectorId, setViewingInspectorId] = useState(null);
+  const [viewingInspectorName, setViewingInspectorName] = useState(null);
 
   // Exterior checklist state (unprefixed item keys, global to the property report)
   const [itemStates, setItemStates] = useState({});
@@ -367,6 +369,8 @@ export default function PropertyInspection() {
 
     setInspectionId(report.id);
     setPropertyName(report.property_name || "");
+    setViewingInspectorId(report.inspector_id || null);
+    setViewingInspectorName(report.inspector_name || null);
     setRating(report.overall_rating || "");
     setGeneralNotes(report.general_notes || "");
     setItemStates(exteriorMap);
@@ -429,6 +433,8 @@ export default function PropertyInspection() {
         if (activeEnriched) {
           setInspectionId(activeReport.id);
           setPropertyName(activeReport.property_name || "");
+          setViewingInspectorId(activeReport.inspector_id || null);
+          setViewingInspectorName(activeReport.inspector_name || null);
           setRating(activeReport.overall_rating || "");
           setGeneralNotes(activeReport.general_notes || "");
           setAreas(activeEnriched.areas || []);
@@ -744,16 +750,17 @@ export default function PropertyInspection() {
     }
   }
 
-  // Renders one checklist section's rows (used for both Exterior and each area's interior sections)
-  function renderSectionItems(sec, states, photos, areaId) {
+  // Renders one checklist section's rows (used for Exterior, legacy items, and each area's interior sections)
+  function renderSectionItems(sec, states, photos, areaId, readOnly) {
     return sec.items.map(item => {
       const state = states[item.key] || {};
       const photoList = (photos[item.key]) || [];
       return (
         <div key={item.key} style={{ padding: "10px 0", borderBottom: "1px solid " + C.cardBorder }}>
           <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-            <input type="checkbox" checked={!!state.checked} onChange={() => toggleChecklistItem(sec.section, item, areaId)}
-              style={{ width: 15, height: 15, flexShrink: 0, marginTop: 2, accentColor: C.green, cursor: "pointer" }} />
+            <input type="checkbox" checked={!!state.checked} disabled={!!readOnly}
+              onChange={() => { if (!readOnly) toggleChecklistItem(sec.section, item, areaId); }}
+              style={{ width: 15, height: 15, flexShrink: 0, marginTop: 2, accentColor: C.green, cursor: readOnly ? "default" : "pointer" }} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 13, color: state.checked ? C.muted : C.text, textDecoration: state.checked ? "line-through" : "none", lineHeight: 1.4 }}>
                 {item.label}
@@ -775,26 +782,36 @@ export default function PropertyInspection() {
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", marginTop: 8, paddingLeft: 25 }}>
             {state.flag && <FlagDot flag={state.flag} />}
-            <select value={state.flag || ""} onChange={e => saveFlag(item.key, item.label, sec.section, e.target.value, areaId)}
-              style={{ fontSize: 11, padding: "4px 6px", borderRadius: 6, border: "1px solid " + C.cardBorder, background: C.dark, color: C.text, fontFamily: "inherit", cursor: "pointer" }}>
-              <option value="">Flag</option>
-              {FLAG_OPTS.map(f => <option key={f} value={f}>{f}</option>)}
-            </select>
-            <button onClick={() => setNoteModal({ key: item.key, label: item.label, section: sec.section, areaId })}
-              style={{ fontSize: 11, padding: "4px 9px", borderRadius: 6, border: "1px solid " + C.cardBorder, background: C.dark, color: C.muted, cursor: "pointer" }}>
-              Note
-            </button>
-            <button onClick={() => openCamera(item.key, areaId)}
-              style={{ fontSize: 11, padding: "4px 9px", borderRadius: 6, border: "1px solid " + C.gold, background: C.dark, color: C.gold, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontWeight: 600 }}>
-              📷 Take photo
-            </button>
-            <button onClick={() => openLibrary(item.key, areaId)}
-              style={{ fontSize: 11, padding: "4px 9px", borderRadius: 6, border: "1px solid " + C.cardBorder, background: C.dark, color: C.muted, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontWeight: 600 }}>
-              🖼️ {photoList.length > 0
-                ? <span>+Add · <span style={{ background: C.gold, color: C.dark, fontSize: 10, fontWeight: 700, padding: "1px 5px", borderRadius: 8 }}>{photoList.length}</span></span>
-                : "Library"}
-              {photoUploading && activePhotoKey === item.key && activePhotoAreaId === (areaId || null) && <span style={{ fontSize: 10, color: C.muted }}>Uploading...</span>}
-            </button>
+            {readOnly ? (
+              state.flag && (
+                <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, border: "1px solid " + C.cardBorder, color: C.muted }}>{state.flag}</span>
+              )
+            ) : (
+              <select value={state.flag || ""} onChange={e => saveFlag(item.key, item.label, sec.section, e.target.value, areaId)}
+                style={{ fontSize: 11, padding: "4px 6px", borderRadius: 6, border: "1px solid " + C.cardBorder, background: C.dark, color: C.text, fontFamily: "inherit", cursor: "pointer" }}>
+                <option value="">Flag</option>
+                {FLAG_OPTS.map(f => <option key={f} value={f}>{f}</option>)}
+              </select>
+            )}
+            {!readOnly && (
+              <>
+                <button onClick={() => setNoteModal({ key: item.key, label: item.label, section: sec.section, areaId })}
+                  style={{ fontSize: 11, padding: "4px 9px", borderRadius: 6, border: "1px solid " + C.cardBorder, background: C.dark, color: C.muted, cursor: "pointer" }}>
+                  Note
+                </button>
+                <button onClick={() => openCamera(item.key, areaId)}
+                  style={{ fontSize: 11, padding: "4px 9px", borderRadius: 6, border: "1px solid " + C.gold, background: C.dark, color: C.gold, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontWeight: 600 }}>
+                  📷 Take photo
+                </button>
+                <button onClick={() => openLibrary(item.key, areaId)}
+                  style={{ fontSize: 11, padding: "4px 9px", borderRadius: 6, border: "1px solid " + C.cardBorder, background: C.dark, color: C.muted, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontWeight: 600 }}>
+                  🖼️ {photoList.length > 0
+                    ? <span>+Add · <span style={{ background: C.gold, color: C.dark, fontSize: 10, fontWeight: 700, padding: "1px 5px", borderRadius: 8 }}>{photoList.length}</span></span>
+                    : "Library"}
+                  {photoUploading && activePhotoKey === item.key && activePhotoAreaId === (areaId || null) && <span style={{ fontSize: 10, color: C.muted }}>Uploading...</span>}
+                </button>
+              </>
+            )}
           </div>
         </div>
       );
@@ -946,6 +963,7 @@ export default function PropertyInspection() {
   const otherInspector = allReports.find(r => r.inspector_id !== currentUser.id && r.property_name === propertyName);
   const otherName = otherInspector?.inspector_name || (currentUser.id === "avy" ? "Dennis" : "Avy");
   const sharedGroups = groupByProperty(sharedReportData, e => e.report.property_name);
+  const isReadOnly = !!(viewingInspectorId && viewingInspectorId !== currentUser.id);
 
   return (
     <div style={{ minHeight: "100vh", background: C.dark, fontFamily: "'Inter','Segoe UI',sans-serif", overflowX: "hidden" }}>
@@ -991,14 +1009,26 @@ export default function PropertyInspection() {
               </div>
             )}
 
+            {isReadOnly && (
+              <div style={{ background: "#2A1008", border: "1px solid #D85A30", borderRadius: 10, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 12, color: "#D85A30", fontWeight: 700 }}>
+                  🔒 Viewing {viewingInspectorName || "another inspector"}'s report — read-only
+                </span>
+                <button onClick={() => loadAllReports()}
+                  style={{ background: C.burgundyDark, border: "none", borderRadius: 6, padding: "6px 12px", color: C.ivory, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                  ← Back to my report
+                </button>
+              </div>
+            )}
+
             {/* Property selector */}
             <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 14 }}>
               <label style={{ fontSize: 10, fontWeight: 700, color: C.gold, textTransform: "uppercase", letterSpacing: 1 }}>Property being inspected</label>
-              <input type="text" list="properties-list" value={propertyName}
+              <input type="text" list="properties-list" value={propertyName} disabled={isReadOnly}
                 onChange={e => setPropertyName(e.target.value)}
                 onBlur={e => switchProperty(e.target.value)}
                 placeholder="e.g. Athens TX — State Hwy 31 West"
-                style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "9px 12px", color: C.text, fontSize: 13, outline: "none", fontFamily: "inherit" }} />
+                style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "9px 12px", color: C.text, fontSize: 13, outline: "none", fontFamily: "inherit", opacity: isReadOnly ? 0.6 : 1 }} />
               <datalist id="properties-list">{myProperties.map(r => <option key={r.id} value={r.property_name} />)}</datalist>
             </div>
 
@@ -1032,7 +1062,7 @@ export default function PropertyInspection() {
               </button>
               {exteriorOpen && (
                 <div style={{ marginTop: 10 }}>
-                  {renderSectionItems(EXTERIOR_SECTION, itemStates, myPhotos, null)}
+                  {renderSectionItems(EXTERIOR_SECTION, itemStates, myPhotos, null, isReadOnly)}
                 </div>
               )}
             </div>
@@ -1049,20 +1079,22 @@ export default function PropertyInspection() {
                 <div style={{ fontSize: 11, color: C.muted, marginBottom: 10 }}>
                   Saved before wing/room tracking was added. Still fully editable — assign it to a wing/room by adding a new area and rechecking there if you'd like it organized going forward.
                 </div>
-                {renderSectionItems(sec, itemStates, myPhotos, null)}
+                {renderSectionItems(sec, itemStates, myPhotos, null, isReadOnly)}
               </div>
             ))}
 
             {/* INTERIOR AREAS — Wing -> Room */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
               <span style={{ fontSize: 12, fontWeight: 700, color: C.gold, textTransform: "uppercase", letterSpacing: 1 }}>Interior areas ({areas.length})</span>
-              <button onClick={() => setShowAddArea(!showAddArea)}
-                style={{ background: C.green, border: "none", borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-                + Add wing / room
-              </button>
+              {!isReadOnly && (
+                <button onClick={() => setShowAddArea(!showAddArea)}
+                  style={{ background: C.green, border: "none", borderRadius: 8, padding: "8px 14px", color: C.ivory, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                  + Add wing / room
+                </button>
+              )}
             </div>
 
-            {showAddArea && (
+            {showAddArea && !isReadOnly && (
               <div style={{ background: C.card, border: "1px solid " + C.gold, borderRadius: 12, padding: "14px 16px", marginBottom: 14 }}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
                   <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
@@ -1130,7 +1162,7 @@ export default function PropertyInspection() {
                           </button>
                           {(currentActiveSec === sec.section || currentActiveSec === null) && (
                             <div style={{ marginTop: 8 }}>
-                              {renderSectionItems(sec, areaItemStates[area.id] || {}, areaPhotos[area.id] || {}, area.id)}
+                              {renderSectionItems(sec, areaItemStates[area.id] || {}, areaPhotos[area.id] || {}, area.id, isReadOnly)}
                             </div>
                           )}
                         </div>
@@ -1149,8 +1181,8 @@ export default function PropertyInspection() {
                   const rc = RATING_COLORS[r];
                   const sel = rating === r;
                   return (
-                    <button key={r} onClick={() => { setRating(r); saveHeader(); }}
-                      style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid " + (sel ? rc.border : C.cardBorder), background: sel ? rc.bg : C.dark, color: sel ? rc.color : C.text, fontSize: 13, fontWeight: sel ? 700 : 400, cursor: "pointer" }}>
+                    <button key={r} disabled={isReadOnly} onClick={() => { setRating(r); saveHeader(); }}
+                      style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid " + (sel ? rc.border : C.cardBorder), background: sel ? rc.bg : C.dark, color: sel ? rc.color : C.text, fontSize: 13, fontWeight: sel ? 700 : 400, cursor: isReadOnly ? "default" : "pointer", opacity: isReadOnly ? 0.7 : 1 }}>
                       {r}
                     </button>
                   );
@@ -1161,27 +1193,31 @@ export default function PropertyInspection() {
             {/* General notes */}
             <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "14px 16px", marginBottom: 14 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: C.gold, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>General notes for this property</div>
-              <textarea value={generalNotes} onChange={e => setGeneralNotes(e.target.value)} onBlur={saveHeader}
+              <textarea value={generalNotes} disabled={isReadOnly} onChange={e => setGeneralNotes(e.target.value)} onBlur={saveHeader}
                 placeholder="Add any additional notes, observations, or concerns for this property..."
                 rows={4}
-                style={{ width: "100%", background: C.dark, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "10px 12px", color: C.text, fontSize: 13, resize: "vertical", outline: "none", fontFamily: "inherit", lineHeight: 1.6 }} />
+                style={{ width: "100%", background: C.dark, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "10px 12px", color: C.text, fontSize: 13, resize: "vertical", outline: "none", fontFamily: "inherit", lineHeight: 1.6, opacity: isReadOnly ? 0.7 : 1 }} />
             </div>
 
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              <button onClick={saveHeader} style={{ background: C.burgundyDark, border: "none", borderRadius: 8, padding: "11px 20px", color: C.ivory, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-                {saving ? "Saving..." : "Save"}
-              </button>
-              <button onClick={() => setShowAddArea(true)}
-                style={{ background: C.green, border: "none", borderRadius: 8, padding: "11px 20px", color: C.ivory, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-                + Start new area
-              </button>
-              <button onClick={() => { setPropertyName(""); setRating(""); setGeneralNotes(""); setInspectionId(null); setItemStates({}); setMyPhotos({}); setAreas([]); setAreaItemStates({}); setAreaPhotos({}); setMyProgress(0); }}
-                style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "11px 20px", color: C.text, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-                + Start new property
-              </button>
+              {!isReadOnly && (
+                <>
+                  <button onClick={saveHeader} style={{ background: C.burgundyDark, border: "none", borderRadius: 8, padding: "11px 20px", color: C.ivory, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                    {saving ? "Saving..." : "Save"}
+                  </button>
+                  <button onClick={() => setShowAddArea(true)}
+                    style={{ background: C.green, border: "none", borderRadius: 8, padding: "11px 20px", color: C.ivory, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                    + Start new area
+                  </button>
+                  <button onClick={() => { setPropertyName(""); setRating(""); setGeneralNotes(""); setInspectionId(null); setViewingInspectorId(null); setViewingInspectorName(null); setItemStates({}); setMyPhotos({}); setAreas([]); setAreaItemStates({}); setAreaPhotos({}); setMyProgress(0); }}
+                    style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "11px 20px", color: C.text, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                    + Start new property
+                  </button>
+                </>
+              )}
               <button onClick={() => setShowMyProperties(!showMyProperties)}
                 style={{ background: C.card, border: "1px solid " + C.gold, borderRadius: 8, padding: "11px 16px", color: C.gold, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-                📋 My properties ({myProperties.length})
+                📋 All reports ({allReports.length})
               </button>
               <button onClick={() => { setView("shared"); loadAllReports(); }}
                 style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "11px 16px", color: C.muted, fontSize: 13, cursor: "pointer" }}>
@@ -1192,38 +1228,48 @@ export default function PropertyInspection() {
             {showMyProperties && (
               <div style={{ background: C.card, border: "1px solid " + C.gold, borderRadius: 12, padding: "14px 16px", marginTop: 14 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: C.gold, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>
-                  My properties — tap any to switch
+                  All reports — yours and your teammate's. Tap any to open the full report; only your own can be edited.
                 </div>
-                {myProperties.length === 0 && (
-                  <div style={{ color: C.muted, fontSize: 13 }}>No properties yet.</div>
+                {allReports.length === 0 && (
+                  <div style={{ color: C.muted, fontSize: 13 }}>No reports yet.</div>
                 )}
-                {myProperties.map(report => (
-                  <div key={report.id}
-                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", background: inspectionId === report.id ? "#2A1A0A" : C.dark, border: "1px solid " + (inspectionId === report.id ? C.gold : C.cardBorder), borderRadius: 8, marginBottom: 8, gap: 8 }}
-                    onMouseEnter={e => e.currentTarget.style.borderColor = C.gold}
-                    onMouseLeave={e => { if (inspectionId !== report.id) e.currentTarget.style.borderColor = C.cardBorder; }}>
-                    <div onClick={() => loadReportById(report.id)} style={{ cursor: "pointer", flex: 1, minWidth: 0 }}>
-                      <div style={{ color: C.text, fontWeight: 600, fontSize: 13 }}>{report.property_name}</div>
-                      <div style={{ color: C.muted, fontSize: 11, marginTop: 2 }}>
-                        {report.overall_rating || "No rating"} · {new Date(report.updated_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                {allReports.map(report => {
+                  const isMine = report.inspector_id === currentUser.id;
+                  return (
+                    <div key={report.id}
+                      style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", background: inspectionId === report.id ? "#2A1A0A" : C.dark, border: "1px solid " + (inspectionId === report.id ? C.gold : C.cardBorder), borderRadius: 8, marginBottom: 8, gap: 8 }}
+                      onMouseEnter={e => e.currentTarget.style.borderColor = C.gold}
+                      onMouseLeave={e => { if (inspectionId !== report.id) e.currentTarget.style.borderColor = C.cardBorder; }}>
+                      <div onClick={() => loadReportById(report.id)} style={{ cursor: "pointer", flex: 1, minWidth: 0 }}>
+                        <div style={{ color: C.text, fontWeight: 600, fontSize: 13 }}>
+                          {report.property_name}
+                          <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 700, padding: "1px 7px", borderRadius: 8, background: isMine ? C.burgundyDark : C.green, color: C.ivory }}>
+                            {report.inspector_name.split(" ")[0]}
+                          </span>
+                        </div>
+                        <div style={{ color: C.muted, fontSize: 11, marginTop: 2 }}>
+                          {report.overall_rating || "No rating"} · {new Date(report.updated_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                        </div>
                       </div>
+                      {inspectionId === report.id
+                        ? <span style={{ color: C.gold, fontSize: 12, fontWeight: 700, flexShrink: 0 }}>Active ✓</span>
+                        : <span onClick={() => loadReportById(report.id)} style={{ color: C.muted, fontSize: 13, cursor: "pointer", flexShrink: 0 }}>Open →</span>
+                      }
+                      {isMine && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (window.confirm("Delete this report for \"" + report.property_name + "\"? This removes its checklist, notes, and photos permanently.")) {
+                              deleteReport(report.id);
+                            }
+                          }}
+                          style={{ background: "transparent", border: "1px solid #A32D2D", borderRadius: 6, padding: "5px 8px", color: "#D85A30", fontSize: 12, cursor: "pointer", flexShrink: 0 }}>
+                          🗑️
+                        </button>
+                      )}
                     </div>
-                    {inspectionId === report.id
-                      ? <span style={{ color: C.gold, fontSize: 12, fontWeight: 700, flexShrink: 0 }}>Active ✓</span>
-                      : <span onClick={() => loadReportById(report.id)} style={{ color: C.muted, fontSize: 13, cursor: "pointer", flexShrink: 0 }}>Open →</span>
-                    }
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (window.confirm("Delete this report for \"" + report.property_name + "\"? This removes its checklist, notes, and photos permanently.")) {
-                          deleteReport(report.id);
-                        }
-                      }}
-                      style={{ background: "transparent", border: "1px solid #A32D2D", borderRadius: 6, padding: "5px 8px", color: "#D85A30", fontSize: 12, cursor: "pointer", flexShrink: 0 }}>
-                      🗑️
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </>
