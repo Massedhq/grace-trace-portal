@@ -1081,6 +1081,17 @@ export default function PropertyInspection() {
                 placeholder="e.g. Athens TX — State Hwy 31 West"
                 style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "9px 12px", color: C.text, fontSize: 13, outline: "none", fontFamily: "inherit", opacity: isReadOnly ? 0.6 : 1 }} />
               <datalist id="properties-list">{myProperties.map(r => <option key={r.id} value={r.property_name} />)}</datalist>
+              {(() => {
+                const activeReport = allReports.find(r => r.id === inspectionId);
+                if (activeReport && (activeReport.wing || activeReport.room_area)) {
+                  return (
+                    <div style={{ fontSize: 11, color: C.gold, fontStyle: "italic" }}>
+                      This report was originally recorded as: {[activeReport.wing, activeReport.room_area].filter(Boolean).join(" — ")} (from before wing/room tracking was added — the notes and checklist below for this report belong to that area).
+                    </div>
+                  );
+                }
+                return null;
+              })()}
             </div>
 
             {/* Progress */}
@@ -1298,6 +1309,11 @@ export default function PropertyInspection() {
                             {report.inspector_name.split(" ")[0]}
                           </span>
                         </div>
+                        {(report.wing || report.room_area) && (
+                          <div style={{ color: C.gold, fontSize: 11, marginTop: 2, fontStyle: "italic" }}>
+                            Originally recorded as: {[report.wing, report.room_area].filter(Boolean).join(" — ")}
+                          </div>
+                        )}
                         <div style={{ color: C.muted, fontSize: 11, marginTop: 2 }}>
                           {report.overall_rating || "No rating"} · {new Date(report.updated_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
                         </div>
@@ -1369,6 +1385,12 @@ export default function PropertyInspection() {
                         </div>
                         <div style={{ color: C.text, fontWeight: 700, fontSize: 13 }}>{report.inspector_name}</div>
                       </div>
+
+                      {(report.wing || report.room_area) && (
+                        <div style={{ fontSize: 11, color: C.gold, fontStyle: "italic", marginBottom: 10 }}>
+                          Originally recorded as: {[report.wing, report.room_area].filter(Boolean).join(" — ")}
+                        </div>
+                      )}
 
                       {/* Exterior items that have activity */}
                       {EXTERIOR_SECTION.items.some(i => items[i.key]?.checked || items[i.key]?.flag || items[i.key]?.note) && (
