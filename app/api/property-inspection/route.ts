@@ -1,13 +1,18 @@
 // app/api/property-inspection/route.ts
 // Stores property inspection reports for Grace Trace Ministries.
-// Each inspector (Avy or Dennis) submits their own report per area.
+// One report per inspector per property. Exterior is checked once for the
+// whole property. Interior-type sections (Interior, Electrical, Plumbing,
+// etc.) are tracked per Wing -> Room "area" within that same report, using
+// an item_key prefix of "AREA_<areaId>__<key>" so no schema change was
+// needed on the existing items/photos tables.
 // Self-healing tables — CREATE TABLE IF NOT EXISTS on every request.
 
 import { neon } from "@neondatabase/serverless";
 
 const sql = neon(process.env.DATABASE_URL!);
 
-const TOTAL_CHECKLIST_ITEMS = 84;
+const EXTERIOR_ITEM_COUNT = 12;
+const INTERIOR_ITEMS_PER_AREA = 72;
 
 async function ensureTables() {
   await sql`
@@ -55,6 +60,17 @@ async function ensureTables() {
       uploaded_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS property_inspection_areas (
+      id SERIAL PRIMARY KEY,
+      inspection_id INTEGER NOT NULL,
+      wing TEXT NOT NULL,
+      room TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE (inspection_id, wing, room)
+    )
+  `;
 }
 
 export async function GET(req: Request) {
@@ -68,7 +84,8 @@ export async function GET(req: Request) {
     if (id) {
       const [report] = await sql`SELECT * FROM property_inspections WHERE id = ${id}`;
       const items = await sql`SELECT * FROM property_inspection_items WHERE inspection_id = ${id} ORDER BY id ASC`;
-      return Response.json({ report: report || null, items });
+      const areas = await sql`SELECT * FROM property_inspection_areas WHERE inspection_id = ${id} ORDER BY id ASC`;
+      return Response.json({ report: report || null, items, areas });
     }
 
     if (full === "true") {
@@ -87,6 +104,12 @@ export async function GET(req: Request) {
         WHERE inspection_id = ANY(${ids})
       `;
 
+      const allAreas = await sql`
+        SELECT * FROM property_inspection_areas
+        WHERE inspection_id = ANY(${ids})
+        ORDER BY id ASC
+      `;
+
       // NOTE: photo_data is deliberately excluded here — bundling full base64
       // image data for every report in one response blows past Vercel's
       // response size limit. Real photo bytes are fetched separately, per
@@ -100,6 +123,7 @@ export async function GET(req: Request) {
 
       const enriched = reports.map((report: any) => {
         const itemsForReport = allItems.filter((i: any) => i.inspection_id === report.id);
+        const areasForReport = allAreas.filter((a: any) => a.inspection_id === report.id);
         const photosForReport = allPhotoMeta.filter((p: any) => p.inspection_id === report.id);
 
         const itemsMap: Record<string, any> = {};
@@ -112,12 +136,13 @@ export async function GET(req: Request) {
           photosMap[key].push(p);
         });
 
-        const checkedCount = itemsForReport.filter((i: any) => i.checked).length;
-        const progress = TOTAL_CHECKLIST_ITEMS
-          ? Math.round((checkedCount / TOTAL_CHECKLIST_ITEMS) * 100)
-          : 0;
+        const exteriorChecked = itemsForReport.filter((i: any) => !i.item_key.startsWith("AREA_") && i.checked).length;
+        const interiorChecked = itemsForReport.filter((i: any) => i.item_key.startsWith("AREA_") && i.checked).length;
+        const totalPossible = EXTERIOR_ITEM_COUNT + INTERIOR_ITEMS_PER_AREA * areasForReport.length;
+        const checkedCount = exteriorChecked + interiorChecked;
+        const progress = totalPossible ? Math.round((checkedCount / totalPossible) * 100) : 0;
 
-        return { report, items: itemsMap, photos: photosMap, progress };
+        return { report, items: itemsMap, photos: photosMap, areas: areasForReport, progress };
       });
 
       return Response.json({ reports, enriched });
@@ -153,10 +178,27 @@ export async function POST(req: Request) {
       return Response.json({ error: "inspector_id and inspector_name are required" }, { status: 400 });
     }
 
+    const finalPropertyName = (property_name || "Athens TX — State Hwy 31 West").trim();
+
+    // One report per inspector per property. If this inspector already has a
+    // report for this property, reuse it instead of creating a duplicate —
+    // that's what lets the checklist (including Exterior) persist across
+    // every wing/room you add within the same property.
+    const [existing] = await sql`
+      SELECT * FROM property_inspections
+      WHERE inspector_id = ${inspector_id} AND property_name = ${finalPropertyName}
+      ORDER BY created_at ASC
+      LIMIT 1
+    `;
+
+    if (existing) {
+      return Response.json({ report: existing }, { status: 200 });
+    }
+
     const [report] = await sql`
       INSERT INTO property_inspections (property_name, inspector_id, inspector_name, wing, room_area, inspection_date, overall_rating, general_notes)
       VALUES (
-        ${property_name || "Athens TX — State Hwy 31 West"},
+        ${finalPropertyName},
         ${inspector_id}, ${inspector_name},
         ${wing || null}, ${room_area || null},
         ${inspection_date || new Date().toLocaleDateString("en-US")},
@@ -175,11 +217,12 @@ export async function PATCH(req: Request) {
   try {
     await ensureTables();
     const body = await req.json();
-    const { id, wing, room_area, overall_rating, general_notes, completed, item } = body;
+    const { id, overall_rating, general_notes, completed, item } = body;
 
     if (!id) return Response.json({ error: "id is required" }, { status: 400 });
 
-    // Update an individual checklist item
+    // Update an individual checklist item (item_key may be a plain exterior
+    // key like "ext_roof", or an area-scoped key like "AREA_5__int_walls")
     if (item) {
       const { section, item_key, item_label, checked, flag, note } = item;
       const [row] = await sql`
@@ -199,9 +242,7 @@ export async function PATCH(req: Request) {
     // Update the report header
     const [report] = await sql`
       UPDATE property_inspections
-      SET wing = COALESCE(${wing || null}, wing),
-          room_area = COALESCE(${room_area || null}, room_area),
-          overall_rating = COALESCE(${overall_rating || null}, overall_rating),
+      SET overall_rating = COALESCE(${overall_rating || null}, overall_rating),
           general_notes = COALESCE(${general_notes || null}, general_notes),
           completed = COALESCE(${completed ?? null}, completed),
           updated_at = NOW()
