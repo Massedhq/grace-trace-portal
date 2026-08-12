@@ -907,22 +907,39 @@ export default function PropertyInspection() {
     </style></head><body>`;
 
     html += `<h1>Grace Trace Ministries</h1>
-    <div class="sub">Property Inspection Report &mdash; ${date}</div>`;
+    <div class="sub">Property Inspection Report &mdash; ${date}</div>
+    <button onclick="window.print()" style="position:fixed;top:16px;right:16px;background:#1E4D2B;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;z-index:999;">🖨️ Print / Save as PDF</button>`;
 
     propertyGroups.forEach(({ propertyName: propName, entries }) => {
       html += `<div class="property-title">${propName}</div>`;
 
-      html += `<div style="margin-bottom:24px">`;
-      entries.forEach(({ report, progress }) => {
-        const ratingClass = (report.overall_rating || "").replace(/[^a-zA-Z]/g, "");
-        html += `<div class="inspector-card">
-          <h3>${report.inspector_name}</h3>
-          <div style="font-size:12px;margin-bottom:4px">Progress: <strong>${progress}%</strong></div>
-          ${report.overall_rating ? `<div>Rating: <span class="rating rating-${ratingClass}">${report.overall_rating}</span></div>` : ""}
-          ${report.general_notes ? `<div style="font-size:12px;color:#666;margin-top:6px;font-style:italic">"${report.general_notes}"</div>` : ""}
-        </div>`;
+      // ---- One combined overall score for the property, not a card per old report ----
+      const RATING_SEVERITY = ["Unsafe for occupancy", "Poor", "Fair", "Good", "Excellent"];
+      let worstRating = null;
+      entries.forEach(({ report }) => {
+        if (!report.overall_rating) return;
+        const idx = RATING_SEVERITY.indexOf(report.overall_rating);
+        if (idx === -1) return;
+        if (worstRating === null || idx < RATING_SEVERITY.indexOf(worstRating)) worstRating = report.overall_rating;
       });
-      html += `</div>`;
+      const avgProgress = entries.length ? Math.round(entries.reduce((a, e) => a + e.progress, 0) / entries.length) : 0;
+      const overallRatingClass = (worstRating || "").replace(/[^a-zA-Z]/g, "");
+
+      html += `<div style="background:#F5F0E8;border:1px solid #D4C8B8;border-radius:10px;padding:16px 20px;margin-bottom:20px">
+        <div style="font-size:14px;margin-bottom:6px">Overall Property Progress: <strong>${avgProgress}%</strong></div>
+        ${worstRating
+          ? `<div style="font-size:14px">Overall Property Score: <span class="rating rating-${overallRatingClass}">${worstRating}</span></div>`
+          : `<div style="font-size:13px;color:#999;font-style:italic">Not yet rated</div>`}
+      </div>`;
+
+      const notesWithText = entries.filter(e => e.report.general_notes && e.report.general_notes.trim());
+      if (notesWithText.length > 0) {
+        html += `<div style="margin-bottom:20px"><h3 style="margin-bottom:8px">General Notes</h3>`;
+        notesWithText.forEach(({ report }) => {
+          html += `<div style="font-size:12px;color:#666;margin-bottom:6px"><strong>${report.inspector_name}:</strong> <span style="font-style:italic">"${report.general_notes}"</span></div>`;
+        });
+        html += `</div>`;
+      }
 
       // ---- Merge every contributing report's data into one combined checklist ----
       const exteriorMerged = {};   // item_key -> [{report, item, photos}]
@@ -1052,8 +1069,7 @@ export default function PropertyInspection() {
 
     const blob = new Blob([html], { type: "text/html" });
     const url = URL.createObjectURL(blob);
-    const win = window.open(url, "_blank");
-    if (win) { win.onload = () => { win.print(); }; }
+    window.open(url, "_blank");
   }
 
   if (!currentUser) return <div style={{ background: C.dark, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: C.muted }}>Loading...</div>;
