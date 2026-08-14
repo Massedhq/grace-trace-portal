@@ -17,7 +17,7 @@ const C = {
   success: "#4CAF50",
 };
 
-const ALLOWED = ["avy", "dennis", "travis"];
+const ALLOWED = ["avy", "dennis", "travis", "ialana", "deann", "erica", "aubreyon"];
 
 const DEFAULT_PROPERTY = "Athens TX — State Hwy 31 West";
 
@@ -211,6 +211,11 @@ function parseAreaItemKey(item_key) {
 
 const EXTERIOR_KEYS = new Set(EXTERIOR_SECTION.items.map(i => i.key));
 
+const SHORT_NAMES = { avy: "Avy", dennis: "Dennis", travis: "Travis", ialana: "Ialana", deann: "Deann", erica: "Erica", aubreyon: "AuBreyon" };
+function shortInspectorName(report) {
+  return SHORT_NAMES[report.inspector_id] || (report.inspector_name || "").split(" ")[0];
+}
+
 // Items saved before Wing/Room tracking existed have plain (unprefixed) keys
 // that aren't in EXTERIOR_KEYS either — e.g. "int_walls" or "kit_stove" from
 // an old per-room report. Nothing was lost; this just makes that data
@@ -292,7 +297,6 @@ export default function PropertyInspection() {
   const [saving, setSaving] = useState(false);
   const [allReports, setAllReports] = useState([]);
   const [myProgress, setMyProgress] = useState(0);
-  const [otherProgress, setOtherProgress] = useState(0);
   const [sharedFlags, setSharedFlags] = useState([]);
   const [noteModal, setNoteModal] = useState(null); // { key, label, section, areaId }
   const [photoUploading, setPhotoUploading] = useState(false);
@@ -314,7 +318,15 @@ export default function PropertyInspection() {
         window.location.href = "/";
         return;
       }
-      const names = { avy: "Avrial Evans (Avy)", dennis: "Dennis", travis: "Travis Ramar" };
+      const names = {
+        avy: "Avrial Evans (Avy)",
+        dennis: "Dennis",
+        travis: "Travis Ramar",
+        ialana: "Ialana Tippins",
+        deann: "Deann Evans",
+        erica: "Erica Evans",
+        aubreyon: "AuBreyon \"Kisses\" Woodley",
+      };
       setCurrentUser({ id: uid, name: names[uid] });
     } catch (e) { window.location.href = "/"; return; }
   }, []);
@@ -421,7 +433,6 @@ export default function PropertyInspection() {
       setAllReports(reports);
 
       const mine = reports.filter(rep => rep.inspector_id === currentUser.id);
-      const others = reports.filter(rep => rep.inspector_id !== currentUser.id);
       setMyProperties(mine);
       setSharedReportData(enriched);
 
@@ -469,14 +480,6 @@ export default function PropertyInspection() {
           setAreaPhotos(areaPhotoMap);
           setMyProgress(activeEnriched.progress);
         }
-
-        const otherOnSameProperty = others.find(rep => rep.property_name === activeReport.property_name);
-        const otherEnriched = otherOnSameProperty
-          ? enriched.find(e => e.report.id === otherOnSameProperty.id)
-          : null;
-        setOtherProgress(otherEnriched?.progress || 0);
-      } else {
-        setOtherProgress(0);
       }
 
       // Build flags from all enriched data
@@ -992,7 +995,7 @@ export default function PropertyInspection() {
         let out = "";
         contributors.forEach(({ report, item: itm, photos: photoList }) => {
           const tagClass = report.inspector_id === "avy" ? "tag-avy" : "tag-dennis";
-          out += `<div style="margin-top:4px"><span class="inspector-tag ${tagClass}">${report.inspector_name.split(" ")[0]}</span>`;
+          out += `<div style="margin-top:4px"><span class="inspector-tag ${tagClass}">${shortInspectorName(report)}</span>`;
           if (itm?.checked) out += `<span style="color:#3B6D11;font-size:11px">&#10003; Checked</span>`;
           if (itm?.flag) {
             const fc = (itm.flag || "").replace(/[^a-zA-Z]/g, "");
@@ -1075,8 +1078,6 @@ export default function PropertyInspection() {
 
   if (!currentUser) return <div style={{ background: C.dark, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: C.muted }}>Loading...</div>;
 
-  const otherInspector = allReports.find(r => r.inspector_id !== currentUser.id && r.property_name === propertyName);
-  const otherName = otherInspector?.inspector_name || (currentUser.id === "avy" ? "Dennis" : "Avy");
   const sharedGroups = groupByProperty(sharedReportData, e => e.report.property_name);
   const isReadOnly = !!(viewingInspectorId && viewingInspectorId !== currentUser.id);
 
@@ -1180,18 +1181,33 @@ export default function PropertyInspection() {
 
             {/* Progress */}
             <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "14px 16px", marginBottom: 14 }}>
-              {[
-                { label: "My progress", pct: myProgress, color: C.burgundyDark },
-                { label: otherName, pct: otherProgress, color: C.green },
-              ].map(p => (
-                <div key={p.label} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 7 }}>
-                  <span style={{ fontSize: 12, color: C.muted, width: 90, flexShrink: 0 }}>{p.label}</span>
-                  <div style={{ flex: 1, background: C.dark, borderRadius: 4, height: 7, overflow: "hidden" }}>
-                    <div style={{ background: p.color, height: 7, borderRadius: 4, width: p.pct + "%", transition: "width 0.3s" }} />
+              {(() => {
+                const propertyReports = allReports.filter(r => r.property_name === propertyName);
+                const latestByOtherInspector = {};
+                propertyReports.forEach(r => {
+                  if (r.inspector_id === currentUser.id) return;
+                  const existing = latestByOtherInspector[r.inspector_id];
+                  if (!existing || new Date(r.updated_at) > new Date(existing.updated_at)) {
+                    latestByOtherInspector[r.inspector_id] = r;
+                  }
+                });
+                const rows = [
+                  { key: "me", label: "My progress", pct: myProgress, color: C.burgundyDark },
+                  ...Object.values(latestByOtherInspector).map(r => {
+                    const enriched = sharedReportData.find(e => e.report.id === r.id);
+                    return { key: r.id, label: shortInspectorName(r), pct: enriched ? enriched.progress : 0, color: C.green };
+                  }),
+                ];
+                return rows.map(p => (
+                  <div key={p.key} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 7 }}>
+                    <span style={{ fontSize: 12, color: C.muted, width: 90, flexShrink: 0 }}>{p.label}</span>
+                    <div style={{ flex: 1, background: C.dark, borderRadius: 4, height: 7, overflow: "hidden" }}>
+                      <div style={{ background: p.color, height: 7, borderRadius: 4, width: p.pct + "%", transition: "width 0.3s" }} />
+                    </div>
+                    <span style={{ color: C.text, fontSize: 12, fontWeight: 700, width: 32, textAlign: "right" }}>{p.pct}%</span>
                   </div>
-                  <span style={{ color: C.text, fontSize: 12, fontWeight: 700, width: 32, textAlign: "right" }}>{p.pct}%</span>
-                </div>
-              ))}
+                ));
+              })()}
             </div>
 
             {/* EXTERIOR — single, property-wide section */}
@@ -1418,7 +1434,7 @@ export default function PropertyInspection() {
                         <div onClick={() => { loadReportById(report.id); setView("mine"); }} style={{ cursor: "pointer", flex: 1, minWidth: 0 }}>
                           <div style={{ color: C.text, fontWeight: 600, fontSize: 13 }}>
                             <span style={{ fontSize: 10, fontWeight: 700, padding: "1px 7px", borderRadius: 8, background: isMine ? C.burgundyDark : C.green, color: C.ivory, marginRight: 6 }}>
-                              {report.inspector_name.split(" ")[0]}
+                              {shortInspectorName(report)}
                             </span>
                             {report.inspector_name}
                           </div>
@@ -1501,7 +1517,7 @@ export default function PropertyInspection() {
                   <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "14px 16px", marginBottom: 14 }}>
                     {entries.map(({ report, progress }) => (
                       <div key={report.id} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                        <span style={{ fontSize: 12, color: C.muted, width: 110, flexShrink: 0 }}>{report.inspector_name.split(" ")[0]}</span>
+                        <span style={{ fontSize: 12, color: C.muted, width: 110, flexShrink: 0 }}>{shortInspectorName(report)}</span>
                         <div style={{ flex: 1, background: C.dark, borderRadius: 4, height: 7, overflow: "hidden" }}>
                           <div style={{ background: report.inspector_id === "avy" ? C.burgundyDark : C.green, height: 7, borderRadius: 4, width: progress + "%", transition: "width 0.3s" }} />
                         </div>
