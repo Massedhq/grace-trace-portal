@@ -300,7 +300,6 @@ export default function PropertyInspection() {
   const cameraInputRef = useRef(null);
   const [activePhotoKey, setActivePhotoKey] = useState(null);
   const [activePhotoAreaId, setActivePhotoAreaId] = useState(null);
-  const [showMyProperties, setShowMyProperties] = useState(false);
   const [myProperties, setMyProperties] = useState([]); // this inspector's own reports (one per property)
   const [sharedReportData, setSharedReportData] = useState([]);
   const [lightboxPhoto, setLightboxPhoto] = useState(null);
@@ -1102,11 +1101,11 @@ export default function PropertyInspection() {
           <div style={{ color: C.ivory, fontWeight: 800, fontSize: 16, marginTop: 2 }}>Property Inspection</div>
           <div style={{ color: C.gold, fontSize: 11 }}>{propertyName || "No property selected"} · {currentUser.name}</div>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          {["mine", "shared"].map(v => (
-            <button key={v} onClick={() => { setView(v); if (v === "shared") loadAllReports(); }}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {["mine", "shared", "browse"].map(v => (
+            <button key={v} onClick={() => { setView(v); if (v === "shared" || v === "browse") loadAllReports(); }}
               style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid " + (view === v ? C.gold : C.cardBorder), background: view === v ? C.gold : C.card, color: view === v ? C.dark : C.muted, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-              {v === "mine" ? "My report" : "Shared view"}
+              {v === "mine" ? "My report" : v === "shared" ? "Shared view" : "By property"}
             </button>
           ))}
         </div>
@@ -1352,37 +1351,39 @@ export default function PropertyInspection() {
                   </button>
                 </>
               )}
-              <button onClick={() => setShowMyProperties(!showMyProperties)}
-                style={{ background: C.card, border: "1px solid " + C.gold, borderRadius: 8, padding: "11px 16px", color: C.gold, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-                📋 All reports ({allReports.length})
-              </button>
               <button onClick={() => { setView("shared"); loadAllReports(); }}
                 style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "11px 16px", color: C.muted, fontSize: 13, cursor: "pointer" }}>
                 View shared report
               </button>
             </div>
+          </>
+        )}
 
-            {showMyProperties && (
-              <div style={{ background: C.card, border: "1px solid " + C.gold, borderRadius: 12, padding: "14px 16px", marginTop: 14 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: C.gold, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>
-                  All reports — yours and your teammate's. Tap any to open the full report; only your own can be edited.
+        {view === "browse" && (
+          <>
+            {groupByProperty(allReports, r => r.property_name).length === 0 && (
+              <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "20px 16px", color: C.muted, fontSize: 13, textAlign: "center" }}>
+                No properties inspected yet.
+              </div>
+            )}
+            {groupByProperty(allReports, r => r.property_name).map(({ propertyName: propName, entries: propReports }) => (
+              <div key={propName} style={{ marginBottom: 20 }}>
+                <div style={{ color: C.gold, fontWeight: 800, fontSize: 15, marginBottom: 10, borderBottom: "2px solid " + C.gold, paddingBottom: 8 }}>
+                  {propName}
                 </div>
-                {allReports.length === 0 && (
-                  <div style={{ color: C.muted, fontSize: 13 }}>No reports yet.</div>
-                )}
-                {allReports.map(report => {
+                {propReports.map(report => {
                   const isMine = report.inspector_id === currentUser.id;
                   return (
                     <div key={report.id}
-                      style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", background: inspectionId === report.id ? "#2A1A0A" : C.dark, border: "1px solid " + (inspectionId === report.id ? C.gold : C.cardBorder), borderRadius: 8, marginBottom: 8, gap: 8 }}
+                      style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", background: (inspectionId === report.id && view === "browse") ? "#2A1A0A" : C.card, border: "1px solid " + ((inspectionId === report.id) ? C.gold : C.cardBorder), borderRadius: 8, marginBottom: 8, gap: 8 }}
                       onMouseEnter={e => e.currentTarget.style.borderColor = C.gold}
                       onMouseLeave={e => { if (inspectionId !== report.id) e.currentTarget.style.borderColor = C.cardBorder; }}>
-                      <div onClick={() => loadReportById(report.id)} style={{ cursor: "pointer", flex: 1, minWidth: 0 }}>
+                      <div onClick={() => { loadReportById(report.id); setView("mine"); }} style={{ cursor: "pointer", flex: 1, minWidth: 0 }}>
                         <div style={{ color: C.text, fontWeight: 600, fontSize: 13 }}>
-                          {report.property_name}
-                          <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 700, padding: "1px 7px", borderRadius: 8, background: isMine ? C.burgundyDark : C.green, color: C.ivory }}>
+                          <span style={{ fontSize: 10, fontWeight: 700, padding: "1px 7px", borderRadius: 8, background: isMine ? C.burgundyDark : C.green, color: C.ivory, marginRight: 6 }}>
                             {report.inspector_name.split(" ")[0]}
                           </span>
+                          {report.inspector_name}
                         </div>
                         {(report.wing || report.room_area) && (
                           <div style={{ color: C.gold, fontSize: 11, marginTop: 2, fontStyle: "italic" }}>
@@ -1393,10 +1394,9 @@ export default function PropertyInspection() {
                           {report.overall_rating || "No rating"} · {new Date(report.updated_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
                         </div>
                       </div>
-                      {inspectionId === report.id
-                        ? <span style={{ color: C.gold, fontSize: 12, fontWeight: 700, flexShrink: 0 }}>Active ✓</span>
-                        : <span onClick={() => loadReportById(report.id)} style={{ color: C.muted, fontSize: 13, cursor: "pointer", flexShrink: 0 }}>Open →</span>
-                      }
+                      <span onClick={() => { loadReportById(report.id); setView("mine"); }} style={{ color: C.muted, fontSize: 13, cursor: "pointer", flexShrink: 0 }}>
+                        {isMine ? "Open →" : "View →"}
+                      </span>
                       {isMine && (
                         <button
                           onClick={(e) => {
@@ -1413,7 +1413,7 @@ export default function PropertyInspection() {
                   );
                 })}
               </div>
-            )}
+            ))}
           </>
         )}
 
