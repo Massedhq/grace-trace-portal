@@ -302,6 +302,8 @@ export default function PropertyInspection() {
   const [activePhotoAreaId, setActivePhotoAreaId] = useState(null);
   const [myProperties, setMyProperties] = useState([]); // this inspector's own reports (one per property)
   const [sharedReportData, setSharedReportData] = useState([]);
+  const [selectedBrowseProperty, setSelectedBrowseProperty] = useState(null);
+  const [selectedSharedProperty, setSelectedSharedProperty] = useState(null);
   const [lightboxPhoto, setLightboxPhoto] = useState(null);
 
   useEffect(() => {
@@ -1148,7 +1150,15 @@ export default function PropertyInspection() {
 
             {/* Property selector */}
             <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 14 }}>
-              <label style={{ fontSize: 10, fontWeight: 700, color: C.gold, textTransform: "uppercase", letterSpacing: 1 }}>Property being inspected</label>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                <label style={{ fontSize: 10, fontWeight: 700, color: C.gold, textTransform: "uppercase", letterSpacing: 1 }}>Property being inspected</label>
+                {!isReadOnly && (
+                  <button onClick={() => { setPropertyName(""); setRating(""); setGeneralNotes(""); setInspectionId(null); setViewingInspectorId(null); setViewingInspectorName(null); setItemStates({}); setMyPhotos({}); setAreas([]); setAreaItemStates({}); setAreaPhotos({}); setMyProgress(0); }}
+                    style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 6, padding: "4px 10px", color: C.text, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+                    + Start new property
+                  </button>
+                )}
+              </div>
               <input type="text" list="properties-list" value={propertyName} disabled={isReadOnly}
                 onChange={e => setPropertyName(e.target.value)}
                 onBlur={e => switchProperty(e.target.value)}
@@ -1361,59 +1371,87 @@ export default function PropertyInspection() {
 
         {view === "browse" && (
           <>
-            {groupByProperty(allReports, r => r.property_name).length === 0 && (
-              <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "20px 16px", color: C.muted, fontSize: 13, textAlign: "center" }}>
-                No properties inspected yet.
-              </div>
-            )}
-            {groupByProperty(allReports, r => r.property_name).map(({ propertyName: propName, entries: propReports }) => (
-              <div key={propName} style={{ marginBottom: 20 }}>
-                <div style={{ color: C.gold, fontWeight: 800, fontSize: 15, marginBottom: 10, borderBottom: "2px solid " + C.gold, paddingBottom: 8 }}>
-                  {propName}
-                </div>
-                {propReports.map(report => {
-                  const isMine = report.inspector_id === currentUser.id;
-                  return (
-                    <div key={report.id}
-                      style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", background: (inspectionId === report.id && view === "browse") ? "#2A1A0A" : C.card, border: "1px solid " + ((inspectionId === report.id) ? C.gold : C.cardBorder), borderRadius: 8, marginBottom: 8, gap: 8 }}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = C.gold}
-                      onMouseLeave={e => { if (inspectionId !== report.id) e.currentTarget.style.borderColor = C.cardBorder; }}>
-                      <div onClick={() => { loadReportById(report.id); setView("mine"); }} style={{ cursor: "pointer", flex: 1, minWidth: 0 }}>
-                        <div style={{ color: C.text, fontWeight: 600, fontSize: 13 }}>
-                          <span style={{ fontSize: 10, fontWeight: 700, padding: "1px 7px", borderRadius: 8, background: isMine ? C.burgundyDark : C.green, color: C.ivory, marginRight: 6 }}>
-                            {report.inspector_name.split(" ")[0]}
-                          </span>
-                          {report.inspector_name}
-                        </div>
-                        {(report.wing || report.room_area) && (
-                          <div style={{ color: C.gold, fontSize: 11, marginTop: 2, fontStyle: "italic" }}>
-                            Originally recorded as: {[report.wing, report.room_area].filter(Boolean).join(" — ")}
-                          </div>
-                        )}
-                        <div style={{ color: C.muted, fontSize: 11, marginTop: 2 }}>
-                          {report.overall_rating || "No rating"} · {new Date(report.updated_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
-                        </div>
+            {(() => {
+              const browseGroups = groupByProperty(allReports, r => r.property_name);
+              const activeGroup = browseGroups.find(g => g.propertyName === selectedBrowseProperty);
+
+              if (!selectedBrowseProperty || !activeGroup) {
+                return (
+                  <>
+                    {browseGroups.length === 0 && (
+                      <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "20px 16px", color: C.muted, fontSize: 13, textAlign: "center" }}>
+                        No properties inspected yet.
                       </div>
-                      <span onClick={() => { loadReportById(report.id); setView("mine"); }} style={{ color: C.muted, fontSize: 13, cursor: "pointer", flexShrink: 0 }}>
-                        {isMine ? "Open →" : "View →"}
-                      </span>
-                      {isMine && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (window.confirm("Delete this report for \"" + report.property_name + "\"? This removes its checklist, notes, and photos permanently.")) {
-                              deleteReport(report.id);
-                            }
-                          }}
-                          style={{ background: "transparent", border: "1px solid #A32D2D", borderRadius: 6, padding: "5px 8px", color: "#D85A30", fontSize: 12, cursor: "pointer", flexShrink: 0 }}>
-                          🗑️
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
+                    )}
+                    {browseGroups.map(({ propertyName: propName, entries: propReports }) => (
+                      <button key={propName} onClick={() => setSelectedBrowseProperty(propName)}
+                        style={{ width: "100%", textAlign: "left", background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "16px", marginBottom: 10, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}
+                        onMouseEnter={e => e.currentTarget.style.borderColor = C.gold}
+                        onMouseLeave={e => e.currentTarget.style.borderColor = C.cardBorder}>
+                        <div>
+                          <div style={{ color: C.text, fontWeight: 700, fontSize: 14 }}>{propName}</div>
+                          <div style={{ color: C.muted, fontSize: 12, marginTop: 3 }}>{propReports.length} report{propReports.length === 1 ? "" : "s"}</div>
+                        </div>
+                        <span style={{ color: C.gold, fontSize: 18 }}>→</span>
+                      </button>
+                    ))}
+                  </>
+                );
+              }
+
+              return (
+                <>
+                  <button onClick={() => setSelectedBrowseProperty(null)}
+                    style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "8px 14px", color: C.muted, fontSize: 12, cursor: "pointer", marginBottom: 14 }}>
+                    ← All properties
+                  </button>
+                  <div style={{ color: C.gold, fontWeight: 800, fontSize: 15, marginBottom: 10, borderBottom: "2px solid " + C.gold, paddingBottom: 8 }}>
+                    {activeGroup.propertyName}
+                  </div>
+                  {activeGroup.entries.map(report => {
+                    const isMine = report.inspector_id === currentUser.id;
+                    return (
+                      <div key={report.id}
+                        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", background: (inspectionId === report.id) ? "#2A1A0A" : C.card, border: "1px solid " + ((inspectionId === report.id) ? C.gold : C.cardBorder), borderRadius: 8, marginBottom: 8, gap: 8 }}
+                        onMouseEnter={e => e.currentTarget.style.borderColor = C.gold}
+                        onMouseLeave={e => { if (inspectionId !== report.id) e.currentTarget.style.borderColor = C.cardBorder; }}>
+                        <div onClick={() => { loadReportById(report.id); setView("mine"); }} style={{ cursor: "pointer", flex: 1, minWidth: 0 }}>
+                          <div style={{ color: C.text, fontWeight: 600, fontSize: 13 }}>
+                            <span style={{ fontSize: 10, fontWeight: 700, padding: "1px 7px", borderRadius: 8, background: isMine ? C.burgundyDark : C.green, color: C.ivory, marginRight: 6 }}>
+                              {report.inspector_name.split(" ")[0]}
+                            </span>
+                            {report.inspector_name}
+                          </div>
+                          {(report.wing || report.room_area) && (
+                            <div style={{ color: C.gold, fontSize: 11, marginTop: 2, fontStyle: "italic" }}>
+                              Originally recorded as: {[report.wing, report.room_area].filter(Boolean).join(" — ")}
+                            </div>
+                          )}
+                          <div style={{ color: C.muted, fontSize: 11, marginTop: 2 }}>
+                            {report.overall_rating || "No rating"} · {new Date(report.updated_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                          </div>
+                        </div>
+                        <span onClick={() => { loadReportById(report.id); setView("mine"); }} style={{ color: C.muted, fontSize: 13, cursor: "pointer", flexShrink: 0 }}>
+                          {isMine ? "Open →" : "View →"}
+                        </span>
+                        {isMine && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (window.confirm("Delete this report for \"" + report.property_name + "\"? This removes its checklist, notes, and photos permanently.")) {
+                                deleteReport(report.id);
+                              }
+                            }}
+                            style={{ background: "transparent", border: "1px solid #A32D2D", borderRadius: 6, padding: "5px 8px", color: "#D85A30", fontSize: 12, cursor: "pointer", flexShrink: 0 }}>
+                            🗑️
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </>
+              );
+            })()}
           </>
         )}
 
@@ -1432,7 +1470,27 @@ export default function PropertyInspection() {
               </div>
             )}
 
-            {sharedGroups.map(({ propertyName: propName, entries }) => {
+            {!selectedSharedProperty && sharedGroups.map(({ propertyName: propName, entries }) => (
+              <button key={propName} onClick={() => setSelectedSharedProperty(propName)}
+                style={{ width: "100%", textAlign: "left", background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "16px", marginBottom: 10, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = C.gold}
+                onMouseLeave={e => e.currentTarget.style.borderColor = C.cardBorder}>
+                <div>
+                  <div style={{ color: C.text, fontWeight: 700, fontSize: 14 }}>{propName}</div>
+                  <div style={{ color: C.muted, fontSize: 12, marginTop: 3 }}>{entries.length} inspector report{entries.length === 1 ? "" : "s"}</div>
+                </div>
+                <span style={{ color: C.gold, fontSize: 18 }}>→</span>
+              </button>
+            ))}
+
+            {selectedSharedProperty && (
+              <button onClick={() => setSelectedSharedProperty(null)}
+                style={{ background: "transparent", border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "8px 14px", color: C.muted, fontSize: 12, cursor: "pointer", marginBottom: 14 }}>
+                ← All properties
+              </button>
+            )}
+
+            {sharedGroups.filter(g => g.propertyName === selectedSharedProperty).map(({ propertyName: propName, entries }) => {
               const propFlags = sharedFlags.filter(f => f.propertyName === propName);
               return (
                 <div key={propName} style={{ marginBottom: 32 }}>
