@@ -258,15 +258,21 @@ function NoteModal({ title, onConfirm, onCancel }) {
   );
 }
 
+function canonProp(s) {
+  return (s || "").trim().toLowerCase().replace(/\s+/g, " ").replace(/[–—−]/g, "-");
+}
+
 function groupByProperty(list, getPropertyName) {
   const map = {};
   const order = [];
+  const displayNames = {};
   list.forEach(entry => {
-    const key = getPropertyName(entry) || "Unnamed property";
-    if (!map[key]) { map[key] = []; order.push(key); }
+    const raw = getPropertyName(entry) || "Unnamed property";
+    const key = canonProp(raw);
+    if (!map[key]) { map[key] = []; order.push(key); displayNames[key] = raw; }
     map[key].push(entry);
   });
-  return order.map(key => ({ propertyName: key, entries: map[key] }));
+  return order.map(key => ({ propertyName: displayNames[key], entries: map[key] }));
 }
 
 export default function PropertyInspection() {
@@ -542,7 +548,7 @@ export default function PropertyInspection() {
     if (!newName) return;
     if (inspectionId && (propertyName || "").trim() === newName) return;
 
-    const existing = myProperties.find(r => r.property_name === newName);
+    const existing = myProperties.find(r => canonProp(r.property_name) === canonProp(newName));
     if (existing) {
       await loadReportById(existing.id);
       return;
@@ -1053,7 +1059,7 @@ export default function PropertyInspection() {
         });
       });
 
-      const propFlags = sharedFlags.filter(f => f.propertyName === propName);
+      const propFlags = sharedFlags.filter(f => canonProp(f.propertyName) === canonProp(propName));
       if (propFlags.length > 0) {
         html += `<div class="concerns"><h2 style="color:#D85A30;border-color:#D85A30;margin-top:0">&#9888; Flagged Concerns (${propFlags.length})</h2>`;
         propFlags.forEach(f => {
@@ -1182,7 +1188,7 @@ export default function PropertyInspection() {
             {/* Progress */}
             <div style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: "14px 16px", marginBottom: 14 }}>
               {(() => {
-                const propertyReports = allReports.filter(r => r.property_name === propertyName);
+                const propertyReports = allReports.filter(r => canonProp(r.property_name) === canonProp(propertyName));
                 const latestByOtherInspector = {};
                 propertyReports.forEach(r => {
                   if (r.inspector_id === currentUser.id) return;
@@ -1507,7 +1513,7 @@ export default function PropertyInspection() {
             )}
 
             {sharedGroups.filter(g => g.propertyName === selectedSharedProperty).map(({ propertyName: propName, entries }) => {
-              const propFlags = sharedFlags.filter(f => f.propertyName === propName);
+              const propFlags = sharedFlags.filter(f => canonProp(f.propertyName) === canonProp(propName));
               return (
                 <div key={propName} style={{ marginBottom: 32 }}>
                   <div style={{ color: C.gold, fontWeight: 800, fontSize: 15, marginBottom: 12, borderBottom: "2px solid " + C.gold, paddingBottom: 8 }}>

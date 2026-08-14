@@ -181,15 +181,16 @@ export async function POST(req: Request) {
     const finalPropertyName = (property_name || "Athens TX — State Hwy 31 West").trim();
 
     // One report per inspector per property. If this inspector already has a
-    // report for this property, reuse it instead of creating a duplicate —
-    // that's what lets the checklist (including Exterior) persist across
-    // every wing/room you add within the same property.
-    const [existing] = await sql`
-      SELECT * FROM property_inspections
-      WHERE inspector_id = ${inspector_id} AND property_name = ${finalPropertyName}
-      ORDER BY created_at ASC
-      LIMIT 1
+    // report for this property, reuse it instead of creating a duplicate.
+    // Match forgivingly (case/whitespace/dash-style insensitive) so small
+    // typing differences between two people ("Athens TX — State Hwy 31 West"
+    // vs "athens tx - state hwy 31 west") don't silently split into two
+    // separate reports.
+    const canon = (s: string) => (s || "").trim().toLowerCase().replace(/\s+/g, " ").replace(/[–—−]/g, "-");
+    const candidates = await sql`
+      SELECT * FROM property_inspections WHERE inspector_id = ${inspector_id} ORDER BY created_at ASC
     `;
+    const existing = candidates.find((r: any) => canon(r.property_name) === canon(finalPropertyName));
 
     if (existing) {
       return Response.json({ report: existing }, { status: 200 });
