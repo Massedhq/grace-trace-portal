@@ -486,6 +486,23 @@ export default function PropertyInspection() {
           setAreaPhotos(areaPhotoMap);
           setMyProgress(activeEnriched.progress);
         }
+      } else {
+        // No reports of my own for any property. Make sure we're not stuck
+        // showing a teammate's report from an earlier "By property"/"Shared
+        // view" visit — reset to a blank, fully editable state so a new or
+        // first-time inspector can actually start typing/checking/uploading.
+        setInspectionId(null);
+        setPropertyName("");
+        setViewingInspectorId(null);
+        setViewingInspectorName(null);
+        setItemStates({});
+        setMyPhotos({});
+        setAreas([]);
+        setAreaItemStates({});
+        setAreaPhotos({});
+        setRating("");
+        setGeneralNotes("");
+        setMyProgress(0);
       }
 
       // Build flags from all enriched data
@@ -773,18 +790,24 @@ export default function PropertyInspection() {
     setLightboxPhoto(null);
   }
 
-  function openCamera(itemKey, areaId) {
+  async function openCamera(itemKey, areaId) {
     setActivePhotoKey(itemKey);
     setActivePhotoAreaId(areaId || null);
+    // Create/confirm the report in the database BEFORE launching the camera.
+    // Some phones reload or suspend this tab while the camera app is open —
+    // if the report didn't exist yet at that moment, returning from the
+    // camera can look like the inspection never started.
+    await getOrCreateInspection();
     if (cameraInputRef.current) {
       cameraInputRef.current.value = "";
       setTimeout(() => cameraInputRef.current?.click(), 50);
     }
   }
 
-  function openLibrary(itemKey, areaId) {
+  async function openLibrary(itemKey, areaId) {
     setActivePhotoKey(itemKey);
     setActivePhotoAreaId(areaId || null);
+    await getOrCreateInspection();
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
       setTimeout(() => fileInputRef.current?.click(), 50);
@@ -1112,7 +1135,7 @@ export default function PropertyInspection() {
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {["mine", "shared", "browse"].map(v => (
-            <button key={v} onClick={() => { setView(v); if (v === "shared" || v === "browse") loadAllReports(); }}
+            <button key={v} onClick={() => { setView(v); loadAllReports(); }}
               style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid " + (view === v ? C.gold : C.cardBorder), background: view === v ? C.gold : C.card, color: view === v ? C.dark : C.muted, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
               {v === "mine" ? "My report" : v === "shared" ? "Shared view" : "By property"}
             </button>
@@ -1159,12 +1182,10 @@ export default function PropertyInspection() {
             <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 14 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                 <label style={{ fontSize: 10, fontWeight: 700, color: C.gold, textTransform: "uppercase", letterSpacing: 1 }}>Property being inspected</label>
-                {!isReadOnly && (
-                  <button onClick={() => { setPropertyName(""); setRating(""); setGeneralNotes(""); setInspectionId(null); setViewingInspectorId(null); setViewingInspectorName(null); setItemStates({}); setMyPhotos({}); setAreas([]); setAreaItemStates({}); setAreaPhotos({}); setMyProgress(0); }}
-                    style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 6, padding: "4px 10px", color: C.text, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
-                    + Start new property
-                  </button>
-                )}
+                <button onClick={() => { setPropertyName(""); setRating(""); setGeneralNotes(""); setInspectionId(null); setViewingInspectorId(null); setViewingInspectorName(null); setItemStates({}); setMyPhotos({}); setAreas([]); setAreaItemStates({}); setAreaPhotos({}); setMyProgress(0); }}
+                  style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 6, padding: "4px 10px", color: C.text, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+                  + Start new property
+                </button>
               </div>
               <input type="text" list="properties-list" value={propertyName} disabled={isReadOnly}
                 onChange={e => setPropertyName(e.target.value)}
@@ -1377,12 +1398,12 @@ export default function PropertyInspection() {
                     style={{ background: C.green, border: "none", borderRadius: 8, padding: "11px 20px", color: C.ivory, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
                     + Start new area
                   </button>
-                  <button onClick={() => { setPropertyName(""); setRating(""); setGeneralNotes(""); setInspectionId(null); setViewingInspectorId(null); setViewingInspectorName(null); setItemStates({}); setMyPhotos({}); setAreas([]); setAreaItemStates({}); setAreaPhotos({}); setMyProgress(0); }}
-                    style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "11px 20px", color: C.text, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-                    + Start new property
-                  </button>
                 </>
               )}
+              <button onClick={() => { setPropertyName(""); setRating(""); setGeneralNotes(""); setInspectionId(null); setViewingInspectorId(null); setViewingInspectorName(null); setItemStates({}); setMyPhotos({}); setAreas([]); setAreaItemStates({}); setAreaPhotos({}); setMyProgress(0); }}
+                style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "11px 20px", color: C.text, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                + Start new property
+              </button>
               <button onClick={() => { setView("shared"); loadAllReports(); }}
                 style={{ background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 8, padding: "11px 16px", color: C.muted, fontSize: 13, cursor: "pointer" }}>
                 View shared report
