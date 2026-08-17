@@ -43,6 +43,7 @@ async function notifyTeamOfNewProperty(prop) {
       prop.askingPrice ? "Asking: " + prop.askingPrice : "",
       prop.monthlyLease ? "Lease: " + prop.monthlyLease : "",
     ].filter(Boolean).join(" · ");
+    const propertyUrl = (typeof window !== "undefined" ? window.location.origin : "") + "/properties?id=" + prop.id;
 
     await fetch("/api/announcements", {
       method: "POST",
@@ -53,7 +54,7 @@ async function notifyTeamOfNewProperty(prop) {
         body:
           addressLine +
           (details ? "\n" + details : "") +
-          "\n\nSubmitted by " + prop.submittedByName + ". Open Property Opportunities to view details and cast your vote.",
+          "\n\nSubmitted by " + prop.submittedByName + ".\n\nView it here: " + propertyUrl,
         createdBy: prop.submittedByName,
         pinned: false,
       }),
@@ -95,7 +96,18 @@ export default function PropertyOpportunities() {
       const uid = localStorage.getItem("gtm_current_user");
       if (uid) { const u = ALL_STAFF.find(s=>s.id===uid)||{id:uid,name:uid,initials:"?",color:C.burgundy}; setCurrentUser(u); }
     } catch(e) {}
-    loadProperties().then(p => { setProperties(p); setLoading(false); });
+    loadProperties().then(p => {
+      setProperties(p);
+      setLoading(false);
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+        if (id) {
+          const match = p.find(pr => pr.id === id);
+          if (match) setActiveProperty(match);
+        }
+      } catch (e) {}
+    });
   }, []);
 
   async function submitProperty() {

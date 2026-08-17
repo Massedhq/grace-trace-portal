@@ -55,6 +55,25 @@ function categoryMeta(value) {
   return CATEGORIES.find((c) => c.value === value) || CATEGORIES[CATEGORIES.length - 1];
 }
 
+function linkifyText(text, linkColor) {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const result = [];
+  let lastIndex = 0;
+  let match;
+  let key = 0;
+  while ((match = urlRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) result.push(text.slice(lastIndex, match.index));
+    result.push(
+      <a key={key++} href={match[0]} style={{ color: linkColor, textDecoration: "underline", wordBreak: "break-all" }}>
+        {match[0]}
+      </a>
+    );
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < text.length) result.push(text.slice(lastIndex));
+  return result;
+}
+
 export default function AnnouncementsPage() {
   const [staffId, setStaffId] = useState(null);
   const [announcements, setAnnouncements] = useState([]);
@@ -319,8 +338,18 @@ function AnnouncementCard({ announcement, leadership, staffId, currentName, read
         )}
       </div>
       <div style={{ color: C.text, fontSize: 14, lineHeight: 1.7, whiteSpace: "pre-wrap", marginTop: 6 }}>
-        {announcement.body}
+        {linkifyText(announcement.body, C.gold)}
       </div>
+
+      {announcement.category === "property" && (() => {
+        const urlMatch = announcement.body.match(/https?:\/\/[^\s]+/);
+        if (!urlMatch) return null;
+        return (
+          <a href={urlMatch[0]} style={{ display: "inline-block", marginTop: 10, background: C.green, border: "1px solid #4CAF5066", borderRadius: 8, padding: "9px 18px", color: C.ivory, fontSize: 13, fontWeight: 800, textDecoration: "none" }}>
+            🏢 View Property Opportunity →
+          </a>
+        );
+      })()}
 
       <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid " + C.cardBorder, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
         {staffId ? (
