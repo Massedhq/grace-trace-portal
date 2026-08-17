@@ -45,7 +45,7 @@ async function notifyTeamOfNewProperty(prop) {
     ].filter(Boolean).join(" · ");
     const propertyUrl = (typeof window !== "undefined" ? window.location.origin : "") + "/properties?id=" + prop.id;
 
-    await fetch("/api/announcements", {
+    const res = await fetch("/api/announcements", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -59,9 +59,16 @@ async function notifyTeamOfNewProperty(prop) {
         pinned: false,
       }),
     });
+
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      console.error("notifyTeamOfNewProperty failed:", res.status, errBody);
+      return false;
+    }
+    return true;
   } catch (e) {
-    // Non-fatal — the property submission itself already succeeded even if
-    // the announcement post fails, so we don't block or alert on this.
+    console.error("notifyTeamOfNewProperty threw:", e);
+    return false;
   }
 }
 
@@ -141,12 +148,16 @@ export default function PropertyOpportunities() {
 
   async function manualNotify(prop) {
     setNotifying(prop.id);
-    await notifyTeamOfNewProperty(prop);
+    const ok = await notifyTeamOfNewProperty(prop);
     setNotifying(null);
-    setNotifiedIds(prev => ({ ...prev, [prop.id]: true }));
-    setTimeout(() => {
-      setNotifiedIds(prev => { const next = { ...prev }; delete next[prop.id]; return next; });
-    }, 4000);
+    if (ok) {
+      setNotifiedIds(prev => ({ ...prev, [prop.id]: true }));
+      setTimeout(() => {
+        setNotifiedIds(prev => { const next = { ...prev }; delete next[prop.id]; return next; });
+      }, 4000);
+    } else {
+      alert("Couldn't send the team notification — please check your connection and try again. (Details were logged to the browser console.)");
+    }
   }
 
   function castVote(propId, vote) {
