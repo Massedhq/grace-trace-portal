@@ -35,6 +35,35 @@ async function saveProperties(props) {
   try { await fetch("/api/properties", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(props) }); } catch(e) {}
 }
 
+async function notifyTeamOfNewProperty(prop) {
+  try {
+    const addressLine = [prop.address, prop.city, prop.state].filter(Boolean).join(", ");
+    const details = [
+      prop.propertyType,
+      prop.askingPrice ? "Asking: " + prop.askingPrice : "",
+      prop.monthlyLease ? "Lease: " + prop.monthlyLease : "",
+    ].filter(Boolean).join(" · ");
+
+    await fetch("/api/announcements", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: "New Property Opportunity: " + (prop.name || prop.address),
+        category: "Property Opportunity",
+        body:
+          addressLine +
+          (details ? "\n" + details : "") +
+          "\n\nSubmitted by " + prop.submittedByName + ". Open Property Opportunities to view details and cast your vote.",
+        createdBy: prop.submittedBy,
+        pinned: false,
+      }),
+    });
+  } catch (e) {
+    // Non-fatal — the property submission itself already succeeded even if
+    // the announcement post fails, so we don't block or alert on this.
+  }
+}
+
 const EMPTY_FORM = {
   name:"", address:"", city:"", state:"TX", askingPrice:"", monthlyLease:"",
   propertyType:"", squareFt:"", acres:"", numRooms:"", bathrooms:"", parkingSpaces:"",
@@ -69,7 +98,7 @@ export default function PropertyOpportunities() {
     loadProperties().then(p => { setProperties(p); setLoading(false); });
   }, []);
 
-  function submitProperty() {
+  async function submitProperty() {
     if (!form.address.trim()) { setFormError("Please enter the property address."); return; }
     if (!form.city.trim()) { setFormError("Please enter the city."); return; }
     if (!form.propertyType) { setFormError("Please select a property type."); return; }
@@ -89,6 +118,7 @@ export default function PropertyOpportunities() {
     const updated = [prop, ...properties];
     setProperties(updated);
     saveProperties(updated);
+    notifyTeamOfNewProperty(prop);
     setForm({...EMPTY_FORM});
     setFormError("");
     setSubmitted(true);
