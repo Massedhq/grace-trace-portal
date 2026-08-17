@@ -88,6 +88,8 @@ export default function PropertyOpportunities() {
   const [formError, setFormError] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [newComment, setNewComment] = useState("");
+  const [notifiedIds, setNotifiedIds] = useState({});
+  const [notifying, setNotifying] = useState(null);
 
   const isLeadership = currentUser?.id === "avy" || currentUser?.id === "travis";
 
@@ -135,6 +137,16 @@ export default function PropertyOpportunities() {
     setFormError("");
     setSubmitted(true);
     setTimeout(()=>{ setSubmitted(false); setView("list"); }, 1500);
+  }
+
+  async function manualNotify(prop) {
+    setNotifying(prop.id);
+    await notifyTeamOfNewProperty(prop);
+    setNotifying(null);
+    setNotifiedIds(prev => ({ ...prev, [prop.id]: true }));
+    setTimeout(() => {
+      setNotifiedIds(prev => { const next = { ...prev }; delete next[prop.id]; return next; });
+    }, 4000);
   }
 
   function castVote(propId, vote) {
@@ -211,6 +223,9 @@ export default function PropertyOpportunities() {
             <div style={{color:C.ivory,fontWeight:900,fontSize:16,marginTop:2}}>{prop.name||prop.address}</div>
           </div>
           <div style={{display:"flex",gap:8}}>
+            <button onClick={()=>manualNotify(prop)} disabled={notifying===prop.id} style={{background:notifiedIds[prop.id]?"#4CAF5022":"transparent",border:"1px solid "+(notifiedIds[prop.id]?"#4CAF5066":C.gold+"66"),borderRadius:8,padding:"6px 12px",color:notifiedIds[prop.id]?"#4CAF50":C.gold,fontSize:12,fontWeight:700,cursor:"pointer"}}>
+              {notifying===prop.id ? "…" : notifiedIds[prop.id] ? "✓ Notified" : "🔔 Notify Team"}
+            </button>
             {isLeadership&&<button onClick={()=>deleteProperty(prop.id)} style={{background:C.error+"22",border:"1px solid "+C.error+"44",borderRadius:8,padding:"6px 12px",color:C.error,fontSize:12,fontWeight:700,cursor:"pointer"}}>Remove</button>}
             <button onClick={()=>setActiveProperty(null)} style={{background:"transparent",border:"1px solid "+C.cardBorder,borderRadius:8,padding:"6px 12px",color:C.muted,fontSize:12,cursor:"pointer"}}>← Back</button>
           </div>
@@ -674,6 +689,9 @@ export default function PropertyOpportunities() {
                     {/* Action buttons */}
                     <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                       <button onClick={()=>setActiveProperty(prop)} style={{flex:1,background:C.burgundy,border:"1px solid "+C.gold+"66",borderRadius:8,padding:"8px",color:C.ivory,fontSize:12,fontWeight:700,cursor:"pointer"}}>View Details</button>
+                      <button onClick={()=>manualNotify(prop)} disabled={notifying===prop.id} style={{background:notifiedIds[prop.id]?"#4CAF5022":C.dark,border:"1px solid "+(notifiedIds[prop.id]?"#4CAF5044":C.cardBorder),borderRadius:8,padding:"8px 12px",color:notifiedIds[prop.id]?"#4CAF50":C.muted,fontSize:12,fontWeight:700,cursor:"pointer"}}>
+                        {notifying===prop.id ? "…" : notifiedIds[prop.id] ? "✓ Notified" : "🔔 Notify Team"}
+                      </button>
                       <button onClick={()=>{castVote(prop.id,"yes");}} style={{background:myVote==="yes"?"#4CAF50":C.dark,border:"1px solid "+(myVote==="yes"?"#4CAF50":C.cardBorder),borderRadius:8,padding:"8px 12px",color:myVote==="yes"?C.dark:C.muted,fontSize:13,fontWeight:800,cursor:"pointer"}}>👍</button>
                       <button onClick={()=>{castVote(prop.id,"no");}} style={{background:myVote==="no"?C.error:C.dark,border:"1px solid "+(myVote==="no"?C.error:C.cardBorder),borderRadius:8,padding:"8px 12px",color:myVote==="no"?C.ivory:C.muted,fontSize:13,fontWeight:800,cursor:"pointer"}}>👎</button>
                       {prop.listingUrl&&<a href={prop.listingUrl} target="_blank" rel="noreferrer" style={{background:C.dark,border:"1px solid "+C.cardBorder,borderRadius:8,padding:"8px 12px",color:C.muted,fontSize:12,textDecoration:"none",display:"flex",alignItems:"center"}}>🔗</a>}
