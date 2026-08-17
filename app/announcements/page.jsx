@@ -28,6 +28,7 @@ const CATEGORIES = [
   { value: "contact", label: "New Contact / Agency", color: "#4A5D8B" },
   { value: "funding", label: "Funding / Grant", color: "#C9A84C" },
   { value: "compliance", label: "Compliance / Legal", color: "#8B2A3E" },
+  { value: "property", label: "Property Opportunity", color: "#2E7D32" },
   { value: "general", label: "General Announcement", color: "#5C3010" },
 ];
 

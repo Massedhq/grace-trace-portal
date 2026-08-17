@@ -49,12 +49,12 @@ async function notifyTeamOfNewProperty(prop) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         title: "New Property Opportunity: " + (prop.name || prop.address),
-        category: "Property Opportunity",
+        category: "property",
         body:
           addressLine +
           (details ? "\n" + details : "") +
           "\n\nSubmitted by " + prop.submittedByName + ". Open Property Opportunities to view details and cast your vote.",
-        createdBy: prop.submittedBy,
+        createdBy: prop.submittedByName,
         pinned: false,
       }),
     });
