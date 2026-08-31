@@ -148,7 +148,7 @@ export default function LoiFormPage() {
         <div style={{ height: 3, background: C.navy, margin: "16px 0 24px" }} />
 
         <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: "24px 20px" }}>
-          <p style={{ fontSize: 14, lineHeight: 1.6, margin: "0 0 8px" }}>
+          <p style={{ fontSize: 14, lineHeight: 1.6, margin: "0 0 8px", color: C.text }}>
             <strong>Letter of Intent to Partner</strong> — Transitional Housing Referral Relationship
           </p>
           <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.6 }}>
@@ -209,7 +209,7 @@ export default function LoiFormPage() {
           <h2 style={{ fontSize: 15, color: C.navy, marginTop: 24, borderTop: `1px solid ${C.border}`, paddingTop: 12 }}>
             Intent to collaborate
           </h2>
-          <p style={{ fontSize: 13, lineHeight: 1.6 }}>
+          <p style={{ fontSize: 13, lineHeight: 1.6, color: C.text }}>
             By signing below, you confirm your organization's interest in working with GTM in
             good faith to establish a referral relationship as capacity becomes available, and
             understand this letter may be shared with funders and grant reviewers as evidence of
@@ -256,4 +256,5 @@ export default function LoiFormPage() {
     </div>
   );
 }
+
 
