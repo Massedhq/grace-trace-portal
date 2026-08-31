@@ -74,46 +74,82 @@ export default function LoiSubmissionsPage() {
     const win = window.open("", "_blank");
     if (!win) return;
     const date = r.submitted_at ? new Date(r.submitted_at).toLocaleDateString() : "";
+    const fullName = [r.contact_first_name, r.contact_last_name].filter(Boolean).join(" ");
+    const nameAndTitle = r.contact_title ? `${fullName}, ${r.contact_title}` : fullName;
     win.document.write(`
       <html>
         <head>
           <title>GTM Letter of Intent — ${escapeHtml(r.org_name)}</title>
           <style>
-            body { font-family: Georgia, 'Times New Roman', serif; color: #222; padding: 48px; max-width: 700px; margin: 0 auto; }
-            h1 { color: #1F2A44; font-size: 22px; text-align: center; margin-bottom: 2px; }
-            .sub { text-align: center; color: #B08D57; font-style: italic; margin-bottom: 20px; }
-            .divider { height: 3px; background: #1F2A44; margin: 16px 0 28px; }
-            .row { margin-bottom: 14px; }
-            .label { font-weight: bold; color: #1F2A44; font-size: 13px; }
-            .value { font-size: 14px; margin-top: 2px; }
-            .section-title { font-size: 15px; color: #1F2A44; margin: 26px 0 10px; border-top: 1px solid #ccc; padding-top: 12px; }
-            .sig { margin-top: 40px; border-top: 1px solid #ccc; padding-top: 16px; font-size: 13px; }
+            body { font-family: Georgia, 'Times New Roman', serif; color: #222; padding: 48px; max-width: 720px; margin: 0 auto; }
+            h1 { color: #1F2A44; font-size: 24px; text-align: center; margin-bottom: 2px; letter-spacing: 1px; }
+            .sub { text-align: center; color: #B08D57; font-style: italic; margin-bottom: 6px; }
+            .meta { text-align: center; color: #666; font-size: 11px; margin-bottom: 16px; }
+            .divider { height: 3px; background: #1F2A44; margin: 12px 0 28px; }
+            .date-line { text-align: right; font-size: 13px; color: #444; margin-bottom: 20px; }
+            .re { font-weight: bold; font-size: 15px; color: #1F2A44; margin-bottom: 24px; }
+            .field-row { margin-bottom: 10px; font-size: 14px; }
+            .field-label { font-weight: bold; }
+            .body-text { font-size: 14px; line-height: 1.7; margin: 16px 0; }
+            .section-title { font-weight: bold; font-size: 14px; color: #1F2A44; margin: 22px 0 8px; }
+            .sig-table { width: 100%; margin-top: 40px; border-collapse: collapse; }
+            .sig-table td { width: 50%; vertical-align: top; padding-top: 10px; font-size: 12px; }
+            .sig-line { border-top: 1px solid #999; margin-top: 40px; padding-top: 6px; color: #444; }
+            .sig-header { font-weight: bold; font-size: 12px; color: #1F2A44; margin-bottom: 4px; }
             @media print { body { padding: 24px; } }
           </style>
         </head>
         <body>
           <h1>GRACE TRACE MINISTRIES</h1>
           <div class="sub">Transitional Housing &amp; Reentry Services</div>
+          <div class="meta">gracetraceministries.org &nbsp;|&nbsp; EIN 42-2972120 &nbsp;|&nbsp; UEI FR8MBUNRB3J4</div>
           <div class="divider"></div>
 
-          <div class="section-title">Partner organization</div>
-          <div class="row"><div class="label">Organization</div><div class="value">${escapeHtml(r.org_name)}</div></div>
-          <div class="row"><div class="label">First name</div><div class="value">${escapeHtml(r.contact_first_name)}</div></div>
-          <div class="row"><div class="label">Last name</div><div class="value">${escapeHtml(r.contact_last_name)}</div></div>
-          <div class="row"><div class="label">Title</div><div class="value">${escapeHtml(r.contact_title) || "—"}</div></div>
-          <div class="row"><div class="label">Phone / Email</div><div class="value">${escapeHtml(r.contact_info)}</div></div>
-          <div class="row"><div class="label">City / Location</div><div class="value">${escapeHtml(r.city)}</div></div>
+          <div class="date-line">Date: ${date}</div>
 
-          <div class="section-title">Referral need</div>
-          <div class="row"><div class="label">Estimated referrals per month</div><div class="value">${escapeHtml(r.per_month) || "—"}</div></div>
-          <div class="row"><div class="label">Estimated referrals per year</div><div class="value">${escapeHtml(r.per_year) || "—"}</div></div>
-          <div class="row"><div class="label">Population description</div><div class="value">${escapeHtml(r.population) || "—"}</div></div>
+          <div class="re">RE: Letter of Intent to Partner — Transitional Housing Referral Relationship</div>
 
-          <div class="sig">
-            <div class="label">Signed</div>
-            <div class="value">${escapeHtml(r.signature)}</div>
-            <div class="value" style="color:#666; margin-top:6px;">Submitted ${date}</div>
+          <div class="field-row"><span class="field-label">Partner Organization Name:</span> ${escapeHtml(r.org_name)}</div>
+          <div class="field-row"><span class="field-label">Contact Name &amp; Title:</span> ${escapeHtml(nameAndTitle)}</div>
+          <div class="field-row"><span class="field-label">Phone / Email:</span> ${escapeHtml(r.contact_info)}</div>
+          <div class="field-row"><span class="field-label">City / Location:</span> ${escapeHtml(r.city)}</div>
+
+          <div class="body-text">
+            This Letter of Intent confirms that the above-named organization ("Partner") has expressed interest in referring individuals in need of transitional housing to Grace Trace Ministries ("GTM"), a Texas 501(c)(3) nonprofit organization. This letter is non-binding and is intended to document current need and support GTM's planning and funding efforts, including federal and state grant applications for transitional housing capacity.
           </div>
+
+          <div class="section-title">1. Nature of the Need</div>
+          <div class="body-text">
+            Partner confirms that it regularly encounters individuals who have completed or are completing a program (e.g., sober living, treatment, or reentry) and require transitional housing, and that current housing capacity — whether Partner's own or within the surrounding community — is insufficient to meet this need.
+          </div>
+
+          <div class="section-title">2. Estimated Referral Volume</div>
+          <div class="field-row"><span class="field-label">Estimated number of individuals per month:</span> ${escapeHtml(r.per_month) || "—"}</div>
+          <div class="field-row"><span class="field-label">Estimated number of individuals per year:</span> ${escapeHtml(r.per_year) || "—"}</div>
+          <div class="field-row" style="font-style: italic; color: #666; font-size: 12px;">(Estimates are acceptable and will not be treated as a binding commitment.)</div>
+
+          <div class="section-title">3. Population Description</div>
+          <div class="body-text">${escapeHtml(r.population) || "—"}</div>
+
+          <div class="section-title">4. Intent to Collaborate</div>
+          <div class="body-text">
+            Partner agrees to work in good faith with GTM to establish a referral relationship once GTM has capacity available, and understands that GTM is actively developing housing capacity (including a facility redevelopment project) to meet this and similar community needs. This letter may be shared by GTM with funders, grant reviewers, and government agencies as evidence of community need and partnership support.
+          </div>
+
+          <table class="sig-table">
+            <tr>
+              <td>
+                <div class="sig-header">PARTNER ORGANIZATION</div>
+                <div class="sig-line">Signature</div>
+                <div class="sig-line">${escapeHtml(nameAndTitle)}<br/>Printed Name &amp; Title</div>
+              </td>
+              <td>
+                <div class="sig-header">GRACE TRACE MINISTRIES</div>
+                <div class="sig-line">Signature</div>
+                <div class="sig-line">Avrial Evans, President &amp; Chief Strategist<br/>Printed Name &amp; Title</div>
+              </td>
+            </tr>
+          </table>
         </body>
       </html>
     `);
@@ -313,3 +349,4 @@ const cellStyle = {
   borderBottom: "1px solid #E1DFD8",
   verticalAlign: "top",
 };
+
