@@ -18,7 +18,9 @@ const C = {
 export default function LoiFormPage() {
   const [form, setForm] = useState({
     orgName: "",
-    contactName: "",
+    contactFirstName: "",
+    contactLastName: "",
+    contactTitle: "",
     contactInfo: "",
     city: "",
     perMonth: "",
@@ -38,7 +40,9 @@ export default function LoiFormPage() {
   function validate() {
     const e = {};
     if (!form.orgName.trim()) e.orgName = "Enter your organization's name.";
-    if (!form.contactName.trim()) e.contactName = "Enter a contact name.";
+    if (!form.contactFirstName.trim()) e.contactFirstName = "Enter a first name.";
+    if (!form.contactLastName.trim()) e.contactLastName = "Enter a last name.";
+    if (!form.contactTitle.trim()) e.contactTitle = "Enter a title.";
     if (!form.contactInfo.trim()) e.contactInfo = "Enter a phone number or email.";
     if (!form.city.trim()) e.city = "Enter your city.";
     if (!form.perMonth.trim() && !form.perYear.trim())
@@ -165,18 +169,21 @@ export default function LoiFormPage() {
           <input style={fieldStyle} value={form.orgName} onChange={(e) => update("orgName", e.target.value)} placeholder="e.g. New Horizons Sober Living" />
           {errors.orgName && <div style={errorStyle}>{errors.orgName}</div>}
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-            <div>
-              <label style={labelStyle}>Contact name &amp; title</label>
-              <input style={fieldStyle} value={form.contactName} onChange={(e) => update("contactName", e.target.value)} placeholder="e.g. Jane Smith, Program Director" />
-              {errors.contactName && <div style={errorStyle}>{errors.contactName}</div>}
-            </div>
-            <div>
-              <label style={labelStyle}>Phone or email</label>
-              <input style={fieldStyle} value={form.contactInfo} onChange={(e) => update("contactInfo", e.target.value)} placeholder="e.g. (432) 555-0102" />
-              {errors.contactInfo && <div style={errorStyle}>{errors.contactInfo}</div>}
-            </div>
-          </div>
+          <label style={labelStyle}>First name</label>
+          <input style={fieldStyle} value={form.contactFirstName} onChange={(e) => update("contactFirstName", e.target.value)} placeholder="e.g. Jane" />
+          {errors.contactFirstName && <div style={errorStyle}>{errors.contactFirstName}</div>}
+
+          <label style={labelStyle}>Last name</label>
+          <input style={fieldStyle} value={form.contactLastName} onChange={(e) => update("contactLastName", e.target.value)} placeholder="e.g. Smith" />
+          {errors.contactLastName && <div style={errorStyle}>{errors.contactLastName}</div>}
+
+          <label style={labelStyle}>Title</label>
+          <input style={fieldStyle} value={form.contactTitle} onChange={(e) => update("contactTitle", e.target.value)} placeholder="e.g. Program Director" />
+          {errors.contactTitle && <div style={errorStyle}>{errors.contactTitle}</div>}
+
+          <label style={labelStyle}>Phone or email</label>
+          <input style={fieldStyle} value={form.contactInfo} onChange={(e) => update("contactInfo", e.target.value)} placeholder="e.g. (432) 555-0102" />
+          {errors.contactInfo && <div style={errorStyle}>{errors.contactInfo}</div>}
 
           <label style={labelStyle}>City / location</label>
           <input style={fieldStyle} value={form.city} onChange={(e) => update("city", e.target.value)} placeholder="e.g. Odessa, TX" />
@@ -186,16 +193,11 @@ export default function LoiFormPage() {
             Referral need
           </h2>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-            <div>
-              <label style={labelStyle}>Estimated referrals per month</label>
-              <input style={fieldStyle} type="number" value={form.perMonth} onChange={(e) => update("perMonth", e.target.value)} placeholder="e.g. 4" />
-            </div>
-            <div>
-              <label style={labelStyle}>Estimated referrals per year</label>
-              <input style={fieldStyle} type="number" value={form.perYear} onChange={(e) => update("perYear", e.target.value)} placeholder="e.g. 40" />
-            </div>
-          </div>
+          <label style={labelStyle}>Estimated referrals per month</label>
+          <input style={fieldStyle} type="number" value={form.perMonth} onChange={(e) => update("perMonth", e.target.value)} placeholder="e.g. 4" />
+
+          <label style={labelStyle}>Estimated referrals per year</label>
+          <input style={fieldStyle} type="number" value={form.perYear} onChange={(e) => update("perYear", e.target.value)} placeholder="e.g. 40" />
           {errors.volume && <div style={errorStyle}>{errors.volume}</div>}
 
           <label style={labelStyle}>Who needs referral (gender, program type, length of stay, etc.)</label>
@@ -249,13 +251,10 @@ export default function LoiFormPage() {
             {submitting ? "Submitting…" : "Submit letter of intent"}
           </button>
           <p style={{ textAlign: "center", fontSize: 11, color: C.muted, marginTop: 18 }}>
-            Grace Trace Ministries · EIN 42-2972120 · gracetraceministries.org
+            Grace Trace Ministries · gracetraceministries.org
           </p>
         </div>
       </div>
     </div>
   );
 }
-
-
-
