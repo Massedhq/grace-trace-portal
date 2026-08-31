@@ -80,6 +80,8 @@ export default function LoiSubmissionsPage() {
       <html>
         <head>
           <title>GTM Letter of Intent — ${escapeHtml(r.org_name)}</title>
+          <link rel="preconnect" href="https://fonts.googleapis.com">
+          <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&display=swap" rel="stylesheet">
           <style>
             body { font-family: Georgia, 'Times New Roman', serif; color: #222; padding: 48px; max-width: 720px; margin: 0 auto; }
             h1 { color: #1F2A44; font-size: 24px; text-align: center; margin-bottom: 2px; letter-spacing: 1px; }
@@ -95,10 +97,10 @@ export default function LoiSubmissionsPage() {
             .sig-table { width: 100%; margin-top: 28px; border-collapse: collapse; page-break-inside: avoid; }
             .sig-table td { width: 33.33%; vertical-align: top; padding-top: 10px; padding-right: 12px; font-size: 11px; }
             .signed-name { font-family: 'Brush Script MT', cursive; font-size: 20px; color: #1F2A44; border-bottom: 1px solid #999; padding-bottom: 4px; margin-top: 20px; }
-            .sig-blank { border-top: 1px solid #999; margin-top: 32px; padding-top: 6px; color: #444; }
+            .sig-blank { border-top: 1px solid #999; margin-top: 32px; padding-top: 6px; color: #1F2A44; font-weight: bold; font-size: 12px; }
             .sig-line { border-top: 1px solid #999; margin-top: 6px; padding-top: 6px; color: #444; }
             .sig-header { font-weight: bold; font-size: 11px; color: #1F2A44; margin-bottom: 4px; }
-            .sig-caption { font-size: 10px; color: #666; margin-top: 8px; }
+            .sig-caption { font-size: 12px; font-weight: bold; color: #1F2A44; margin-top: 8px; }
             @media print { body { padding: 24px; } }
           </style>
         </head>
@@ -360,6 +362,7 @@ const cellStyle = {
   verticalAlign: "top",
   color: "#222222",
 };
+
 
 
 
