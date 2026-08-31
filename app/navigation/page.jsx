@@ -140,6 +140,19 @@ const PAGES = [
     ],
     tips:["Avy and Travis can access all staff binders from their hamburger menu","Your signature on the binder is separate from your orientation signature","The sidebar shows all sections — click any section to jump directly to it"],
   },
+  {
+    icon:"🤝",title:"Letters of Intent",url:"/loi-submissions",who:"Avy and Travis only",
+    description:"View every letter of intent submitted by outside partners (like sober living operators) requesting a transitional housing referral relationship with GTM. Each submission includes their contact info, estimated referral volume, and the population they need housed.",
+    steps:[
+      "Log in to the Staff Workday Portal first",
+      "Click the ☰ hamburger menu in the top right",
+      "Click Letters of Intent",
+      "Review the table of every submitted letter",
+      "Click Refresh to pull the latest submissions",
+      "Click Copy as CSV to paste all submissions into a spreadsheet",
+    ],
+    tips:["The public form partners fill out lives at /loi — that is the link you send out, not this page","New submissions appear automatically, no approval step needed","Use Copy as CSV when you need this data for a grant application"],
+  },
 ];
 
 const PASSWORDS = {
