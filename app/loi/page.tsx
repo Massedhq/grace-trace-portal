@@ -222,7 +222,7 @@ export default function LoiFormPage() {
 
           <div style={{ display: "flex", gap: 10, alignItems: "flex-start", marginTop: 18, fontSize: 13, lineHeight: 1.5 }}>
             <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} style={{ marginTop: 3 }} />
-            <label style={{ margin: 0, fontWeight: 400 }}>
+            <label style={{ margin: 0, fontWeight: 400, color: C.text }}>
               I confirm the information above is accurate and I am authorized to submit this on
               behalf of my organization.
             </label>
@@ -256,5 +256,6 @@ export default function LoiFormPage() {
     </div>
   );
 }
+
 
 
