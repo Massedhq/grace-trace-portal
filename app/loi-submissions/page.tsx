@@ -15,13 +15,13 @@ const C = {
 
 export default function LoiSubmissionsPage() {
   const [rows, setRows] = useState([]);
-  const [linkCopied, setLinkCopied] = useState(false);
   const [loading, setLoading] = useState(true);
   const [allowed, setAllowed] = useState(false);
   const [checked, setChecked] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState("submissions");
 
   useEffect(() => {
-    // Same leadership gate used elsewhere in the portal
     const userId = localStorage.getItem("gtm_current_user") || "";
     const sessionActive = localStorage.getItem("gtm_session_active");
     const isLeadership = userId === "avy" || userId === "travis" || userId === "deann";
@@ -78,9 +78,10 @@ export default function LoiSubmissionsPage() {
         <p style={{ color: C.muted, fontSize: 13, marginBottom: 12 }}>
           Submissions from the public LOI form
         </p>
+
         <div style={{ background: C.card, border: "1px solid " + C.border, borderRadius: 10, padding: "12px 16px", marginBottom: 20, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <span style={{ color: C.navy, fontSize: 13, fontWeight: 600 }}>Share this link with partners:</span>
-          <code id="loiShareLink" style={{ background: C.bg, border: "1px solid " + C.border, borderRadius: 6, padding: "4px 8px", fontSize: 12, color: C.text }}>https://staff.gracetraceministries.org/loi</code>
+          <code style={{ background: C.bg, border: "1px solid " + C.border, borderRadius: 6, padding: "4px 8px", fontSize: 12, color: C.text }}>https://staff.gracetraceministries.org/loi</code>
           <button
             onClick={() => {
               navigator.clipboard.writeText("https://staff.gracetraceministries.org/loi");
@@ -102,72 +103,110 @@ export default function LoiSubmissionsPage() {
           </button>
         </div>
 
-        <div style={{ marginBottom: 24 }}>
-          <div style={{ color: C.gold ? C.gold : C.navy, fontSize: 13, fontWeight: 600, marginBottom: 8 }}>
-            Live preview — this is exactly what partners see
-          </div>
-          <p style={{ color: C.muted, fontSize: 12, marginBottom: 10 }}>
-            Need a field added or changed on this form? Let Avy know and it can be updated.
-          </p>
-          <div style={{ border: "1px solid " + C.border, borderRadius: 10, overflow: "hidden", height: 700 }}>
-            <iframe
-              src="/loi"
-              title="Letter of Intent form preview"
-              style={{ width: "100%", height: "100%", border: "none" }}
-            />
-          </div>
-        </div>
-
-        <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+        <div style={{ display: "flex", gap: 4, marginBottom: 20, borderBottom: "1px solid " + C.border }}>
           <button
-            onClick={fetchRows}
-            style={{ fontSize: 13, padding: "8px 14px", borderRadius: 6, border: `1px solid ${C.border}`, background: "#fff", cursor: "pointer" }}
+            onClick={() => setActiveTab("submissions")}
+            style={{
+              padding: "10px 18px",
+              fontSize: 13,
+              fontWeight: 700,
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              color: activeTab === "submissions" ? C.navy : C.muted,
+              borderBottom: activeTab === "submissions" ? "2px solid " + C.navy : "2px solid transparent",
+              marginBottom: -1,
+            }}
           >
-            Refresh
+            Submissions{rows.length ? ` (${rows.length})` : ""}
           </button>
           <button
-            onClick={copyCsv}
-            disabled={!rows.length}
-            style={{ fontSize: 13, padding: "8px 14px", borderRadius: 6, border: `1px solid ${C.border}`, background: "#fff", cursor: rows.length ? "pointer" : "default" }}
+            onClick={() => setActiveTab("preview")}
+            style={{
+              padding: "10px 18px",
+              fontSize: 13,
+              fontWeight: 700,
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              color: activeTab === "preview" ? C.navy : C.muted,
+              borderBottom: activeTab === "preview" ? "2px solid " + C.navy : "2px solid transparent",
+              marginBottom: -1,
+            }}
           >
-            Copy as CSV
+            Live Preview
           </button>
         </div>
 
-        {loading ? (
-          <p style={{ color: C.muted, fontSize: 13 }}>Loading…</p>
-        ) : rows.length === 0 ? (
-          <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: 24, textAlign: "center", color: C.muted, fontSize: 13 }}>
-            No letters of intent submitted yet.
+        {activeTab === "submissions" && (
+          <div>
+            <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+              <button
+                onClick={fetchRows}
+                style={{ fontSize: 13, padding: "8px 14px", borderRadius: 6, border: "1px solid " + C.border, background: "#fff", color: C.navy, cursor: "pointer" }}
+              >
+                Refresh
+              </button>
+              <button
+                onClick={copyCsv}
+                disabled={!rows.length}
+                style={{ fontSize: 13, padding: "8px 14px", borderRadius: 6, border: "1px solid " + C.border, background: "#fff", color: C.navy, cursor: rows.length ? "pointer" : "default" }}
+              >
+                Copy as CSV
+              </button>
+            </div>
+
+            {loading ? (
+              <p style={{ color: C.muted, fontSize: 13 }}>Loading…</p>
+            ) : rows.length === 0 ? (
+              <div style={{ background: C.card, border: "1px solid " + C.border, borderRadius: 10, padding: 24, textAlign: "center", color: C.muted, fontSize: 13 }}>
+                No letters of intent submitted yet.
+              </div>
+            ) : (
+              <div style={{ background: C.card, border: "1px solid " + C.border, borderRadius: 10, overflow: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                  <thead>
+                    <tr style={{ background: "#F0EEE7" }}>
+                      {["Organization", "Contact", "Phone/Email", "City", "Per mo.", "Per yr.", "Population", "Signature", "Submitted"].map((h) => (
+                        <th key={h} style={{ textAlign: "left", padding: "8px 10px", color: C.navy, borderBottom: "1px solid " + C.border }}>
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((r) => (
+                      <tr key={r.id}>
+                        <td style={cellStyle}>{r.org_name}</td>
+                        <td style={cellStyle}>{r.contact_name}</td>
+                        <td style={cellStyle}>{r.contact_info}</td>
+                        <td style={cellStyle}>{r.city}</td>
+                        <td style={cellStyle}>{r.per_month}</td>
+                        <td style={cellStyle}>{r.per_year}</td>
+                        <td style={cellStyle}>{r.population}</td>
+                        <td style={cellStyle}>{r.signature}</td>
+                        <td style={cellStyle}>{new Date(r.submitted_at).toLocaleDateString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
-        ) : (
-          <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, overflow: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-              <thead>
-                <tr style={{ background: "#F0EEE7" }}>
-                  {["Organization", "Contact", "Phone/Email", "City", "Per mo.", "Per yr.", "Population", "Signature", "Submitted"].map((h) => (
-                    <th key={h} style={{ textAlign: "left", padding: "8px 10px", color: C.navy, borderBottom: `1px solid ${C.border}` }}>
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r) => (
-                  <tr key={r.id}>
-                    <td style={cellStyle}>{r.org_name}</td>
-                    <td style={cellStyle}>{r.contact_name}</td>
-                    <td style={cellStyle}>{r.contact_info}</td>
-                    <td style={cellStyle}>{r.city}</td>
-                    <td style={cellStyle}>{r.per_month}</td>
-                    <td style={cellStyle}>{r.per_year}</td>
-                    <td style={cellStyle}>{r.population}</td>
-                    <td style={cellStyle}>{r.signature}</td>
-                    <td style={cellStyle}>{new Date(r.submitted_at).toLocaleDateString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        )}
+
+        {activeTab === "preview" && (
+          <div>
+            <p style={{ color: C.muted, fontSize: 12, marginBottom: 10 }}>
+              This is exactly what partners see. Need a field added or changed? Let Avy know and it can be updated.
+            </p>
+            <div style={{ border: "1px solid " + C.border, borderRadius: 10, overflow: "hidden", height: 700 }}>
+              <iframe
+                src="/loi"
+                title="Letter of Intent form preview"
+                style={{ width: "100%", height: "100%", border: "none" }}
+              />
+            </div>
           </div>
         )}
       </div>
@@ -180,9 +219,3 @@ const cellStyle = {
   borderBottom: "1px solid #E1DFD8",
   verticalAlign: "top",
 };
-
-
-
-
-
-
