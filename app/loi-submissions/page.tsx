@@ -65,6 +65,11 @@ export default function LoiSubmissionsPage() {
     }
   }
 
+  function escapeHtml(str) {
+    if (!str) return "";
+    return String(str).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+  }
+
   function downloadPdf(r) {
     const win = window.open("", "_blank");
     if (!win) return;
@@ -93,7 +98,8 @@ export default function LoiSubmissionsPage() {
 
           <div class="section-title">Partner organization</div>
           <div class="row"><div class="label">Organization</div><div class="value">${escapeHtml(r.org_name)}</div></div>
-          <div class="row"><div class="label">Contact</div><div class="value">${escapeHtml(r.contact_name)}</div></div>
+          <div class="row"><div class="label">First name</div><div class="value">${escapeHtml(r.contact_first_name)}</div></div>
+          <div class="row"><div class="label">Last name</div><div class="value">${escapeHtml(r.contact_last_name)}</div></div>
           <div class="row"><div class="label">Title</div><div class="value">${escapeHtml(r.contact_title) || "—"}</div></div>
           <div class="row"><div class="label">Phone / Email</div><div class="value">${escapeHtml(r.contact_info)}</div></div>
           <div class="row"><div class="label">City / Location</div><div class="value">${escapeHtml(r.city)}</div></div>
@@ -116,17 +122,12 @@ export default function LoiSubmissionsPage() {
     setTimeout(() => win.print(), 300);
   }
 
-  function escapeHtml(str) {
-    if (!str) return "";
-    return String(str).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
-  }
-
   function copyCsv() {
-    const headers = ["Organization", "Contact", "Title", "Phone/Email", "City", "Per Month", "Per Year", "Population", "Signature", "Submitted"];
+    const headers = ["Organization", "First Name", "Last Name", "Title", "Phone/Email", "City", "Per Month", "Per Year", "Population", "Signature", "Submitted"];
     const lines = [headers.join(",")];
     rows.forEach((r) => {
       const line = [
-        r.org_name, r.contact_name, r.contact_title, r.contact_info, r.city, r.per_month, r.per_year, r.population, r.signature, r.submitted_at,
+        r.org_name, r.contact_first_name, r.contact_last_name, r.contact_title, r.contact_info, r.city, r.per_month, r.per_year, r.population, r.signature, r.submitted_at,
       ]
         .map((v) => `"${String(v || "").replace(/"/g, '""')}"`)
         .join(",");
@@ -147,7 +148,7 @@ export default function LoiSubmissionsPage() {
 
   return (
     <div style={{ background: C.bg, minHeight: "100vh", padding: "32px 20px" }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+      <div style={{ maxWidth: 1150, margin: "0 auto" }}>
         <h1 style={{ color: C.navy, fontSize: 22, marginBottom: 4 }}>Letters of intent</h1>
         <p style={{ color: C.muted, fontSize: 13, marginBottom: 12 }}>
           Submissions from the public LOI form
@@ -241,7 +242,7 @@ export default function LoiSubmissionsPage() {
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
                   <thead>
                     <tr style={{ background: "#F0EEE7" }}>
-                      {["Organization", "Contact", "Title", "Phone/Email", "City", "Per mo.", "Per yr.", "Population", "Signature", "Submitted", "Actions"].map((h) => (
+                      {["Organization", "First Name", "Last Name", "Title", "Phone/Email", "City", "Per mo.", "Per yr.", "Population", "Signature", "Submitted", "Actions"].map((h) => (
                         <th key={h} style={{ textAlign: "left", padding: "8px 10px", color: C.navy, borderBottom: "1px solid " + C.border }}>
                           {h}
                         </th>
@@ -252,7 +253,8 @@ export default function LoiSubmissionsPage() {
                     {rows.map((r) => (
                       <tr key={r.id}>
                         <td style={cellStyle}>{r.org_name}</td>
-                        <td style={cellStyle}>{r.contact_name}</td>
+                        <td style={cellStyle}>{r.contact_first_name}</td>
+                        <td style={cellStyle}>{r.contact_last_name}</td>
                         <td style={cellStyle}>{r.contact_title}</td>
                         <td style={cellStyle}>{r.contact_info}</td>
                         <td style={cellStyle}>{r.city}</td>
@@ -311,4 +313,3 @@ const cellStyle = {
   borderBottom: "1px solid #E1DFD8",
   verticalAlign: "top",
 };
-
