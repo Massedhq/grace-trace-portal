@@ -1529,7 +1529,7 @@ export default function WorkdayPortal() {
               { label: "Compensation Declaration", href: "/compensation", icon: "💼" },
               { label: "Task Requests — Kisses", href: "/task-requests", icon: "✉️" },
               ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Staff Reports", href: "/staff-reports", icon: "👥" }] : []),
-              ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Letters of Intent", href: "/loi-submissions", icon: "📝" }] : []),
+              ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Letters of Intent", href: "/loi-submissions", icon: "📝" }] : []).concat(currentUser.id === "deann" ? [{ label: "Letters of Intent", href: "/loi-submissions", icon: "📝" }] : []),
               ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Manage Resource Templates", href: "/admin/resource-templates", icon: "🛠️" }] : []),
               ...(currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Assign Outreach Contacts", href: "/admin/outreach-contacts", icon: "📇" }] : []),
               ...(currentUser.id === "ialana" || currentUser.id === "avy" || currentUser.id === "travis" ? [{ label: "Ialana's Binder", href: "/ialana-binder", icon: "📘" }] : []),
@@ -1778,6 +1778,7 @@ export default function WorkdayPortal() {
     </div>
   );
 }
+
 
 
 

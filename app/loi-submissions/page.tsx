@@ -23,7 +23,7 @@ export default function LoiSubmissionsPage() {
     // Same leadership gate used elsewhere in the portal
     const userId = localStorage.getItem("gtm_current_user") || "";
     const sessionActive = localStorage.getItem("gtm_session_active");
-    const isLeadership = userId === "avy" || userId === "travis";
+    const isLeadership = userId === "avy" || userId === "travis" || userId === "deann";
     setAllowed(sessionActive === "true" && isLeadership);
     setChecked(true);
   }, []);
@@ -140,5 +140,6 @@ const cellStyle = {
   borderBottom: "1px solid #E1DFD8",
   verticalAlign: "top",
 };
+
 
 
