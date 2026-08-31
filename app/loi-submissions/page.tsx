@@ -21,14 +21,8 @@ export default function LoiSubmissionsPage() {
 
   useEffect(() => {
     // Same leadership gate used elsewhere in the portal
-    const currentUser = localStorage.getItem("gtm_current_user");
+    const userId = localStorage.getItem("gtm_current_user") || "";
     const sessionActive = localStorage.getItem("gtm_session_active");
-    let userId = "";
-    try {
-      userId = currentUser ? JSON.parse(currentUser).id : "";
-    } catch (e) {
-      userId = "";
-    }
     const isLeadership = userId === "avy" || userId === "travis";
     setAllowed(sessionActive === "true" && isLeadership);
     setChecked(true);
@@ -146,4 +140,5 @@ const cellStyle = {
   borderBottom: "1px solid #E1DFD8",
   verticalAlign: "top",
 };
+
 
