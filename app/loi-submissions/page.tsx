@@ -20,6 +20,7 @@ export default function LoiSubmissionsPage() {
   const [checked, setChecked] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [activeTab, setActiveTab] = useState("submissions");
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     const userId = localStorage.getItem("gtm_current_user") || "";
@@ -47,12 +48,85 @@ export default function LoiSubmissionsPage() {
     }
   }
 
+  async function deleteRow(id) {
+    if (!window.confirm("Delete this letter of intent? This cannot be undone.")) return;
+    setDeletingId(id);
+    try {
+      await fetch("/api/loi/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      setRows((prev) => prev.filter((r) => r.id !== id));
+    } catch (err) {
+      alert("Could not delete this submission. Please try again.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  function downloadPdf(r) {
+    const win = window.open("", "_blank");
+    if (!win) return;
+    const date = r.submitted_at ? new Date(r.submitted_at).toLocaleDateString() : "";
+    win.document.write(`
+      <html>
+        <head>
+          <title>GTM Letter of Intent — ${escapeHtml(r.org_name)}</title>
+          <style>
+            body { font-family: Georgia, 'Times New Roman', serif; color: #222; padding: 48px; max-width: 700px; margin: 0 auto; }
+            h1 { color: #1F2A44; font-size: 22px; text-align: center; margin-bottom: 2px; }
+            .sub { text-align: center; color: #B08D57; font-style: italic; margin-bottom: 20px; }
+            .divider { height: 3px; background: #1F2A44; margin: 16px 0 28px; }
+            .row { margin-bottom: 14px; }
+            .label { font-weight: bold; color: #1F2A44; font-size: 13px; }
+            .value { font-size: 14px; margin-top: 2px; }
+            .section-title { font-size: 15px; color: #1F2A44; margin: 26px 0 10px; border-top: 1px solid #ccc; padding-top: 12px; }
+            .sig { margin-top: 40px; border-top: 1px solid #ccc; padding-top: 16px; font-size: 13px; }
+            @media print { body { padding: 24px; } }
+          </style>
+        </head>
+        <body>
+          <h1>GRACE TRACE MINISTRIES</h1>
+          <div class="sub">Transitional Housing &amp; Reentry Services</div>
+          <div class="divider"></div>
+
+          <div class="section-title">Partner organization</div>
+          <div class="row"><div class="label">Organization</div><div class="value">${escapeHtml(r.org_name)}</div></div>
+          <div class="row"><div class="label">Contact</div><div class="value">${escapeHtml(r.contact_name)}</div></div>
+          <div class="row"><div class="label">Title</div><div class="value">${escapeHtml(r.contact_title) || "—"}</div></div>
+          <div class="row"><div class="label">Phone / Email</div><div class="value">${escapeHtml(r.contact_info)}</div></div>
+          <div class="row"><div class="label">City / Location</div><div class="value">${escapeHtml(r.city)}</div></div>
+
+          <div class="section-title">Referral need</div>
+          <div class="row"><div class="label">Estimated referrals per month</div><div class="value">${escapeHtml(r.per_month) || "—"}</div></div>
+          <div class="row"><div class="label">Estimated referrals per year</div><div class="value">${escapeHtml(r.per_year) || "—"}</div></div>
+          <div class="row"><div class="label">Population description</div><div class="value">${escapeHtml(r.population) || "—"}</div></div>
+
+          <div class="sig">
+            <div class="label">Signed</div>
+            <div class="value">${escapeHtml(r.signature)}</div>
+            <div class="value" style="color:#666; margin-top:6px;">Submitted ${date}</div>
+          </div>
+        </body>
+      </html>
+    `);
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 300);
+  }
+
+  function escapeHtml(str) {
+    if (!str) return "";
+    return String(str).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+  }
+
   function copyCsv() {
-    const headers = ["Organization", "Contact", "Phone/Email", "City", "Per Month", "Per Year", "Population", "Signature", "Submitted"];
+    const headers = ["Organization", "Contact", "Title", "Phone/Email", "City", "Per Month", "Per Year", "Population", "Signature", "Submitted"];
     const lines = [headers.join(",")];
     rows.forEach((r) => {
       const line = [
-        r.org_name, r.contact_name, r.contact_info, r.city, r.per_month, r.per_year, r.population, r.signature, r.submitted_at,
+        r.org_name, r.contact_name, r.contact_title, r.contact_info, r.city, r.per_month, r.per_year, r.population, r.signature, r.submitted_at,
       ]
         .map((v) => `"${String(v || "").replace(/"/g, '""')}"`)
         .join(",");
@@ -73,7 +147,7 @@ export default function LoiSubmissionsPage() {
 
   return (
     <div style={{ background: C.bg, minHeight: "100vh", padding: "32px 20px" }}>
-      <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <h1 style={{ color: C.navy, fontSize: 22, marginBottom: 4 }}>Letters of intent</h1>
         <p style={{ color: C.muted, fontSize: 13, marginBottom: 12 }}>
           Submissions from the public LOI form
@@ -167,7 +241,7 @@ export default function LoiSubmissionsPage() {
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
                   <thead>
                     <tr style={{ background: "#F0EEE7" }}>
-                      {["Organization", "Contact", "Phone/Email", "City", "Per mo.", "Per yr.", "Population", "Signature", "Submitted"].map((h) => (
+                      {["Organization", "Contact", "Title", "Phone/Email", "City", "Per mo.", "Per yr.", "Population", "Signature", "Submitted", "Actions"].map((h) => (
                         <th key={h} style={{ textAlign: "left", padding: "8px 10px", color: C.navy, borderBottom: "1px solid " + C.border }}>
                           {h}
                         </th>
@@ -179,6 +253,7 @@ export default function LoiSubmissionsPage() {
                       <tr key={r.id}>
                         <td style={cellStyle}>{r.org_name}</td>
                         <td style={cellStyle}>{r.contact_name}</td>
+                        <td style={cellStyle}>{r.contact_title}</td>
                         <td style={cellStyle}>{r.contact_info}</td>
                         <td style={cellStyle}>{r.city}</td>
                         <td style={cellStyle}>{r.per_month}</td>
@@ -186,6 +261,23 @@ export default function LoiSubmissionsPage() {
                         <td style={cellStyle}>{r.population}</td>
                         <td style={cellStyle}>{r.signature}</td>
                         <td style={cellStyle}>{new Date(r.submitted_at).toLocaleDateString()}</td>
+                        <td style={cellStyle}>
+                          <div style={{ display: "flex", gap: 6 }}>
+                            <button
+                              onClick={() => downloadPdf(r)}
+                              style={{ fontSize: 11, padding: "4px 8px", borderRadius: 5, border: "1px solid " + C.border, background: "#fff", color: C.navy, cursor: "pointer", whiteSpace: "nowrap" }}
+                            >
+                              PDF
+                            </button>
+                            <button
+                              onClick={() => deleteRow(r.id)}
+                              disabled={deletingId === r.id}
+                              style={{ fontSize: 11, padding: "4px 8px", borderRadius: 5, border: "1px solid #C9302C", background: "#fff", color: "#C9302C", cursor: "pointer", whiteSpace: "nowrap" }}
+                            >
+                              {deletingId === r.id ? "…" : "Delete"}
+                            </button>
+                          </div>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -219,3 +311,4 @@ const cellStyle = {
   borderBottom: "1px solid #E1DFD8",
   verticalAlign: "top",
 };
+
