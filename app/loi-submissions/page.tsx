@@ -74,9 +74,19 @@ export default function LoiSubmissionsPage() {
     <div style={{ background: C.bg, minHeight: "100vh", padding: "32px 20px" }}>
       <div style={{ maxWidth: 1000, margin: "0 auto" }}>
         <h1 style={{ color: C.navy, fontSize: 22, marginBottom: 4 }}>Letters of intent</h1>
-        <p style={{ color: C.muted, fontSize: 13, marginBottom: 20 }}>
-          Submissions from the public LOI form at /loi
+        <p style={{ color: C.muted, fontSize: 13, marginBottom: 12 }}>
+          Submissions from the public LOI form
         </p>
+        <div style={{ background: C.card, border: "1px solid " + C.border, borderRadius: 10, padding: "12px 16px", marginBottom: 20, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <span style={{ color: C.navy, fontSize: 13, fontWeight: 600 }}>Share this link with partners:</span>
+          <code id="loiShareLink" style={{ background: C.bg, border: "1px solid " + C.border, borderRadius: 6, padding: "4px 8px", fontSize: 12, color: C.text }}>https://staff.gracetraceministries.org/loi</code>
+          <button
+            onClick={() => { navigator.clipboard.writeText("https://staff.gracetraceministries.org/loi"); }}
+            style={{ fontSize: 12, padding: "5px 10px", borderRadius: 6, border: "1px solid " + C.border, background: "#fff", cursor: "pointer" }}
+          >
+            Copy link
+          </button>
+        </div>
 
         <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
           <button
@@ -140,6 +150,7 @@ const cellStyle = {
   borderBottom: "1px solid #E1DFD8",
   verticalAlign: "top",
 };
+
 
 
 
