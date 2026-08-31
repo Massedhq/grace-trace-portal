@@ -152,8 +152,8 @@ export default function LoiSubmissionsPage() {
               </td>
               <td>
                 <div class="sig-header">GRACE TRACE MINISTRIES</div>
-                <div class="signed-name">Deann Evans</div>
-                <div class="sig-line">Deann Evans, Director of Outreach<br/>Printed Name &amp; Title</div>
+                <div class="signed-name">Deann Pride</div>
+                <div class="sig-line">Deann Pride, Director of Outreach<br/>Printed Name &amp; Title</div>
               </td>
             </tr>
           </table>
@@ -357,6 +357,7 @@ const cellStyle = {
   verticalAlign: "top",
   color: "#222222",
 };
+
 
 
 
