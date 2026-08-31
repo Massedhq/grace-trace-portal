@@ -88,6 +88,22 @@ export default function LoiSubmissionsPage() {
           </button>
         </div>
 
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ color: C.gold ? C.gold : C.navy, fontSize: 13, fontWeight: 600, marginBottom: 8 }}>
+            Live preview — this is exactly what partners see
+          </div>
+          <p style={{ color: C.muted, fontSize: 12, marginBottom: 10 }}>
+            Need a field added or changed on this form? Let Avy know and it can be updated.
+          </p>
+          <div style={{ border: "1px solid " + C.border, borderRadius: 10, overflow: "hidden", height: 700 }}>
+            <iframe
+              src="/loi"
+              title="Letter of Intent form preview"
+              style={{ width: "100%", height: "100%", border: "none" }}
+            />
+          </div>
+        </div>
+
         <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
           <button
             onClick={fetchRows}
@@ -150,6 +166,7 @@ const cellStyle = {
   borderBottom: "1px solid #E1DFD8",
   verticalAlign: "top",
 };
+
 
 
 
