@@ -92,10 +92,12 @@ export default function LoiSubmissionsPage() {
             .field-label { font-weight: bold; }
             .body-text { font-size: 14px; line-height: 1.7; margin: 16px 0; }
             .section-title { font-weight: bold; font-size: 14px; color: #1F2A44; margin: 22px 0 8px; }
-            .sig-table { width: 100%; margin-top: 40px; border-collapse: collapse; }
-            .sig-table td { width: 50%; vertical-align: top; padding-top: 10px; font-size: 12px; }
-            .sig-line { border-top: 1px solid #999; margin-top: 40px; padding-top: 6px; color: #444; }
-            .sig-header { font-weight: bold; font-size: 12px; color: #1F2A44; margin-bottom: 4px; }
+            .sig-table { width: 100%; margin-top: 28px; border-collapse: collapse; page-break-inside: avoid; }
+            .sig-table td { width: 33.33%; vertical-align: top; padding-top: 10px; padding-right: 12px; font-size: 11px; }
+            .signed-name { font-family: 'Brush Script MT', cursive; font-size: 20px; color: #1F2A44; border-bottom: 1px solid #999; padding-bottom: 4px; margin-top: 20px; }
+            .sig-blank { border-top: 1px solid #999; margin-top: 32px; padding-top: 6px; color: #444; }
+            .sig-line { border-top: 1px solid #999; margin-top: 6px; padding-top: 6px; color: #444; }
+            .sig-header { font-weight: bold; font-size: 11px; color: #1F2A44; margin-bottom: 4px; }
             @media print { body { padding: 24px; } }
           </style>
         </head>
@@ -140,13 +142,18 @@ export default function LoiSubmissionsPage() {
             <tr>
               <td>
                 <div class="sig-header">PARTNER ORGANIZATION</div>
-                <div class="sig-line">Signature</div>
+                <div class="sig-blank">Signature</div>
                 <div class="sig-line">${escapeHtml(nameAndTitle)}<br/>Printed Name &amp; Title</div>
               </td>
               <td>
                 <div class="sig-header">GRACE TRACE MINISTRIES</div>
-                <div class="sig-line">Signature</div>
+                <div class="signed-name">Avrial Evans</div>
                 <div class="sig-line">Avrial Evans, President &amp; Chief Strategist<br/>Printed Name &amp; Title</div>
+              </td>
+              <td>
+                <div class="sig-header">GRACE TRACE MINISTRIES</div>
+                <div class="signed-name">Deann Evans</div>
+                <div class="sig-line">Deann Evans, Director of Outreach<br/>Printed Name &amp; Title</div>
               </td>
             </tr>
           </table>
@@ -348,5 +355,8 @@ const cellStyle = {
   padding: "8px 10px",
   borderBottom: "1px solid #E1DFD8",
   verticalAlign: "top",
+  color: "#222222",
 };
+
+
 
