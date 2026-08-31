@@ -98,6 +98,7 @@ export default function LoiSubmissionsPage() {
             .sig-blank { border-top: 1px solid #999; margin-top: 32px; padding-top: 6px; color: #444; }
             .sig-line { border-top: 1px solid #999; margin-top: 6px; padding-top: 6px; color: #444; }
             .sig-header { font-weight: bold; font-size: 11px; color: #1F2A44; margin-bottom: 4px; }
+            .sig-caption { font-size: 10px; color: #666; margin-top: 8px; }
             @media print { body { padding: 24px; } }
           </style>
         </head>
@@ -147,11 +148,13 @@ export default function LoiSubmissionsPage() {
               </td>
               <td>
                 <div class="sig-header">GRACE TRACE MINISTRIES</div>
+                <div class="sig-caption">Signature</div>
                 <div class="signed-name">Avrial Evans</div>
                 <div class="sig-line">Avrial Evans, President &amp; Chief Strategist<br/>Printed Name &amp; Title</div>
               </td>
               <td>
                 <div class="sig-header">GRACE TRACE MINISTRIES</div>
+                <div class="sig-caption">Signature</div>
                 <div class="signed-name">Deann Pride</div>
                 <div class="sig-line">Deann Pride, Director of Outreach<br/>Printed Name &amp; Title</div>
               </td>
@@ -357,6 +360,8 @@ const cellStyle = {
   verticalAlign: "top",
   color: "#222222",
 };
+
+
 
 
 
