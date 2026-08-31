@@ -15,6 +15,7 @@ const C = {
 
 export default function LoiSubmissionsPage() {
   const [rows, setRows] = useState([]);
+  const [linkCopied, setLinkCopied] = useState(false);
   const [loading, setLoading] = useState(true);
   const [allowed, setAllowed] = useState(false);
   const [checked, setChecked] = useState(false);
@@ -81,10 +82,23 @@ export default function LoiSubmissionsPage() {
           <span style={{ color: C.navy, fontSize: 13, fontWeight: 600 }}>Share this link with partners:</span>
           <code id="loiShareLink" style={{ background: C.bg, border: "1px solid " + C.border, borderRadius: 6, padding: "4px 8px", fontSize: 12, color: C.text }}>https://staff.gracetraceministries.org/loi</code>
           <button
-            onClick={() => { navigator.clipboard.writeText("https://staff.gracetraceministries.org/loi"); }}
-            style={{ fontSize: 12, padding: "5px 10px", borderRadius: 6, border: "1px solid " + C.border, background: "#fff", cursor: "pointer" }}
+            onClick={() => {
+              navigator.clipboard.writeText("https://staff.gracetraceministries.org/loi");
+              setLinkCopied(true);
+              setTimeout(() => setLinkCopied(false), 2000);
+            }}
+            style={{
+              fontSize: 12,
+              padding: "5px 10px",
+              borderRadius: 6,
+              border: "1px solid " + (linkCopied ? "#0F6E56" : C.border),
+              background: linkCopied ? "#E1F5EE" : "#fff",
+              color: linkCopied ? "#0F6E56" : C.navy,
+              fontWeight: linkCopied ? 700 : 400,
+              cursor: "pointer",
+            }}
           >
-            Copy link
+            {linkCopied ? "✓ Copied" : "Copy link"}
           </button>
         </div>
 
@@ -166,6 +180,7 @@ const cellStyle = {
   borderBottom: "1px solid #E1DFD8",
   verticalAlign: "top",
 };
+
 
 
 
